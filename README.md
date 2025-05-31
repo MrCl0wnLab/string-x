@@ -1,8 +1,7 @@
 <center>
 
 <h1 align="center">
-  <br>
-  🔧 String-X (STRX)
+  <a href="#/"><img src="./asset/logo.png"></a>
 </h1>
 
 <h4 align="center">Ferramenta de Automatização para Manipulação de Strings</h4>
