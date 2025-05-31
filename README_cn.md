@@ -19,11 +19,11 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/osintbrazuca/string-x/blob/main/LICENSE"><img src="https://img.shields.io/github/license/osintbrazuca/string-x?color=blue"></a>
-  <a href="https://github.com/osintbrazuca/string-x/graphs/contributors"><img src="https://img.shields.io/github/contributors-anon/osintbrazuca/string-x"></a>
-  <a href="https://github.com/osintbrazuca/string-x/issues"><img src="https://img.shields.io/github/issues-raw/osintbrazuca/string-x"></a>
-  <a href="https://github.com/osintbrazuca/string-x/network/members"><img src="https://img.shields.io/github/forks/osintbrazuca/string-x"></a>
-  <img src="https://img.shields.io/github/stars/osintbrazuca/string-x.svg?style=social" title="Stars" /> 
+  <a href="https://github.com/MrCl0wnLab/string-x/blob/main/LICENSE"><img src="https://img.shields.io/github/license/MrCl0wnLab/string-x?color=blue"></a>
+  <a href="https://github.com/MrCl0wnLab/string-x/graphs/contributors"><img src="https://img.shields.io/github/contributors-anon/MrCl0wnLab/string-x"></a>
+  <a href="https://github.com/MrCl0wnLab/string-x/issues"><img src="https://img.shields.io/github/issues-raw/MrCl0wnLab/string-x"></a>
+  <a href="https://github.com/MrCl0wnLab/string-x/network/members"><img src="https://img.shields.io/github/forks/MrCl0wnLab/string-x"></a>
+  <img src="https://img.shields.io/github/stars/MrCl0wnLab/string-x.svg?style=social" title="Stars" /> 
 </p>
 
 </center>
@@ -61,7 +61,7 @@
 ### 快速安装
 ```bash
 # 克隆仓库
-git clone https://github.com/osintbrazuca/string-x.git
+git clone https://github.com/MrCl0wnLab/string-x.git
 cd string-x
 
 # 安装依赖
@@ -352,7 +352,7 @@ output-%d-%m-%Y-%H.txt > output-15-06-2025-11.txt
 ```bash
  + 作者:   MrCl0wn
  + 博客:   http://blog.mrcl0wn.com
- + GitHub: https://github.com/osintbrazuca
+ + GitHub: https://github.com/MrCl0wnLab
  + GitHub: https://github.com/MrCl0wnLab
  + Twitter: https://twitter.com/MrCl0wnLab
  + 邮箱:   mrcl0wnlab@gmail.com

@@ -19,11 +19,11 @@ Ferramenta modular de automatização desenvolvida para auxiliar analistas em OS
 </p>
 
 <p align="center">
-  <a href="https://github.com/osintbrazuca/string-x/blob/main/LICENSE"><img src="https://img.shields.io/github/license/osintbrazuca/string-x?color=blue"></a>
-  <a href="https://github.com/osintbrazuca/string-x/graphs/contributors"><img src="https://img.shields.io/github/contributors-anon/osintbrazuca/string-x"></a>
-  <a href="https://github.com/osintbrazuca/string-x/issues"><img src="https://img.shields.io/github/issues-raw/osintbrazuca/string-x"></a>
-  <a href="https://github.com/osintbrazuca/string-x/network/members"><img src="https://img.shields.io/github/forks/osintbrazuca/string-x"></a>
-  <img src="https://img.shields.io/github/stars/osintbrazuca/string-x.svg?style=social" title="Stars" /> 
+  <a href="https://github.com/MrCl0wnLab/string-x/blob/main/LICENSE"><img src="https://img.shields.io/github/license/MrCl0wnLab/string-x?color=blue"></a>
+  <a href="https://github.com/MrCl0wnLab/string-x/graphs/contributors"><img src="https://img.shields.io/github/contributors-anon/MrCl0wnLab/string-x"></a>
+  <a href="https://github.com/MrCl0wnLab/string-x/issues"><img src="https://img.shields.io/github/issues-raw/MrCl0wnLab/string-x"></a>
+  <a href="https://github.com/MrCl0wnLab/string-x/network/members"><img src="https://img.shields.io/github/forks/MrCl0wnLab/string-x"></a>
+  <img src="https://img.shields.io/github/stars/MrCl0wnLab/string-x.svg?style=social" title="Stars" /> 
 </p>
 
 </center>
@@ -61,7 +61,7 @@ Ferramenta modular de automatização desenvolvida para auxiliar analistas em OS
 ### Instalação Rápida
 ```bash
 # Clone o repositório
-git clone https://github.com/osintbrazuca/string-x.git
+git clone https://github.com/MrCl0wnLab/string-x.git
 cd string-x
 
 # Instale as dependências
@@ -673,7 +673,7 @@ Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICE
 
 **MrCl0wn**
 - 🌐 **Blog**: [http://blog.mrcl0wn.com](http://blog.mrcl0wn.com)
-- 🐙 **GitHub**: [@osintbrazuca](https://github.com/osintbrazuca) | [@MrCl0wnLab](https://github.com/MrCl0wnLab)
+- 🐙 **GitHub**: [@MrCl0wnLab](https://github.com/MrCl0wnLab) | [@MrCl0wnLab](https://github.com/MrCl0wnLab)
 - 🐦 **Twitter**: [@MrCl0wnLab](https://twitter.com/MrCl0wnLab)
 - 📧 **Email**: mrcl0wnlab@gmail.com
 

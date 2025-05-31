@@ -19,11 +19,11 @@ Modular automation tool developed to assist analysts in OSINT, pentesting, and d
 </p>
 
 <p align="center">
-  <a href="https://github.com/osintbrazuca/string-x/blob/main/LICENSE"><img src="https://img.shields.io/github/license/osintbrazuca/string-x?color=blue"></a>
-  <a href="https://github.com/osintbrazuca/string-x/graphs/contributors"><img src="https://img.shields.io/github/contributors-anon/osintbrazuca/string-x"></a>
-  <a href="https://github.com/osintbrazuca/string-x/issues"><img src="https://img.shields.io/github/issues-raw/osintbrazuca/string-x"></a>
-  <a href="https://github.com/osintbrazuca/string-x/network/members"><img src="https://img.shields.io/github/forks/osintbrazuca/string-x"></a>
-  <img src="https://img.shields.io/github/stars/osintbrazuca/string-x.svg?style=social" title="Stars" /> 
+  <a href="https://github.com/MrCl0wnLab/string-x/blob/main/LICENSE"><img src="https://img.shields.io/github/license/MrCl0wnLab/string-x?color=blue"></a>
+  <a href="https://github.com/MrCl0wnLab/string-x/graphs/contributors"><img src="https://img.shields.io/github/contributors-anon/MrCl0wnLab/string-x"></a>
+  <a href="https://github.com/MrCl0wnLab/string-x/issues"><img src="https://img.shields.io/github/issues-raw/MrCl0wnLab/string-x"></a>
+  <a href="https://github.com/MrCl0wnLab/string-x/network/members"><img src="https://img.shields.io/github/forks/MrCl0wnLab/string-x"></a>
+  <img src="https://img.shields.io/github/stars/MrCl0wnLab/string-x.svg?style=social" title="Stars" /> 
 </p>
 
 </center>
@@ -61,7 +61,7 @@ Modular automation tool developed to assist analysts in OSINT, pentesting, and d
 ### Quick Installation
 ```bash
 # Clone repository
-git clone https://github.com/osintbrazuca/string-x.git
+git clone https://github.com/MrCl0wnLab/string-x.git
 cd string-x
 
 # Install dependencies
@@ -350,7 +350,7 @@ Contributions are welcome! Please:
 ```bash
  + Author:  MrCl0wn
  + Blog:    http://blog.mrcl0wn.com
- + GitHub:  https://github.com/osintbrazuca
+ + GitHub:  https://github.com/MrCl0wnLab
  + GitHub:  https://github.com/MrCl0wnLab
  + Twitter: https://twitter.com/MrCl0wnLab
  + Email:   mrcl0wnlab@gmail.com
