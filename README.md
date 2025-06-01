@@ -73,11 +73,6 @@ chmod +x strx
 ./strx --help
 ```
 
-### Instalação via Pip (em breve)
-```bash
-pip install string-x
-```
-
 ## 🧠 CONCEITOS FUNDAMENTAIS
 
 ### Sistema de Template {STRING}
@@ -127,16 +122,16 @@ String-X utiliza uma arquitetura modular extensível com quatro tipos principais
 ### Estrutura de Diretórios
 ```
 string-x/
-├── strx                    # Executável principal
-├── config/                 # Configurações globais
-├── core/                   # Núcleo da aplicação
+├── strx                   # Executável principal
+├── config/                # Configurações globais
+├── core/                  # Núcleo da aplicação
 │   ├── command.py         # Processamento de comandos
 │   ├── auto_module.py     # Carregamento dinâmico de módulos
 │   ├── thread_process.py  # Sistema de threads
 │   ├── format.py          # Formatação e encoding
 │   └── style_cli.py       # Interface CLI estilizada
 └── utils/
-    ├── auxiliary/         # Módulos auxiliares
+    ├── auxiliary/        # Módulos auxiliares
     │   ├── ext/          # Módulos extratores
     │   ├── clc/          # Módulos coletores
     │   ├── out/          # Módulos de saída
