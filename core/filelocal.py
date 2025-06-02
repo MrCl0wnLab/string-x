@@ -75,9 +75,8 @@ class FileLocal:
         """
         if value and file:
             try:
-                data_return = open(file, 'w')
-                data_return.write(value)
-                data_return.close()
+                with open(file, 'w') as data_return:
+                    data_return.write(value)
             except Exception:
                 self._cli.console.print_exception(max_frames=3)
 
