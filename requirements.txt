@@ -1,4 +1,21 @@
+# Dependências core
 rich==13.6.0
 typing_extensions==4.9.0
 PyYAML==6.0.1
+
+# HTTP e Requisições
 httpx==0.27.0
+requests==2.31.0
+urllib3==2.0.7
+
+# Requisições e Networking
+dnspython==2.4.2
+python-whois==0.8.0
+
+# Bancos de Dados
+mysql-connector-python==8.2.0
+sqlite3-utils==3.35.1   # Para módulo out:sqlite
+
+
+# Processamento de Dados
+lxml==4.9.3              # Parser XML/HTML mais rápido
