@@ -501,46 +501,39 @@ Para criar novos módulos, siga a estrutura padrão:
 #### Módulo Extractor (ext)
 ```python
 """
-Módulo extrator personalizado.
+Introdução do módulo
 """
-
+from core.basemodule import BaseModule
 import re
 
-def extract(data):
-    """
-    Função principal de extração.
+class ModuleName(BaseModule):
     
-    Args:
-        data (str): Dados de entrada para extração
-        
-    Returns:
-        list: Lista de itens extraídos
-    """
-    pattern = r'seu_regex_aqui'
-    matches = re.findall(pattern, data, re.IGNORECASE)
-    return matches
-```
+    def __init__(self):
+      super().__init__()
 
-#### Módulo Collector (clc)
-```python
-"""
-Módulo coletor personalizado.
-"""
 
-import requests
+      # Define informações de meta do módulo
+      self.meta.update({
+          "name": "Nome do módulo...",
+          "description": "Descreva o módulo...",
+          "author": "Nome do criador...",
+          "type": "extractor | collector | Output..."
+      })
 
-def collect(target):
-    """
-    Função principal de coleta.
+      # Define opções requeridas para este módulo
+      self.options = {
+          "data": str(),
+          "regex": "YOUR_REGEX"
+      }
     
-    Args:
-        target (str): Alvo para coleta de informações
-        
-    Returns:
-        dict: Dados coletados
-    """
-    # Implementar lógica de coleta
-    pass
+    # Função obrigatoria para execução
+    def run(self):
+        """
+        Contexto para lógico do módulo
+          > Acesse as informações de options via: self.options.get(key_name)
+        """
+        # Savar informações da exeução do módulo
+        self.set_result(value_regex)
 ```
 
 ### Filtros e Módulos
