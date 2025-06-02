@@ -30,7 +30,7 @@ Estrutura de um módulo CON:
         pass
 
 Uso com String-X:
-    ./strx -l targets.txt -st "{STRING}" -module "con:ssh" -pm
+    ./strx -l targets.txt -st "echo {STRING}" -module "con:ssh" -pm
 
 Autor: MrCl0wn
 Email: mrcl0wnlab@gmail.com

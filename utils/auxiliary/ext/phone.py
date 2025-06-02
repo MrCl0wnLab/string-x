@@ -5,8 +5,8 @@ Este módulo implementa funcionalidade para extrair números de telefone brasile
 de textos usando expressões regulares. Faz parte do sistema de módulos auxiliares
 do String-X.
 """
-from core.basemodule import BaseModule
 import re
+from core.basemodule import BaseModule
 
 class Phone(BaseModule):
     """
@@ -40,23 +40,18 @@ class Phone(BaseModule):
         
         # Definir opções configuráveis
         self.options = {
-            'data': str(),    # dados de entrada
-            'regex': r'(?:\+?\d{1,3}\s*)?(?:\(?\d{2,3}\)?\s*)?(?:9?\d{4,5}[-.\s]?\d{4})'
+            'data': str(),
+            'regex': r'(?:\+55\s?)?(?:\([1-9]{2}\)\s?|[1-9]{2}\s?)?(?:9\s?)?[0-9]{4}-?[0-9]{4}',
+            'example': './strx -l contacts.txt -st "echo {STRING}" -module "ext:phone" -pm'
         }
     
     def run(self):
         """
-        Executa o processo de extração de números de telefone.
+        Executa o processo de extração de telefones.
         
         Utiliza os dados fornecidos e o padrão regex configurado para identificar
-        e extrair números de telefone válidos. Os telefones encontrados são
-        armazenados nos resultados do módulo.
-        
-        O processo inclui:
-        1. Verificação da disponibilidade de dados e padrão regex
-        2. Compilação do padrão regex com flag IGNORECASE
-        3. Busca por números de telefone no texto
-        4. Armazenamento dos resultados únicos encontrados
+        e extrair números de telefone brasileiros válidos. Os números encontrados
+        são armazenados nos resultados do módulo.
         """
         # Verifica se há dados para processar
         if (target_value := self.options.get("data")) and (regex_data := self.options.get("regex")): 
@@ -65,5 +60,4 @@ class Phone(BaseModule):
                 for value_regex in regex_result_list:
                     self.set_result(value_regex)
 
-            
-    
+

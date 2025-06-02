@@ -6,7 +6,8 @@ via Slack Webhook API, permitindo notificações e compartilhamento de dados
 extraídos pelo String-X em canais Slack.
 """
 from core.basemodule import BaseModule
-
+import json
+import urllib.request
 
 class SlackOutput(BaseModule):
     """
@@ -26,7 +27,7 @@ class SlackOutput(BaseModule):
         
         self.meta = {
             'name': 'Slack Output',
-            'author': 'String-X Team',
+            'author': 'MrCl0wn',
             'version': '1.0',
             'description': 'Envia dados via Slack Webhook',
             'type': 'output'
@@ -35,13 +36,60 @@ class SlackOutput(BaseModule):
         self.options = {
             'webhook_url': str(),
             'channel': str(),
-            'data': str()
+            'data': str(),
+            'example': './strx -l alerts.txt -st "echo {STRING}" -module "out:slack" -pm'
         }
     
     def run(self):
         """
         Executa envio via Slack.
-        
-        TODO: Implementar lógica de envio via Webhook.
         """
-        pass
+        try:
+            data = self.options.get('data', '')
+            webhook_url = self.options.get('webhook_url', '')
+            channel = self.options.get('channel', '#general')
+            
+            if not data:
+                return
+            
+            if not webhook_url:
+                self.set_result("✗ Erro: webhook_url é obrigatório")
+                return
+            
+            # Preparar payload
+            payload = {
+                'channel': channel,
+                'username': 'String-X Bot',
+                'icon_emoji': ':mag:',
+                'text': f"🔍 *String-X Results*",
+                'attachments': [
+                    {
+                        'color': 'good',
+                        'fields': [
+                            {
+                                'title': 'Dados Processados',
+                                'value': f"```{data}```",
+                                'short': False
+                            }
+                        ],
+                        'footer': 'String-X OSINT Tool',
+                        'ts': int(__import__('time').time())
+                    }
+                ]
+            }
+            
+            # Converter para JSON
+            json_data = json.dumps(payload).encode('utf-8')
+            
+            # Fazer requisição
+            req = urllib.request.Request(webhook_url, data=json_data, method='POST')
+            req.add_header('Content-Type', 'application/json')
+            
+            with urllib.request.urlopen(req, timeout=10) as response:
+                if response.status == 200:
+                    self.set_result("✓ Mensagem enviada via Slack")
+                else:
+                    self.set_result(f"✗ Erro Slack: Status {response.status}")
+                    
+        except Exception as e:
+            self.set_result(f"✗ Erro Slack: {str(e)}")

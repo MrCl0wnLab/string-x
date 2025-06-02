@@ -6,7 +6,6 @@ tipos de registros DNS (A, MX, TXT, NS) para hosts especificados, utilizando
 dig como ferramenta subjacente.
 """
 from core.basemodule import BaseModule
-import socket
 import subprocess
 
 
@@ -39,7 +38,8 @@ class DnsInfo(BaseModule):
             'data': str(),  # Nome do host a ser pesquisado
             'records': ['A', 'MX', 'TXT', 'NS'],  # Tipos de registros DNS
             'timeout': 5,  # Timeout para consultas DNS
-            'resolver': '8.8.8.8'  # Servidor DNS resolver
+            'resolver': '8.8.8.8',  # Servidor DNS resolver
+            'example': './strx -l domains.txt -st "echo {STRING}" -module "clc:dns" -pm'
         }
     
     def _get_dns_record(self, host: str, record_type: str) -> list:
@@ -59,7 +59,9 @@ class DnsInfo(BaseModule):
             result = subprocess.run(cmd, capture_output=True, 
                                   text=True, timeout=self.options['timeout'])
             if result.stdout:
-                return result.stdout.strip().split('\n')
+                records = [line.strip() for line in result.stdout.strip().split('\n') if line.strip()]
+                return records
+                
         except Exception:
             pass
         return []
@@ -74,7 +76,7 @@ class DnsInfo(BaseModule):
         host = self.options.get("data", "").strip()
         
         if not host:
-            return None
+            return
         
         dns_info = {
             'host': host,
@@ -94,4 +96,3 @@ class DnsInfo(BaseModule):
                 result += f"  {rtype}: {', '.join(values)}\n"
             
             self.set_result(result)
-        

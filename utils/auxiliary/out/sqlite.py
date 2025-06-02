@@ -6,7 +6,8 @@ em banco de dados SQLite, permitindo armazenamento estruturado de dados
 extraídos pelo String-X.
 """
 from core.basemodule import BaseModule
-
+import sqlite3
+from datetime import datetime
 
 class SqliteOutput(BaseModule):
     """
@@ -26,7 +27,7 @@ class SqliteOutput(BaseModule):
         
         self.meta = {
             'name': 'SQLite Output',
-            'author': 'String-X Team',
+            'author': 'MrCl0wn',
             'version': '1.0',
             'description': 'Salva dados em banco SQLite',
             'type': 'output'
@@ -35,13 +36,50 @@ class SqliteOutput(BaseModule):
         self.options = {
             'database': 'strx_results.db',
             'table': 'results',
-            'data': str()
+            'data': str(),
+            'example': './strx -l domains.txt -st "echo {STRING}" -module "out:sqlite" -pm'
         }
     
     def run(self):
         """
         Executa salvamento no SQLite.
-        
-        TODO: Implementar lógica de conexão e inserção.
         """
-        pass
+        try:
+            data = self.options.get('data', '')
+            if not data:
+                return
+            
+            database_path = self.options.get('database', 'strx_results.db')
+            table_name = self.options.get('table', 'results')
+            
+            # Conectar ao banco SQLite
+            conn = sqlite3.connect(database_path)
+            cursor = conn.cursor()
+            
+            # Criar tabela se não existir
+            cursor.execute(f'''
+                CREATE TABLE IF NOT EXISTS {table_name} (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    data TEXT NOT NULL,
+                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    module_type TEXT DEFAULT 'unknown',
+                    processed_at TEXT
+                )
+            ''')
+            
+            # Inserir dados
+            timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            cursor.execute(f'''
+                INSERT INTO {table_name} (data, processed_at, module_type)
+                VALUES (?, ?, ?)
+            ''', (data, timestamp, self.meta.get('type', 'output')))
+            
+            conn.commit()
+            conn.close()
+            
+            self.set_result(f"✓ Dados salvos em SQLite: {database_path}")
+            
+        except ImportError:
+            self.set_result("✗ Erro: sqlite3 não disponível")
+        except Exception as e:
+            self.set_result(f"✗ Erro SQLite: {str(e)}")

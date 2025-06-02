@@ -4,8 +4,8 @@ Módulo extrator de URLs.
 Este módulo implementa funcionalidade para extrair URLs de textos usando
 expressões regulares. Faz parte do sistema de módulos auxiliares do String-X.
 """
-from core.basemodule import BaseModule
 import re
+from core.basemodule import BaseModule
 
 class AuxRegexURL(BaseModule):
     """
@@ -36,6 +36,7 @@ class AuxRegexURL(BaseModule):
         self.options = {
             "data": str(),
             "regex": r'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+(?:/[-\w%/.]*)*(?:\?[-\w%&=.]*)?',
+            "example": "./strx -l webpages.txt -st \"{STRING}\" -module \"ext:url\" -pm"
         }
     
     def run(self):
@@ -43,21 +44,13 @@ class AuxRegexURL(BaseModule):
         Executa o processo de extração de URLs.
         
         Utiliza os dados fornecidos e o padrão regex configurado para identificar
-        e extrair URLs válidas que começam com http:// ou https://. As URLs
-        encontradas são armazenadas nos resultados do módulo.
-        
-        O processo inclui:
-        1. Verificação da disponibilidade de dados e padrão regex
-        2. Compilação do padrão regex com flag IGNORECASE
-        3. Busca por URLs no texto
-        4. Validação de que as URLs começam com http:// ou https://
-        5. Armazenamento dos resultados únicos encontrados
+        e extrair URLs válidas de strings de texto. As URLs encontradas
+        são armazenadas nos resultados do módulo.
         """
         # Verifica se há dados para processar
         if (target_value := self.options.get("data")) and (regex_data := self.options.get("regex")): 
             regex_data = re.compile(regex_data, re.IGNORECASE)
             if regex_result_list := set(re.findall(regex_data, target_value)):
                 for value_regex in regex_result_list:
-                    if value_regex.startswith(('http://', 'https://')):
-                        # Armazenar resultados
+                    if value_regex:
                         self.set_result(value_regex)

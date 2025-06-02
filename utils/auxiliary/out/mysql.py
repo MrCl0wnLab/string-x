@@ -6,7 +6,7 @@ em banco de dados MySQL, permitindo armazenamento estruturado e consultas
 avançadas dos dados extraídos pelo String-X.
 """
 from core.basemodule import BaseModule
-
+from datetime import datetime
 
 class MySqlOutput(BaseModule):
     """
@@ -26,7 +26,7 @@ class MySqlOutput(BaseModule):
         
         self.meta = {
             'name': 'MySQL Output',
-            'author': 'String-X Team',
+            'author': 'MrCl0wn',
             'version': '1.0',
             'description': 'Salva dados em banco MySQL',
             'type': 'output'
@@ -39,13 +39,65 @@ class MySqlOutput(BaseModule):
             'username': str(),
             'password': str(),
             'table': 'results',
-            'data': str()
+            'data': str(),
+            'example': './strx -l data.txt -st "echo {STRING}" -module "out:mysql" -pm'
         }
     
     def run(self):
         """
         Executa salvamento no MySQL.
-        
-        TODO: Implementar lógica de conexão e inserção.
         """
-        pass
+        try:
+            import mysql.connector
+            
+            data = self.options.get('data', '')
+            if not data:
+                return
+            
+            # Configurações de conexão
+            config = {
+                'host': self.options.get('host', 'localhost'),
+                'port': self.options.get('port', 3306),
+                'database': self.options.get('database', 'strx_results'),
+                'user': self.options.get('username', ''),
+                'password': self.options.get('password', '')
+            }
+            
+            if not config['user']:
+                self.set_result("✗ Erro: Username MySQL não fornecido")
+                return
+            
+            table_name = self.options.get('table', 'results')
+            
+            # Conectar ao MySQL
+            conn = mysql.connector.connect(**config)
+            cursor = conn.cursor()
+            
+            # Criar tabela se não existir
+            cursor.execute(f'''
+                CREATE TABLE IF NOT EXISTS {table_name} (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    data TEXT NOT NULL,
+                    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    module_type VARCHAR(50) DEFAULT 'unknown',
+                    processed_at DATETIME
+                )
+            ''')
+            
+            # Inserir dados
+            timestamp = datetime.now()
+            cursor.execute(f'''
+                INSERT INTO {table_name} (data, processed_at, module_type)
+                VALUES (%s, %s, %s)
+            ''', (data, timestamp, self.meta.get('type', 'output')))
+            
+            conn.commit()
+            cursor.close()
+            conn.close()
+            
+            self.set_result(f"✓ Dados salvos em MySQL: {config['database']}.{table_name}")
+            
+        except ImportError:
+            self.set_result("✗ Erro: mysql-connector-python não instalado (pip install mysql-connector-python)")
+        except Exception as e:
+            self.set_result(f"✗ Erro MySQL: {str(e)}")
