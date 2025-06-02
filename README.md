@@ -302,7 +302,8 @@ cat access.log | awk '{print $1}' | sort -u | ./strx -st "whois {STRING}" -p "gr
 
 ## 🔧 FUNÇÕES INTEGRADAS
 
-String-X inclui funções built-in que podem ser utilizadas dentro dos templates `{STRING}` e comandos pipe. Estas funções são processadas antes da execução dos comandos shell.
+
+String-X inclui mais de 25 funções built-in que podem ser utilizadas dentro dos templates `{STRING}` e comandos pipe. Estas funções são processadas antes da execução dos comandos shell e cobrem desde hash, encoding, manipulação de strings, geração de valores aleatórios, análise de dados, validação de documentos, requisições HTTP, manipulação de arquivos e muito mais.
 
 ### Sintaxe
 ```bash
@@ -316,27 +317,40 @@ String-X inclui funções built-in que podem ser utilizadas dentro dos templates
 ./strx -l data.txt -st "str_rand(10); int_rand(5)" -pf
 ```
 
-### Tabela de Funções Disponíveis
 
-| FUNÇÃO | DESCRIÇÃO | PARÂMETRO | EXEMPLO |
-|--------|-----------|-----------|---------|
-| `clear` | Remove espaços, tabs e quebras de linha | str | `clear({STRING})` |
-| `base64` | Codifica string em Base64 | str | `base64({STRING})` |
-| `debase64` | Decodifica string Base64 | str | `debase64({STRING})` |
-| `sha1` | Gera hash SHA1 | str | `sha1({STRING})` |
-| `sha256` | Gera hash SHA256 | str | `sha256({STRING})` |
-| `md5` | Gera hash MD5 | str | `md5({STRING})` |
-| `hex` | Converte para hexadecimal | str | `hex({STRING})` |
-| `dehex` | Converte de hexadecimal | str | `dehex({STRING})` |
-| `str_rand` | Gera string aleatória | int | `str_rand(10)` |
-| `int_rand` | Gera número aleatório | int | `int_rand(5)` |
-| `ip` | Resolve IP de um hostname | str | `ip({STRING})` |
-| `replace` | Substitui valores na string | str | `replace(old,new,{STRING})` |
-| `get` | Faz requisição HTTP GET | str | `get(https://{STRING})` |
-| `urlencode` | Codifica URL | str | `urlencode({STRING})` |
-| `rev` | Inverte string | str | `rev({STRING})` |
+### Funções Disponíveis (Principais)
 
-### Exemplos de Uso das Funções
+| Função | Descrição | Exemplo |
+|--------|-----------|---------|
+| `clear` | Remove espaços, tabs e quebras de linha | `clear({STRING})` |
+| `base64` / `debase64` | Codifica/decodifica Base64 | `base64({STRING})` |
+| `hex` / `dehex` | Codifica/decodifica hexadecimal | `hex({STRING})` |
+| `sha1`, `sha256`, `md5` | Gera hash | `sha256({STRING})` |
+| `str_rand`, `int_rand` | Gera string/número aleatório | `str_rand(10)` |
+| `ip` | Resolve hostname para IP | `ip({STRING})` |
+| `replace` | Substitui substring | `replace(http:,https:,{STRING})` |
+| `get` | Requisição HTTP GET | `get(https://{STRING})` |
+| `urlencode` | Codifica URL | `urlencode({STRING})` |
+| `rev` | Inverte string | `rev({STRING})` |
+| `timestamp` | Timestamp atual | `timestamp()` |
+| `extract_domain` | Extrai domínio de URL | `extract_domain({STRING})` |
+| `jwt_decode` | Decodifica JWT (payload) | `jwt_decode({STRING})` |
+| `whois_lookup` | Consulta WHOIS | `whois_lookup({STRING})` |
+| `cert_info` | Info de certificado SSL | `cert_info({STRING})` |
+| `user_agent` | User-Agent aleatório | `user_agent()` |
+| `cidr_expand` | Expande faixa CIDR | `cidr_expand(192.168.0.0/30)` |
+| `subdomain_gen` | Gera subdomínios comuns | `subdomain_gen({STRING})` |
+| `email_validator` | Valida email | `email_validator({STRING})` |
+| `hash_file` | Hashes de arquivo | `hash_file(path.txt)` |
+| `encode_url_all` | Codifica URL (tudo) | `encode_url_all({STRING})` |
+| `phone_format` | Formata telefone BR | `phone_format({STRING})` |
+| `password_strength` | Força de senha | `password_strength({STRING})` |
+| `social_media_extract` | Extrai handles sociais | `social_media_extract({STRING})` |
+| `leak_check_format` | Formata email para leaks | `leak_check_format({STRING})` |
+| `cpf_validate` | Valida CPF | `cpf_validate({STRING})` |
+
+
+> Veja a lista completa e exemplos em `utils/helper/functions.py` ou use `--functions` na CLI para documentação detalhada.
 
 #### Hashing e Encoding
 ```bash
@@ -423,67 +437,79 @@ String-X utiliza uma arquitetura modular extensível que permite adicionar funci
 | **Output** | `out` | Formatação e envio de dados | `utils/auxiliary/out/` |
 | **Connection** | `con` | Conexões especializadas | `utils/auxiliary/con/` |
 
+
 ### Módulos Extractor (EXT)
+Módulos para extração de padrões e dados específicos usando regex:
 
-Os módulos extratores utilizam expressões regulares para extrair dados específicos de strings.
-
-#### Módulos Disponíveis:
-- **`email`**: Extrai endereços de email válidos
-- **`domain`**: Extrai domínios e subdomínios
-- **`url`**: Extrai URLs completas (HTTP/HTTPS)
-- **`phone`**: Extrai números de telefone (formato brasileiro)
+| Módulo      | Descrição                                 | Exemplo CLI |
+|-------------|-------------------------------------------|-------------|
+| `email`     | Extrai endereços de email válidos         | `-module "ext:email"` |
+| `domain`    | Extrai domínios e subdomínios             | `-module "ext:domain"` |
+| `url`       | Extrai URLs completas (HTTP/HTTPS)         | `-module "ext:url"` |
+| `phone`     | Extrai números de telefone (BR)            | `-module "ext:phone"` |
+| `credential`| Extrai credenciais, tokens, chaves         | `-module "ext:credential"` |
+| `ip`        | Extrai endereços IPv4/IPv6                 | `-module "ext:ip"` |
+| `hash`      | Extrai hashes MD5, SHA1, SHA256, SHA512    | `-module "ext:hash"` |
 
 ```bash
-# Extrair emails de dump de dados
+# Exemplo: Extrair emails de dump de dados
 ./strx -l database_dump.txt -st "echo '{STRING}'" -module "ext:email" -pm
-
-# Extrair domínios de logs
-cat access.log | ./strx -st "echo '{STRING}'" -module "ext:domain" -pm | sort -u
-
-# Extrair URLs de arquivos HTML
-./strx -l html_files.txt -st "cat {STRING}" -module "ext:url" -pm
-
-# Extrair telefones de documentos
-./strx -l documents.txt -st "cat {STRING}" -module "ext:phone" -pm
 ```
+
 
 ### Módulos Collector (CLC)
+Módulos para coleta de informações externas, APIs e análise:
 
-Os módulos coletores fazem requisições para serviços externos para obter informações adicionais.
-
-#### Módulos Disponíveis:
-- **`dns`**: Coleta registros DNS (A, MX, TXT, etc.)
+| Módulo        | Descrição                                 | Exemplo CLI |
+|---------------|-------------------------------------------|-------------|
+| `dns`         | Coleta registros DNS (A, MX, TXT, NS)     | `-module "clc:dns"` |
+| `emailverify` | Verifica validade de emails (MX, SMTP)    | `-module "clc:emailverify"` |
+| `geoip`       | Geolocalização de IPs                     | `-module "clc:geoip"` |
+| `ipinfo`      | Scanner de portas IP/host                  | `-module "clc:ipinfo"` |
+| `netscan`     | Scanner de rede (hosts, serviços)          | `-module "clc:netscan"` |
+| `shodan`      | Consulta API Shodan                        | `-module "clc:shodan"` |
+| `subdomain`   | Enumeração de subdomínios                  | `-module "clc:subdomain"` |
+| `virustotal`  | Consulta API VirusTotal                    | `-module "clc:virustotal"` |
+| `whois`       | Consulta WHOIS de domínios                 | `-module "clc:whois"` |
 
 ```bash
-# Coletar informações DNS
+# Exemplo: Coletar informações DNS
 ./strx -l domains.txt -st "echo {STRING}" -module "clc:dns" -pm
-
-# DNS lookup com verbose
-./strx -l subdomains.txt -st "echo {STRING}" -module "clc:dns" -pm -v
 ```
+
 
 ### Módulos Output (OUT)
+Módulos para saída e integração de resultados:
 
-Os módulos de saída formatam e enviam resultados para diferentes destinos.
-
-#### Módulos Disponíveis:
-- **`sqlite`**: Salva dados em banco SQLite
-- **`mysql`**: Salva dados em banco MySQL
-- **`telegram`**: Envia resultados via Telegram Bot
-- **`slack`**: Envia resultados via Slack Webhook
+| Módulo        | Descrição                                 | Exemplo CLI |
+|---------------|-------------------------------------------|-------------|
+| `sqlite`      | Salva dados em banco SQLite               | `-module "out:sqlite"` |
+| `mysql`       | Salva dados em banco MySQL                | `-module "out:mysql"` |
+| `telegram`    | Envia resultados via Telegram Bot         | `-module "out:telegram"` |
+| `slack`       | Envia resultados via Slack Webhook        | `-module "out:slack"` |
+| `json_output` | Salva resultados em JSON                  | `-module "out:json_output"` |
+| `csv_output`  | Salva resultados em CSV                   | `-module "out:csv_output"` |
+| `xml_output`  | Salva resultados em XML                   | `-module "out:xml_output"` |
 
 ```bash
-# Salvar em SQLite
+# Exemplo: Salvar em SQLite
 ./strx -l data.txt -st "process {STRING}" -module "out:sqlite" -pm
-
-# Enviar para Telegram
-./strx -l alerts.txt -st "echo '{STRING}'" -module "out:telegram" -pm
-
-# Enviar para Slack
-./strx -l reports.txt -st "generate_report {STRING}" -module "out:slack" -pm
 ```
 
-### Uso de Módulos
+
+### Módulos Connection (CON)
+Módulos para conexões e sondagens especializadas:
+
+| Módulo        | Descrição                                 | Exemplo CLI |
+|---------------|-------------------------------------------|-------------|
+| `ssh`         | Conexão SSH e execução remota             | `-module "con:ssh"` |
+| `ftp`         | Conexão FTP e listagem/download           | `-module "con:ftp"` |
+| `http_probe`  | Sondagem HTTP/HTTPS, análise de headers   | `-module "con:http_probe"` |
+
+```bash
+# Exemplo: Sondar servidores HTTP
+./strx -l urls.txt -st "{STRING}" -module "con:http_probe" -pm
+```
 
 #### Sintaxe Básica
 ```bash
@@ -494,19 +520,19 @@ Os módulos de saída formatam e enviam resultados para diferentes destinos.
 - **`-module tipo:nome`**: Especifica o módulo a ser utilizado
 - **`-pm`**: Mostra apenas resultados do módulo (omite saída shell)
 
-#### Exemplos Práticos
 
+#### Exemplos Práticos
 ```bash
-# 1. Extrair emails e salvar ordenados
+# Extrair emails e salvar ordenados
 ./strx -l breach_data.txt -st "echo '{STRING}'" -module "ext:email" -pm | sort -u > emails.txt
 
-# 2. Verificar DNS de domínios suspeitos
+# Verificar DNS de domínios suspeitos
 ./strx -l suspicious_domains.txt -st "echo {STRING}" -module "clc:dns" -pm -v
 
-# 3. Pipeline com múltiplos módulos
+# Pipeline com múltiplos módulos
 cat logs.txt | ./strx -st "echo '{STRING}'" -module "ext:domain" -pm | ./strx -st "echo {STRING}" -module "clc:dns" -pm
 
-# 4. Extrair URLs e verificar status
+# Extrair URLs e verificar status
 ./strx -l pages.txt -st "cat {STRING}" -module "ext:url" -pm | ./strx -st "curl -I {STRING}" -p "grep 'HTTP/'"
 ```
 
