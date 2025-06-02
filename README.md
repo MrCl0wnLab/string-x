@@ -391,7 +391,23 @@ echo "SGVsbG8gV29ybGQ=" | ./strx -st "debase64({STRING})" -pf
 ./strx -l data.txt -st "base64({STRING})" -pf -of -o encoded.txt
 ```
 
+### Exemplo de Function
 > **💡 Dica**: Você pode adicionar funções personalizadas editando o arquivo `utils/helper/functions.py`
+```python
+@staticmethod
+def check_admin_exemplo(value: str) -> str:
+  try:
+      if '<p>admin</p>' in value:
+        return value
+  except:
+    return str()
+```
+
+### Usando o exemplo de function
+```bash
+# Executando a function criada
+./strx -l data.txt -st "check_admin_exemplo({STRING})" -pf
+```
 
 
 ## 🧩 SISTEMA DE MÓDULOS
@@ -609,7 +625,7 @@ String-X suporta processamento paralelo através de threads para acelerar opera�
 ### Boas Práticas para Threading
 - **Rate limiting**: Use `-sleep` para evitar sobrecarga de serviços
 - **Número adequado**: Ajuste `-t` conforme recursos disponíveis
-- **Monitoramento**: Use `-v` para acompanhar progresso
+- **Monitoramento (verbose)**: Use `-v` para acompanhar progresso
 ## 📸 EXEMPLOS VISUAIS
 
 ### Execução Básica
