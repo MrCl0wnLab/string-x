@@ -281,7 +281,7 @@ Collector modules make requests to external services to obtain additional inform
 
 ```bash
 # Collect DNS information
-./strx -l domains.txt -st "{STRING}" -module "clc:dns" -pm
+./strx -l domains.txt -st "echo {STRING}" -module "clc:dns" -pm
 ```
 
 ## 🎯 FILTERS AND SELECTIVE PROCESSING

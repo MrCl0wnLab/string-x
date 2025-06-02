@@ -445,10 +445,10 @@ cat access.log | ./strx -st "echo '{STRING}'" -module "ext:domain" -pm | sort -u
 
 ```bash
 # جمع معلومات DNS
-./strx -l domains.txt -st "{STRING}" -module "clc:dns" -pm
+./strx -l domains.txt -st "echo {STRING}" -module "clc:dns" -pm
 
 # DNS lookup مع verbose
-./strx -l subdomains.txt -st "{STRING}" -module "clc:dns" -pm -v
+./strx -l subdomains.txt -st "echo {STRING}" -module "clc:dns" -pm -v
 ```
 
 ### وحدات Output (OUT)
@@ -490,10 +490,10 @@ cat access.log | ./strx -st "echo '{STRING}'" -module "ext:domain" -pm | sort -u
 ./strx -l breach_data.txt -st "echo '{STRING}'" -module "ext:email" -pm | sort -u > emails.txt
 
 # 2. فحص DNS للنطاقات المشبوهة
-./strx -l suspicious_domains.txt -st "{STRING}" -module "clc:dns" -pm -v
+./strx -l suspicious_domains.txt -st "echo {STRING}" -module "clc:dns" -pm -v
 
 # 3. أنبوب مع وحدات متعددة
-cat logs.txt | ./strx -st "echo '{STRING}'" -module "ext:domain" -pm | ./strx -st "{STRING}" -module "clc:dns" -pm
+cat logs.txt | ./strx -st "echo '{STRING}'" -module "ext:domain" -pm | ./strx -st "echo {STRING}" -module "clc:dns" -pm
 
 # 4. استخراج URLs وفحص الحالة
 ./strx -l pages.txt -st "cat {STRING}" -module "ext:url" -pm | ./strx -st "curl -I {STRING}" -p "grep 'HTTP/'"
@@ -557,7 +557,7 @@ def collect(target):
 ./strx -l data.txt -st "echo '{STRING}'" -module "ext:email" -pm -f ".gov"
 
 # DNS lookup فقط للنطاقات .br
-./strx -l domains.txt -st "{STRING}" -module "clc:dns" -pm -f ".br"
+./strx -l domains.txt -st "echo {STRING}" -module "clc:dns" -pm -f ".br"
 ```
 
 ## 🎯 المرشحات والمعالجة الانتقائية
@@ -590,7 +590,7 @@ def collect(target):
 ./strx -l data.txt -st "echo '{STRING}'" -module "ext:email" -pm -f "gmail.com"
 
 # DNS lookup فقط للنطاقات الفرعية
-./strx -l domains.txt -st "{STRING}" -module "clc:dns" -pm -f "sub."
+./strx -l domains.txt -st "echo {STRING}" -module "clc:dns" -pm -f "sub."
 ```
 
 ## ⚡ المعالجة المتوازية

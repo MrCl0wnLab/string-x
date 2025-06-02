@@ -281,7 +281,7 @@ cat access.log | ./strx -st "echo '{STRING}'" -module "ext:domain" -pm | sort -u
 
 ```bash
 # 收集DNS信息
-./strx -l domains.txt -st "{STRING}" -module "clc:dns" -pm
+./strx -l domains.txt -st "echo {STRING}" -module "clc:dns" -pm
 ```
 
 ## 🎯 过滤器和选择性处理

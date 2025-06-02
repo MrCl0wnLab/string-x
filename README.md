@@ -456,10 +456,10 @@ Os módulos coletores fazem requisições para serviços externos para obter inf
 
 ```bash
 # Coletar informações DNS
-./strx -l domains.txt -st "{STRING}" -module "clc:dns" -pm
+./strx -l domains.txt -st "echo {STRING}" -module "clc:dns" -pm
 
 # DNS lookup com verbose
-./strx -l subdomains.txt -st "{STRING}" -module "clc:dns" -pm -v
+./strx -l subdomains.txt -st "echo {STRING}" -module "clc:dns" -pm -v
 ```
 
 ### Módulos Output (OUT)
@@ -501,10 +501,10 @@ Os módulos de saída formatam e enviam resultados para diferentes destinos.
 ./strx -l breach_data.txt -st "echo '{STRING}'" -module "ext:email" -pm | sort -u > emails.txt
 
 # 2. Verificar DNS de domínios suspeitos
-./strx -l suspicious_domains.txt -st "{STRING}" -module "clc:dns" -pm -v
+./strx -l suspicious_domains.txt -st "echo {STRING}" -module "clc:dns" -pm -v
 
 # 3. Pipeline com múltiplos módulos
-cat logs.txt | ./strx -st "echo '{STRING}'" -module "ext:domain" -pm | ./strx -st "{STRING}" -module "clc:dns" -pm
+cat logs.txt | ./strx -st "echo '{STRING}'" -module "ext:domain" -pm | ./strx -st "echo {STRING}" -module "clc:dns" -pm
 
 # 4. Extrair URLs e verificar status
 ./strx -l pages.txt -st "cat {STRING}" -module "ext:url" -pm | ./strx -st "curl -I {STRING}" -p "grep 'HTTP/'"
@@ -561,7 +561,7 @@ Você pode combinar filtros com módulos para processamento mais específico:
 ./strx -l data.txt -st "echo '{STRING}'" -module "ext:email" -pm -f ".gov"
 
 # DNS lookup apenas para domínios .br
-./strx -l domains.txt -st "{STRING}" -module "clc:dns" -pm -f ".br"
+./strx -l domains.txt -st "echo {STRING}" -module "clc:dns" -pm -f ".br"
 ```
 
 ## 🎯 FILTROS E PROCESSAMENTO SELETIVO
@@ -594,7 +594,7 @@ O sistema de filtros permite processar apenas strings que atendam critérios esp
 ./strx -l data.txt -st "echo '{STRING}'" -module "ext:email" -pm -f "gmail.com"
 
 # DNS lookup apenas para subdomínios
-./strx -l domains.txt -st "{STRING}" -module "clc:dns" -pm -f "sub."
+./strx -l domains.txt -st "echo {STRING}" -module "clc:dns" -pm -f "sub."
 ```
 
 ## ⚡ PROCESSAMENTO PARALELO

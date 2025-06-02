@@ -281,7 +281,7 @@ Los módulos recolectores hacen peticiones a servicios externos para obtener inf
 
 ```bash
 # Recolectar información DNS
-./strx -l domains.txt -st "{STRING}" -module "clc:dns" -pm
+./strx -l domains.txt -st "echo {STRING}" -module "clc:dns" -pm
 ```
 
 ## 🎯 FILTROS Y PROCESAMIENTO SELECTIVO
