@@ -324,23 +324,34 @@ cat access.log | awk '{print $1}' | sort -u | ./strx -st "whois {STRING}" -p "gr
 
 ### جدول الوظائف المتاحة
 
-| الوظيفة | الوصف | المعامل | مثال |
-|--------|-----------|-----------|---------|
-| `clear` | إزالة المسافات، tabs وكسرات الأسطر | str | `clear({STRING})` |
-| `base64` | ترميز النص في Base64 | str | `base64({STRING})` |
-| `debase64` | فك ترميز النص Base64 | str | `debase64({STRING})` |
-| `sha1` | توليد hash SHA1 | str | `sha1({STRING})` |
-| `sha256` | توليد hash SHA256 | str | `sha256({STRING})` |
-| `md5` | توليد hash MD5 | str | `md5({STRING})` |
-| `hex` | تحويل إلى hexadecimal | str | `hex({STRING})` |
-| `dehex` | تحويل من hexadecimal | str | `dehex({STRING})` |
-| `str_rand` | توليد نص عشوائي | int | `str_rand(10)` |
-| `int_rand` | توليد رقم عشوائي | int | `int_rand(5)` |
-| `ip` | حل IP لاسم مضيف | str | `ip({STRING})` |
-| `replace` | استبدال قيم في النص | str | `replace(old,new,{STRING})` |
-| `get` | تنفيذ طلب HTTP GET | str | `get(https://{STRING})` |
-| `urlencode` | ترميز URL | str | `urlencode({STRING})` |
-| `rev` | عكس النص | str | `rev({STRING})` |
+| FUNCTION | DESCRIPTION | EXAMPLE |
+|--------|-----------|---------|
+| `clear` | Remove espaços, tabs e quebras de linha | `clear({STRING})` |
+| `base64` / `debase64` | Codifica/decodifica Base64 | `base64({STRING})` |
+| `hex` / `dehex` | Codifica/decodifica hexadecimal | `hex({STRING})` |
+| `sha1`, `sha256`, `md5` | Gera hash | `sha256({STRING})` |
+| `str_rand`, `int_rand` | Gera string/número aleatório | `str_rand(10)` |
+| `ip` | Resolve hostname para IP | `ip({STRING})` |
+| `replace` | Substitui substring | `replace(http:,https:,{STRING})` |
+| `get` | Requisição HTTP GET | `get(https://{STRING})` |
+| `urlencode` | Codifica URL | `urlencode({STRING})` |
+| `rev` | Inverte string | `rev({STRING})` |
+| `timestamp` | Timestamp atual | `timestamp()` |
+| `extract_domain` | Extrai domínio de URL | `extract_domain({STRING})` |
+| `jwt_decode` | Decodifica JWT (payload) | `jwt_decode({STRING})` |
+| `whois_lookup` | Consulta WHOIS | `whois_lookup({STRING})` |
+| `cert_info` | Info de certificado SSL | `cert_info({STRING})` |
+| `user_agent` | User-Agent aleatório | `user_agent()` |
+| `cidr_expand` | Expande faixa CIDR | `cidr_expand(192.168.0.0/30)` |
+| `subdomain_gen` | Gera subdomínios comuns | `subdomain_gen({STRING})` |
+| `email_validator` | Valida email | `email_validator({STRING})` |
+| `hash_file` | Hashes de arquivo | `hash_file(path.txt)` |
+| `encode_url_all` | Codifica URL (tudo) | `encode_url_all({STRING})` |
+| `phone_format` | Formata telefone BR | `phone_format({STRING})` |
+| `password_strength` | Força de senha | `password_strength({STRING})` |
+| `social_media_extract` | Extrai handles sociais | `social_media_extract({STRING})` |
+| `leak_check_format` | Formata email para leaks | `leak_check_format({STRING})` |
+| `cpf_validate` | Valida CPF | `cpf_validate({STRING})` |
 
 ### أمثلة استخدام الوظائف
 

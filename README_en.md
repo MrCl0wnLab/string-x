@@ -1,8 +1,7 @@
 <center>
 
 <h1 align="center">
-  <br>
-  🔧 String-X (STRX)
+  <a href="#/"><img src="./asset/logo.png"></a>
 </h1>
 
 <h4 align="center">Automation Tool for String Manipulation</h4>
@@ -232,23 +231,35 @@ String-X includes built-in functions that can be used within `{STRING}` template
 
 ### Available Functions Table
 
-| FUNCTION | DESCRIPTION | PARAMETER | EXAMPLE |
-|----------|-------------|-----------|---------|
-| `clear` | Removes spaces, tabs and line breaks | str | `clear({STRING})` |
-| `base64` | Encodes string to Base64 | str | `base64({STRING})` |
-| `debase64` | Decodes Base64 string | str | `debase64({STRING})` |
-| `sha1` | Generates SHA1 hash | str | `sha1({STRING})` |
-| `sha256` | Generates SHA256 hash | str | `sha256({STRING})` |
-| `md5` | Generates MD5 hash | str | `md5({STRING})` |
-| `hex` | Converts to hexadecimal | str | `hex({STRING})` |
-| `dehex` | Converts from hexadecimal | str | `dehex({STRING})` |
-| `str_rand` | Generates random string | int | `str_rand(10)` |
-| `int_rand` | Generates random number | int | `int_rand(5)` |
-| `ip` | Resolves IP from hostname | str | `ip({STRING})` |
-| `replace` | Replaces values in string | str | `replace(old,new,{STRING})` |
-| `get` | Makes HTTP GET request | str | `get(https://{STRING})` |
-| `urlencode` | Encodes URL | str | `urlencode({STRING})` |
-| `rev` | Reverses string | str | `rev({STRING})` |
+| FUNCTION | DESCRIPTION | EXAMPLE |
+|--------|-----------|---------|
+| `clear` | Remove espaços, tabs e quebras de linha | `clear({STRING})` |
+| `base64` / `debase64` | Codifica/decodifica Base64 | `base64({STRING})` |
+| `hex` / `dehex` | Codifica/decodifica hexadecimal | `hex({STRING})` |
+| `sha1`, `sha256`, `md5` | Gera hash | `sha256({STRING})` |
+| `str_rand`, `int_rand` | Gera string/número aleatório | `str_rand(10)` |
+| `ip` | Resolve hostname para IP | `ip({STRING})` |
+| `replace` | Substitui substring | `replace(http:,https:,{STRING})` |
+| `get` | Requisição HTTP GET | `get(https://{STRING})` |
+| `urlencode` | Codifica URL | `urlencode({STRING})` |
+| `rev` | Inverte string | `rev({STRING})` |
+| `timestamp` | Timestamp atual | `timestamp()` |
+| `extract_domain` | Extrai domínio de URL | `extract_domain({STRING})` |
+| `jwt_decode` | Decodifica JWT (payload) | `jwt_decode({STRING})` |
+| `whois_lookup` | Consulta WHOIS | `whois_lookup({STRING})` |
+| `cert_info` | Info de certificado SSL | `cert_info({STRING})` |
+| `user_agent` | User-Agent aleatório | `user_agent()` |
+| `cidr_expand` | Expande faixa CIDR | `cidr_expand(192.168.0.0/30)` |
+| `subdomain_gen` | Gera subdomínios comuns | `subdomain_gen({STRING})` |
+| `email_validator` | Valida email | `email_validator({STRING})` |
+| `hash_file` | Hashes de arquivo | `hash_file(path.txt)` |
+| `encode_url_all` | Codifica URL (tudo) | `encode_url_all({STRING})` |
+| `phone_format` | Formata telefone BR | `phone_format({STRING})` |
+| `password_strength` | Força de senha | `password_strength({STRING})` |
+| `social_media_extract` | Extrai handles sociais | `social_media_extract({STRING})` |
+| `leak_check_format` | Formata email para leaks | `leak_check_format({STRING})` |
+| `cpf_validate` | Valida CPF | `cpf_validate({STRING})` |
+
 
 ## 🧩 MODULE SYSTEM
 
@@ -362,9 +373,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 <div align="center">
 
-**⭐ Se este projeto foi útil, considere dar uma estrela!**
+**⭐ If this project was useful, consider giving it a star!**
 
-**💡 Sugestões e feedbacks são sempre bem-vindos!**
+**💡 Suggestions and feedback are always welcome!**
 
 **💀 Hacker Hackeia!**
 

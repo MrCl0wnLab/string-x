@@ -232,23 +232,35 @@ String-X incluye funciones built-in que pueden ser utilizadas dentro de las plan
 
 ### Tabla de Funciones Disponibles
 
-| FUNCIÓN | DESCRIPCIÓN | PARÁMETRO | EJEMPLO |
-|---------|-------------|-----------|---------|
-| `clear` | Elimina espacios, tabs y saltos de línea | str | `clear({STRING})` |
-| `base64` | Codifica string en Base64 | str | `base64({STRING})` |
-| `debase64` | Decodifica string Base64 | str | `debase64({STRING})` |
-| `sha1` | Genera hash SHA1 | str | `sha1({STRING})` |
-| `sha256` | Genera hash SHA256 | str | `sha256({STRING})` |
-| `md5` | Genera hash MD5 | str | `md5({STRING})` |
-| `hex` | Convierte a hexadecimal | str | `hex({STRING})` |
-| `dehex` | Convierte de hexadecimal | str | `dehex({STRING})` |
-| `str_rand` | Genera string aleatorio | int | `str_rand(10)` |
-| `int_rand` | Genera número aleatorio | int | `int_rand(5)` |
-| `ip` | Resuelve IP de un hostname | str | `ip({STRING})` |
-| `replace` | Sustituye valores en la string | str | `replace(old,new,{STRING})` |
-| `get` | Hace petición HTTP GET | str | `get(https://{STRING})` |
-| `urlencode` | Codifica URL | str | `urlencode({STRING})` |
-| `rev` | Invierte string | str | `rev({STRING})` |
+| FUNCIÓN | DESCRIPCIÓN | EJEMPLO |
+|--------|-----------|---------|
+| `clear` | Remove espaços, tabs e quebras de linha | `clear({STRING})` |
+| `base64` / `debase64` | Codifica/decodifica Base64 | `base64({STRING})` |
+| `hex` / `dehex` | Codifica/decodifica hexadecimal | `hex({STRING})` |
+| `sha1`, `sha256`, `md5` | Gera hash | `sha256({STRING})` |
+| `str_rand`, `int_rand` | Gera string/número aleatório | `str_rand(10)` |
+| `ip` | Resolve hostname para IP | `ip({STRING})` |
+| `replace` | Substitui substring | `replace(http:,https:,{STRING})` |
+| `get` | Requisição HTTP GET | `get(https://{STRING})` |
+| `urlencode` | Codifica URL | `urlencode({STRING})` |
+| `rev` | Inverte string | `rev({STRING})` |
+| `timestamp` | Timestamp atual | `timestamp()` |
+| `extract_domain` | Extrai domínio de URL | `extract_domain({STRING})` |
+| `jwt_decode` | Decodifica JWT (payload) | `jwt_decode({STRING})` |
+| `whois_lookup` | Consulta WHOIS | `whois_lookup({STRING})` |
+| `cert_info` | Info de certificado SSL | `cert_info({STRING})` |
+| `user_agent` | User-Agent aleatório | `user_agent()` |
+| `cidr_expand` | Expande faixa CIDR | `cidr_expand(192.168.0.0/30)` |
+| `subdomain_gen` | Gera subdomínios comuns | `subdomain_gen({STRING})` |
+| `email_validator` | Valida email | `email_validator({STRING})` |
+| `hash_file` | Hashes de arquivo | `hash_file(path.txt)` |
+| `encode_url_all` | Codifica URL (tudo) | `encode_url_all({STRING})` |
+| `phone_format` | Formata telefone BR | `phone_format({STRING})` |
+| `password_strength` | Força de senha | `password_strength({STRING})` |
+| `social_media_extract` | Extrai handles sociais | `social_media_extract({STRING})` |
+| `leak_check_format` | Formata email para leaks | `leak_check_format({STRING})` |
+| `cpf_validate` | Valida CPF | `cpf_validate({STRING})` |
+
 
 ## 🧩 SISTEMA DE MÓDULOS
 
@@ -361,9 +373,9 @@ output-%d-%m-%Y-%H.txt > output-15-06-2025-11.txt
 
 <div align="center">
 
-**⭐ Se este projeto foi útil, considere dar uma estrela!**
+**⭐ Si este proyecto te fue útil, ¡considera darle una estrella!**
 
-**💡 Sugestões e feedbacks são sempre bem-vindos!**
+**💡 ¡Sugerencias y feedback son siempre bienvenidos!**
 
 **💀 Hacker Hackeia!**
 
