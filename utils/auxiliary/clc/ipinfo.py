@@ -1,99 +1,202 @@
 """
-Módulo CLC para scanner de portas.
+Módulo collector para informações detalhadas de endereços IP.
 
-Este módulo implementa um scanner de portas básico usando sockets
-para verificação de conectividade com suporte a threads.
+Este módulo implementa funcionalidade para obter informações detalhadas sobre 
+endereços IP utilizando a API do ipinfo.io, incluindo localização geográfica,
+ASN, organização, entre outros dados.
 """
-import socket
-import threading
-from concurrent.futures import ThreadPoolExecutor
 from core.basemodule import BaseModule
+import httpx
+import json
+import socket
+import os
+import time
+from datetime import datetime, timedelta
 
-class PortScanner(BaseModule):
+
+class IPInfo(BaseModule):
     """
-    Scanner de portas básico usando sockets com threads.
-    """
+    Coletor de informações detalhadas sobre endereços IP.
     
+    Esta classe coleta informações completas sobre endereços IP usando a API
+    do ipinfo.io, com opção de utilização de token de API para acesso a 
+    recursos adicionais e maior limite de requisições.
+    
+    Herda de BaseModule fornecendo interface padrão para módulos auxiliares.
+    """
+ 
     def __init__(self):
+        """
+        Inicializa o coletor de informações IP com configurações padrão.
+        
+        Este módulo utiliza a API ipinfo.io para obter detalhes como:
+        - Hostname e ASN
+        - Localização geográfica (cidade, região, país)
+        - Coordenadas (latitude, longitude)
+        - Organização e ASN
+        - Timezone e código postal
+        - Informações sobre privacidade e abuso
+        
+        Nota: O uso gratuito da API tem limite de 50.000 requisições por mês.
+        Para acesso a recursos premium, defina um token de API.
+        """
         super().__init__()
         
         self.meta = {
-            'name': 'Port Scanner',
+            'name': 'IP Information Collector',
             'author': 'MrCl0wn',
-            'version': '1.0',
-            'description': 'Scanner de portas usando sockets com threads',
+            'version': '1.1',
+            'description': 'Coleta informações detalhadas sobre endereços IP usando ipinfo.io',
             'type': 'collector'
         }
         
         self.options = {
-            'data': str(),  # IP ou hostname
-            'ports': '22,80,443,21,25,53,110,143,993,995,3389',
-            'timeout': 2,
-            'threads': 50,
-            'example': './strx -l targets.txt -st "echo {STRING}" -module "clc:ipinfo" -pm'
+            'data': str(),          # Endereço IP a ser consultado (pode ser múltiplos IPs separados por nova linha)
+            'api_token': str(),     # Token de API do ipinfo.io (opcional, pode usar env IPINFO_TOKEN)
+            'timeout': 10,          # Timeout para requisições
+            'user-agent': 'STRX/1.0 (https://github.com/MrCl0wnLab/string-x)', # User-Agent para requisições
+            'example': './strx -l ips.txt -st "echo {STRING}" -module "clc:ipinfo" -pm' # Exemplo de uso
         }
     
-    def run(self):
+    def _is_valid_ip(self, ip: str) -> bool:
         """
-        Executa o scanner de portas com threads.
+        Verifica se o endereço IP fornecido é válido.
         
-        Verifica as portas especificadas no host e armazena os resultados.
-        """
-        target = self.options.get("data", "").strip()
-        if not target:
-            return
+        Args:
+            ip (str): Endereço IP a ser validado
             
-        ports_str = self.options.get('ports', '80,443')
-        
-        # Parse portas
-        ports = []
-        for port_range in ports_str.split(','):
-            port_range = port_range.strip()
-            if '-' in port_range:
-                start, end = map(int, port_range.split('-'))
-                ports.extend(range(start, end + 1))
-            else:
-                ports.append(int(port_range))
-        
-        # Scanner com threads
-        open_ports = []
-        with ThreadPoolExecutor(max_workers=self.options.get('threads', 50)) as executor:
-            futures = [executor.submit(self._scan_port, target, port) for port in ports]
-            for future in futures:
-                result = future.result()
-                if result:
-                    open_ports.append(result)
-        
-        # Formatação dos resultados
-        if open_ports:
-            result = f"Target: {target}\nOpen Ports:\n"
-            for port_info in sorted(open_ports):
-                result += f"  {port_info}\n"
-            self.set_result(result)
-        else:
-            self.set_result(f"Target: {target}\nNo open ports found")
-    
-    def _scan_port(self, target: str, port: int) -> str:
-        """Escaneia uma porta específica."""
+        Returns:
+            bool: True se o IP for válido, False caso contrário
+        """
         try:
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.settimeout(self.options.get('timeout', 2))
-            result = sock.connect_ex((target, port))
-            sock.close()
-            
-            if result == 0:
-                service = self._get_service(port)
-                return f"{port}/tcp - {service}"
-        except Exception:
-            pass
-        return None
+            socket.inet_aton(ip)
+            return True
+        except socket.error:
+            # Pode ser um hostname, tenta resolver
+            try:
+                socket.gethostbyname(ip)
+                return True
+            except socket.error:
+                return False
     
-    def _get_service(self, port: int) -> str:
-        """Retorna serviço comum para a porta."""
-        services = {
-            21: 'FTP', 22: 'SSH', 23: 'Telnet', 25: 'SMTP',
-            53: 'DNS', 80: 'HTTP', 110: 'POP3', 143: 'IMAP',
-            443: 'HTTPS', 993: 'IMAPS', 995: 'POP3S', 3389: 'RDP',
-            3306: 'MySQL', 5432: 'PostgreSQL', 6379: 'Redis'
-        }
-        return services.get(port, 'Unknown')
+    def _is_private_ip(self, ip: str) -> bool:
+        """
+        Verifica se o endereço IP é privado/local.
+        
+        Args:
+            ip (str): Endereço IP a ser verificado
+            
+        Returns:
+            bool: True se for IP privado, False caso contrário
+        """
+        try:
+            # Verifica se é um IP local/privado
+            if ip.startswith(('10.', '172.16.', '172.17.', '172.18.', 
+                             '172.19.', '172.20.', '172.21.', '172.22.',
+                             '172.23.', '172.24.', '172.25.', '172.26.',
+                             '172.27.', '172.28.', '172.29.', '172.30.',
+                             '172.31.', '192.168.', '127.', '169.254.')):
+                return True
+            return False
+        except Exception:
+            return False
+    
+
+    def _query_ipinfo(self, ip: str) -> dict:
+        """
+        Consulta a API do ipinfo.io para obter informações do IP.
+        
+        Args:
+            ip (str): Endereço IP para consulta
+            
+        Returns:
+            dict: Dicionário com informações do IP ou None em caso de erro
+        """
+     
+        
+        try:
+
+            base_url = f"https://ipinfo.io/{ip}/json"
+            headers = {
+                'Accept': 'application/json',
+                'User-Agent': 'STRX/1.0 (https://github.com/MrCl0wnLab/string-x)'
+            }
+            
+            # Adiciona token de API se disponível (prioriza opção, depois variável de ambiente)
+            token = self.options.get('api_token') or os.environ.get('IPINFO_TOKEN')
+            if token:
+                headers['Authorization'] = f"Bearer {token}"
+            
+            response = httpx.get(
+                url=base_url, 
+                headers=headers,
+                timeout=self.options.get('timeout', 10),
+                follow_redirects=True
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                # Armazenar no cache com timestamp atual
+                return data
+            elif response.status_code == 429:  # Too Many Requests
+                self.set_result(f"⚠️ {ip}: Limite de requisições excedido. Tente novamente mais tarde ou use um token de API.")
+                return None
+            else:
+                self.set_result(f"⚠️ {ip}: API retornou código {response.status_code}")
+                return None
+            
+        except httpx.RequestError as e:
+            self.set_result(f"✗ {ip}: Erro de conexão: {str(e)}")
+            return None
+        except Exception as e:
+            self.set_result(f"✗ {ip}: Erro ao consultar API: {str(e)}")
+            return None
+    
+
+    def run(self, **kwargs):
+        """
+        Executa consulta de informações do IP.
+        
+        Obtém e formata informações detalhadas do IP especificado utilizando
+        a API ipinfo.io e registra o resultado. Suporta processamento em lote
+        para múltiplos IPs.
+        
+        Args:
+            **kwargs: Argumentos adicionais a serem mesclados com self.options
+        """
+
+        ip = self.options.get("data", "").strip()
+        if not ip or not self._is_valid_ip(ip) or self._is_private_ip(ip):
+            return
+        
+
+        if data := self._query_ipinfo(ip):
+            '''
+            {
+                "ip": "8.8.8.8",
+                "hostname": "dns.google",
+                "city": "Mountain View",
+                "region": "California",
+                "country": "US",
+                "loc": "37.4056,-122.0775",
+                "org": "AS15169 Google LLC",
+                "postal": "94043",
+                "timezone": "America/Los_Angeles",
+                "readme": "https://ipinfo.io/missingauth",
+                "anycast": true
+            }
+            '''
+            result = {
+                "IP": data.get("ip", "N/A"),
+                "Hostname": data.get("hostname", "N/A"),
+                "City": data.get("city", "N/A"),
+                "Region": data.get("region", "N/A"),
+                "Country": data.get("country", "N/A"),
+                "Location": data.get("loc", "N/A"),
+                "Organization": data.get("org", "N/A"),
+                "Postal Code": data.get("postal", "N/A"),
+                "Timezone": data.get("timezone", "N/A"),
+                "Anycast": data.get("anycast", False)
+            }
+            self.set_result(json.dumps(result))
+        return str()
