@@ -11,6 +11,7 @@ import base64
 import socket
 import random
 import datetime
+import ipaddress
 import subprocess
 from urllib.parse import urlparse
 from core.request import Request
@@ -415,7 +416,6 @@ class Funcs:
             return str()
             
         try:
-            import ipaddress
             network = ipaddress.IPv4Network(value, strict=False)
             return ','.join(str(ip) for ip in network.hosts())
         except Exception:

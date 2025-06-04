@@ -4,6 +4,7 @@ Módulo collector para escaneamento de rede.
 Este módulo implementa funcionalidade para escaneamento de redes,
 descoberta de hosts ativos e análise de serviços em rede.
 """
+import ipaddress
 import threading
 import time
 from core.basemodule import BaseModule
@@ -98,7 +99,7 @@ class NetworkScanner(BaseModule):
         try:
             # CIDR notation
             if '/' in data:
-                import ipaddress
+                
                 network = ipaddress.ip_network(data, strict=False)
                 hosts = [str(ip) for ip in network.hosts()]
                 
@@ -116,7 +117,7 @@ class NetworkScanner(BaseModule):
                         
             # Single IP
             else:
-                import ipaddress
+                
                 ipaddress.ip_address(data)  # Validar
                 hosts = [data]
                 

@@ -5,7 +5,7 @@ Este módulo implementa funcionalidade para obter informações de
 geolocalização de endereços IP usando APIs públicas gratuitas.
 """
 from core.basemodule import BaseModule
-
+import ipaddress
 
 class GeoIPCollector(BaseModule):
     """
@@ -79,7 +79,6 @@ class GeoIPCollector(BaseModule):
     def _is_valid_ip(self, ip: str) -> bool:
         """Valida se é um IP válido."""
         try:
-            import ipaddress
             ipaddress.ip_address(ip)
             return True
         except ValueError:
@@ -88,7 +87,6 @@ class GeoIPCollector(BaseModule):
     def _is_private_ip(self, ip: str) -> bool:
         """Verifica se é um IP privado."""
         try:
-            import ipaddress
             ip_obj = ipaddress.ip_address(ip)
             return ip_obj.is_private or ip_obj.is_loopback or ip_obj.is_link_local
         except ValueError:

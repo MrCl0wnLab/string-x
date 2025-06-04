@@ -9,6 +9,7 @@ from core.basemodule import BaseModule
 import json
 import urllib.request
 import urllib.parse
+import ipaddress
 
 class ShodanCollector(BaseModule):
     """
@@ -77,7 +78,7 @@ class ShodanCollector(BaseModule):
     def _query_host(self, ip: str, api_key: str) -> str:
         """Consulta informações de um host específico."""
         try:
-            import ipaddress
+            
             
             # Validar se é um IP válido
             ipaddress.ip_address(ip)
