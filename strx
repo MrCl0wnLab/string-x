@@ -15,6 +15,7 @@ Tipos de módulos suportados:
 - connection (CON): Módulos para estabelecer conexões  
 - extractor (EXT): Módulos para extrair dados específicos
 - collector (CLC): Módulos para coletar e agregar informações
+- inteligência artificial (AI): Módulo para integração com serviços de Inteligência Artificial
 
 Author: Cleiton Pinheiro aka MrCl0wn
 Email: mrcl0wnlab[@]gmail.com

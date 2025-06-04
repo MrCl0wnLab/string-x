@@ -492,10 +492,15 @@ Módulos para coleta de informações externas, APIs e análise:
 | `subdomain`   | Enumeração de subdomínios                  | `-module "clc:subdomain"` |
 | `virustotal`  | Consulta API VirusTotal                    | `-module "clc:virustotal"` |
 | `whois`       | Consulta WHOIS de domínios                 | `-module "clc:whois"` |
+| `bing`        | Realiza buscas avançadas com dorks no Bing  | `-module "clc:bing"` |
 
 ```bash
 # Exemplo: Coletar informações DNS
 ./strx -l domains.txt -st "echo {STRING}" -module "clc:dns" -pm
+
+# Exemplo: Coletar informações usando Bing
+./strx -l dorks.txt -st "echo {STRING}" -module "clc:bing" -pm
+echo 'fbi.gov' | ./strx -st "echo {STRING}" -module "clc:bing" -pm
 ```
 
 
