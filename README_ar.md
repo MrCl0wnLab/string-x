@@ -176,8 +176,8 @@ string-x/
 ### واجهة التطبيق
 
 ```bash
-usage: strx [-h] [-list file] -str cmd [-out file] [-pipe cmd] [-verbose] 
-            [-thread <10>] [-pf] [-of] [-filter value] [-sleep <5>] 
+usage: strx [-h] [-types] [-examples] [-functions] [-list file] [-str cmd] [-out file] 
+            [-pipe cmd] [-verbose] [-thread <10>] [-pf] [-of] [-filter value] [-sleep <5>]
             [-module <type:module>] [-pm]
 
  
@@ -211,22 +211,25 @@ usage: strx [-h] [-list file] -str cmd [-out file] [-pipe cmd] [-verbose]
                                   ░                    ░         ░    ░  
                                   ░                                      
                                 
-                          String-X: Automation Tool for String Manipulation
+                                String-X: Tool for automating commands
 
 options:
-             -h, --help             عرض رسالة المساعدة هذه
-             -list, -l file         ملف يحتوي على نصوص للتنفيذ
-             -str, -st cmd          قالب أمر مع العنصر النائب {STRING}
-             -out, -o file          ملف إخراج للنتائج
-             -pipe, -p cmd          أمر منفذ بعد الأنبوب |
-             -verbose, -v           وضع مفصل مع معلومات تفصيلية
-             -thread, -t <10>       عدد threads للمعالجة المتوازية
-             -pf                    إظهار نتائج الوظائف فقط
-             -of                    حفظ نتائج الوظائف في ملف
-             -filter, -f value      مرشح للاختيار المحدد للنصوص
-             -sleep <5>             تأخير بالثواني بين تنفيذ threads
-             -module <type:module>  تحديد نوع واسم الوحدة
-             -pm                    إظهار نتائج الوحدة فقط
+             -h, --help             show this help message and exit
+             -types                 Lista tipos de módulos
+             -examples              Lista módulos e exemplos de uso
+             -functions, -funcs     Lista funções
+             -list, -l file         Arquivo com strings para execução
+             -str, -st cmd          String template de comando
+             -out, -o file          Arquivo output de valores da execução shell
+             -pipe, -p cmd          Comando que será executado depois de um pipe |
+             -verbose, -v           Modo verboso
+             -thread, -t <10>       Quantidade de threads
+             -pf                    Mostrar resultados da execução de função, ignora shell
+             -of                    Habilitar output de valores da execução de função
+             -filter, -f value      Valor para filtrar strings para execução
+             -sleep <5>             Segundos de delay entre threads
+             -module <type:module>  Selectionar o tipo e module
+             -pm                    Mostrar somente resultados de execução do module
 ```
 
 ## 💡 أمثلة عملية

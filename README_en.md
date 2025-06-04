@@ -172,6 +172,65 @@ string-x/
 | `-of` | Save function results to file | `-of` |
 | `-sleep` | Delay between threads (seconds) | `-sleep 2` |
 
+### Application Interface
+
+```bash
+usage: strx [-h] [-types] [-examples] [-functions] [-list file] [-str cmd] [-out file] 
+            [-pipe cmd] [-verbose] [-thread <10>] [-pf] [-of] [-filter value] [-sleep <5>]
+            [-module <type:module>] [-pm]
+
+ 
+                                             _
+                                            (T)          _
+                                        _         .=.   (R)
+                                       (S)   _   /\/(`)_         ▓
+                                        ▒   /\/`\/ |\ 0`\      ░
+                                        b   |░-.\_|_/.-||
+                                        r   )/ |_____| \(    _
+                            █               0  #/\ /\#  ░   (X)
+                             ░                _| + o |_                ░
+                             b         _     ((|, ^ ,|))               b
+                             r        (1)     `||\_/||`                r  
+                                               || _ ||      _
+                                ▓              | \_/ ░     (V)
+                                b          0.__.\   /.__.0   ░
+                                r           `._  `"`  _.'           ▒
+                                               ) ;  \ (             b
+                                        ░    1'-' )/`'-1            r
+                                                 0`     
+                        
+                              ██████    ▄▄▄█████▓    ██▀███     ▒██   ██▒ 
+                            ▒██    ▒    ▓  ██▒ ▓▒   ▓██ ▒ ██▒   ░▒ █ █ ▒░
+                            ░ ▓██▄      ▒ ▓██░ ▒░   ▓██ ░▄█ ▒   ░░  █   ░
+                              ▒   ██▒   ░ ▓██▓ ░    ▒██▀▀█▄      ░ █ █ ▒ 
+                            ▒██████▒▒     ▒██▒ ░    ░██▓ ▒██▒   ▒██▒ ▒██▒
+                            ▒ ▒▓▒ ▒ ░     ▒ ░░      ░ ▒▓ ░▒▓░   ▒▒ ░ ░▓ ░
+                            ░ ░▒  ░ ░       ░         ░▒ ░ ▒░   ░░   ░▒ ░
+                            ░  ░  ░       ░           ░░   ░     ░    ░  
+                                  ░                    ░         ░    ░  
+                                  ░                                      
+                                
+                                String-X: Tool for automating commands
+
+options:
+             -h, --help             show this help message and exit
+             -types                 Lista tipos de módulos
+             -examples              Lista módulos e exemplos de uso
+             -functions, -funcs     Lista funções
+             -list, -l file         Arquivo com strings para execução
+             -str, -st cmd          String template de comando
+             -out, -o file          Arquivo output de valores da execução shell
+             -pipe, -p cmd          Comando que será executado depois de um pipe |
+             -verbose, -v           Modo verboso
+             -thread, -t <10>       Quantidade de threads
+             -pf                    Mostrar resultados da execução de função, ignora shell
+             -of                    Habilitar output de valores da execução de função
+             -filter, -f value      Valor para filtrar strings para execução
+             -sleep <5>             Segundos de delay entre threads
+             -module <type:module>  Selectionar o tipo e module
+             -pm                    Mostrar somente resultados de execução do module
+```
+
 ## 💡 PRACTICAL EXAMPLES
 
 ### Basic Examples
