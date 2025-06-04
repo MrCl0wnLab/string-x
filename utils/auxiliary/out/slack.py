@@ -8,6 +8,7 @@ extraídos pelo String-X em canais Slack.
 from core.basemodule import BaseModule
 import json
 import urllib.request
+from core.format import Format
 
 class SlackOutput(BaseModule):
     """
@@ -45,7 +46,7 @@ class SlackOutput(BaseModule):
         Executa envio via Slack.
         """
         try:
-            data = self.options.get('data', '')
+            data = Format.clear_value(self.options.get('data', ''))
             webhook_url = self.options.get('webhook_url', '')
             channel = self.options.get('channel', '#general')
             

@@ -8,6 +8,7 @@ extraídos pelo String-X.
 from core.basemodule import BaseModule
 import sqlite3
 from datetime import datetime
+from core.format import Format
 
 class SqliteOutput(BaseModule):
     """
@@ -45,7 +46,7 @@ class SqliteOutput(BaseModule):
         Executa salvamento no SQLite.
         """
         try:
-            data = self.options.get('data', '')
+            data = Format.clear_value(self.options.get('data', ''))
             if not data:
                 return
             
@@ -77,7 +78,7 @@ class SqliteOutput(BaseModule):
             conn.commit()
             conn.close()
             
-            self.set_result(f"✓ Dados salvos em SQLite: {database_path}")
+            self.set_result(f"{data} ✓ Dados salvos em SQLite: {database_path}")
             
         except ImportError:
             self.set_result("✗ Erro: sqlite3 não disponível")

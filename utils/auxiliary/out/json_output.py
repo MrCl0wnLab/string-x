@@ -8,6 +8,7 @@ from core.basemodule import BaseModule
 import json
 import os
 from datetime import datetime
+from core.format import Format
 
 class JSONOutput(BaseModule):
     """
@@ -40,7 +41,7 @@ class JSONOutput(BaseModule):
         Salva os dados fornecidos em um arquivo JSON com timestamp
         e metadados adicionais.
         """
-        data = self.options.get("data", "").strip()
+        data = Format.clear_value(self.options.get("data", "").strip())
         if not data:
             return
         

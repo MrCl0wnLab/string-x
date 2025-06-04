@@ -9,6 +9,7 @@ from core.basemodule import BaseModule
 import json
 import urllib.request
 import urllib.parse
+from core.format import Format
 
 class TelegramOutput(BaseModule):
     """
@@ -48,7 +49,7 @@ class TelegramOutput(BaseModule):
         try:
            
             
-            data = self.options.get('data', '')
+            data = Format.clear_value(self.options.get('data', ''))
             bot_token = self.options.get('bot_token', '')
             chat_id = self.options.get('chat_id', '')
             

@@ -7,6 +7,7 @@ avançadas dos dados extraídos pelo String-X.
 """
 from core.basemodule import BaseModule
 from datetime import datetime
+from core.format import Format
 
 class MySqlOutput(BaseModule):
     """
@@ -50,7 +51,7 @@ class MySqlOutput(BaseModule):
         try:
             import mysql.connector
             
-            data = self.options.get('data', '')
+            data = Format.clear_value(self.options.get('data', ''))
             if not data:
                 return
             

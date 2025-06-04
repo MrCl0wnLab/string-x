@@ -8,6 +8,7 @@ from core.basemodule import BaseModule
 import csv
 import os
 from datetime import datetime
+from core.format import Format
 
 class CSVOutput(BaseModule):
     """
@@ -40,7 +41,7 @@ class CSVOutput(BaseModule):
         Salva os dados fornecidos em um arquivo CSV com colunas
         configuráveis e timestamps.
         """
-        data = self.options.get("data", "").strip()
+        data = Format.clear_value(self.options.get("data", "").strip())
         if not data:
             return
         

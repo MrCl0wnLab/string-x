@@ -8,6 +8,7 @@ from core.basemodule import BaseModule
 import xml.etree.ElementTree as ET
 from datetime import datetime
 import os
+from core.format import Format
 
 class XMLOutput(BaseModule):
     """
@@ -40,7 +41,7 @@ class XMLOutput(BaseModule):
         Salva os dados fornecidos em um arquivo XML com estrutura
         hierárquica e metadados.
         """
-        data = self.options.get("data", "").strip()
+        data = Format.clear_value(self.options.get("data", "").strip())
         if not data:
             return
         
