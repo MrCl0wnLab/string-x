@@ -7,7 +7,7 @@
 <h4 align="center">Ferramenta de Automatização para Manipulação de Strings</h4>
 
 <p align="center">
-Ferramenta modular de automatização desenvolvida para auxiliar analistas em OSINT, pentest e análise de dados através da manipulação dinâmica de strings em linhas de comando Linux. Sistema baseado em templates com processamento paralelo e módulos extensíveis.
+String-X (strx) é uma ferramenta modular de automatização desenvolvida para profissionais de Infosec e entusiastas de Hacking. Especializada na manipulação dinâmica de strings em ambiente Linux. Com arquitetura modular, oferece recursos avançados para OSINT, pentest e análise de dados, incluindo processamento paralelo, módulos especializados de extração, coleta e integração com APIs externas. Sistema baseado em templates flexíveis com mais de 25 funções integradas.
 </p>
 
 <p align="center">
@@ -40,15 +40,18 @@ Ferramenta modular de automatização desenvolvida para auxiliar analistas em OS
 - [Contribuição](#-contribuição)
 - [Autor](#-autor)
 
-## ✨ Características
+## ✨ CARACTERÍSTICAS
 
-- 🚀 **Processamento Paralelo**: Sistema de threads configurável para alta performance
-- 🔧 **Arquitetura Modular**: Extensível através de módulos EXT, CLC, OUT e CON
-- 🔄 **Template Dinâmico**: Sistema de substituição de strings com placeholder `{STRING}`
-- 🛠️ **Funções Integradas**: Funções de hash, encoding, requests e geração de valores aleatórios
-- 📁 **Múltiplas Fontes**: Suporte a arquivos, stdin e pipes
-- 🎯 **Filtragem Avançada**: Sistema de filtros para processamento seletivo
-- 💾 **Output Flexível**: Salvamento em arquivos com timestamp automático
+- 🚀 **Processamento Paralelo**: Sistema multi-threading configurável para execução de alta performance
+- 🧩 **Arquitetura Modular**: Estrutura extensível com módulos especializados (EXT, CLC, OUT, CON, AI)
+- 🔄 **Template Dinâmico**: Sistema de substituição com placeholder `{STRING}` para manipulação flexível
+- 🛠️ **+25 Funções Integradas**: Operações de hash, encoding, requests, validação e geração de dados
+- 📡 **Múltiplas Fontes de Entrada**: Suporte a arquivos, stdin e encadeamento de pipes
+- 🎯 **Filtragem Inteligente**: Sistema de filtros para processamento seletivo de strings
+- 📊 **Saída Configurável**: Formatação personalizável com timestamp automático e redirecionamento
+- 🔌 **Integrações Externas**: Conexões com APIs, bancos de dados e serviços de notificação
+- 🔍 **Análise Avançada**: Extração de padrões complexos com regex e processamento especializado
+- 🔒 **Ferramentas para Segurança**: Recursos específicos para OSINT, pentest e análise de dados
 
 ## 📦 INSTALAÇÃO
 
