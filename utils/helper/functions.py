@@ -236,18 +236,18 @@ class Funcs:
         return str() 
     
     @staticmethod
-    def urlencode(url: str) -> str:
+    def urlencode(value: str) -> str:
         """
         Codifica URL.
         
         Args:
-            url (str): URL a ser codificada
+            value (str): URL a ser codificada
             
         Returns:
             str: URL codificada ou string vazia
         """
-        if url:
-           encode = Format.parse_urlencode(url)
+        if value:
+           encode = Format.parse_urlencode(value)
            if encode:
                return encode
         return str()

@@ -5,7 +5,7 @@ Este pacote contém módulos auxiliares organizados por tipo de funcionalidade.
 Os módulos são carregados dinamicamente pelo sistema AutoModulo baseado
 no tipo e nome especificados.
 
-Tipos de módulos suportados:
+Tipos de módulos suportados (exemplos):
     ext: Módulos extratores (extraction) - extraem dados específicos de textos
     clc: Módulos coletores (collector) - coletam e agregam informações
     out: Módulos de saída (output) - formatam e direcionam resultados

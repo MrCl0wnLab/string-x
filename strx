@@ -30,10 +30,12 @@ from config import setting
 from core.command import Command
 from core.filelocal import FileLocal
 from core.thread_process import ThreadProcess
-
 from core.style_cli import StyleCli, RichArgumentParser, RawDescriptionHelpFormatter
-from core.auto_module import AutoModulo
+from core.help_modules import *
 
+
+# Ensure the correct path is in sys.path
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 __author__ = "Cleiton Pinheiro aka MrCl0wn"
 __maintainer__ = "Cleiton Pinheiro aka MrCl0wn"
@@ -172,8 +174,12 @@ if __name__ == '__main__':
                 indent_increment=13),
             description=setting.BANNER_HELP
         )
+                
+        parser.add_argument('-types', help="Lista tipos de módulos", action='store_true')
+        parser.add_argument('-examples', help="Lista módulos e exemplos de uso", action='store_true')
+        parser.add_argument('-functions', '-funcs', help="Lista funções", action='store_true')
         parser.add_argument('-list', '-l', metavar="file", help="Arquivo com strings para execução", default=stdin_get_list())
-        parser.add_argument('-str', '-st', metavar="cmd", help="String template de comando", default=None, required=True)
+        parser.add_argument('-str', '-st', metavar="cmd", help="String template de comando", default=None)
         parser.add_argument('-out', '-o', metavar="file", help="Arquivo output de valores da execução shell", default=setting.LOG_FILE_OUTPUT)
         parser.add_argument('-pipe', '-p', metavar="cmd", help="Comando que será executado depois de um pipe |", default=None)
         parser.add_argument('-verbose', '-v', help="Modo verboso", action='store_true', default=False)
@@ -184,15 +190,40 @@ if __name__ == '__main__':
         parser.add_argument('-sleep', metavar="<5>", help="Segundos de delay entre threads", default=None, required=False)
         parser.add_argument('-module', metavar="<type:module>", help="Selectionar o tipo e module", default=str(), required=False)
         parser.add_argument('-pm', help="Mostrar somente resultados de execução do module", action='store_true', default=False)
+       
         
         ARGS = parser.parse_args() 
 
+        # Exibe as categorias de módulos disponíveis
+        if ARGS.types:
+            CLI.console.print(f"{setting.BANNER_HELP}\n")
+            exit(show_module_categories())
+        
+        # Exibe exemplos de uso dos módulos
+        if ARGS.examples:
+            CLI.console.print(f"{setting.BANNER_HELP}\n")
+            exit(show_module_examples())
+            
+        # Exibe as funções auxiliares disponíveis
+        if ARGS.functions:
+            CLI.console.print(f"{setting.BANNER_HELP}\n")
+            exit(show_helper_functions())
+        
+        # Verifica se o argumento -str foi fornecido quando não estamos em modo de ajuda
+        if ARGS.str:
+            stdin_get_list()
+        else:
+            parser.error("o argumento -str/-st é obrigatório quando não estiver usando -types, -examples ou -functions")
+            
+        # Define o número máximo de threads a serem utilizadas
         if ARGS.thread:
             THREAD.max_thread = int(ARGS.thread)
-        
+
+        # Carrega a lista de strings alvo de um arquivo ou da entrada direta
         if ARGS.list:
             target_list = open_file(ARGS.list) if os.path.isfile(str(ARGS.list)) else ARGS.list
         else:
+            # Se não houver lista, exibe a ajuda e sai
             CLI.console.print(f"{setting.BANNER_HELP}\n")
             exit(parser.parse_args('-h'))
 
