@@ -443,6 +443,17 @@ String-X utiliza uma arquitetura modular extensível que permite adicionar funci
 | **Collector** | `clc` | Coleta de informações de APIs/serviços | `utils/auxiliary/clc/` |
 | **Output** | `out` | Formatação e envio de dados | `utils/auxiliary/out/` |
 | **Connection** | `con` | Conexões especializadas | `utils/auxiliary/con/` |
+| **AI** | `ai` | Inteligência artificial  | `utils/auxiliary/ai/` |
+
+
+#### Sintaxe Básica
+```bash
+./strx -module "tipo:nome_do_modulo"
+```
+
+#### Parâmetros Relacionados
+- **`-module tipo:nome`**: Especifica o módulo a ser utilizado
+- **`-pm`**: Mostra apenas resultados do módulo (omite saída shell)
 
 
 ### Módulos Extractor (EXT)
@@ -518,15 +529,20 @@ Módulos para conexões e sondagens especializadas:
 ./strx -l urls.txt -st "{STRING}" -module "con:http_probe" -pm
 ```
 
-#### Sintaxe Básica
+### Módulos Inteligência artificial  (AI)
+Módulos para de prompts para Inteligência artificial:
+
+| Módulo        | Descrição                                 | Exemplo CLI |
+|---------------|-------------------------------------------|-------------|
+| `gemini`      | Prompt para Google Gemini AI - ([Criar API Key](https://aistudio.google.com/app/apikey))    | `-module "ai:gemini"` |
+
 ```bash
-./strx -module "tipo:nome_do_modulo"
+# Exemplo: Uso de arquivos com Prompts
+./strx -l prompts.txt -st "echo {STRING}" -module "ai:gemini" -pm
+
+# Exemplo: Coletar urls e enviar para analise montando Prompt
+./strx -l urls.txt -st "echo 'Analisar URL: {STRING}'" -module "ai:gemini" -pm
 ```
-
-#### Parâmetros Relacionados
-- **`-module tipo:nome`**: Especifica o módulo a ser utilizado
-- **`-pm`**: Mostra apenas resultados do módulo (omite saída shell)
-
 
 #### Exemplos Práticos
 ```bash
