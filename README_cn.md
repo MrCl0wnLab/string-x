@@ -155,19 +155,23 @@ string-x/
 ### 主要参数
 
 | 参数 | 描述 | 示例 |
-|------|------|------|
-| `-l, --list` | 用于处理的字符串文件 | `-l hosts.txt` |
-| `-st, --str` | 带`{STRING}`的命令模板 | `-st "curl {STRING}"` |
+|-----------|-----------|---------|
+| `-h, --help`         |  显示项目帮助 | `-h` |
+| `-types`             |  列出模块类型 | `-types` |
+| `-examples`          |  列出模块和使用示例 | `-examples` |
+| `-functions, -funcs` |  列出函数 | `-funcs` |
+| `-l, --list` | 包含要处理字符串的文件 | `-l hosts.txt` |
+| `-st, --str` | 带有`{STRING}`的命令模板 | `-st "curl {STRING}"` |
 | `-o, --out` | 结果输出文件 | `-o results.txt` |
-| `-p, --pipe` | 通过管道的额外命令 | `-p "grep 200"` |
+| `-p, --pipe` | 通过管道的附加命令 | `-p "grep 200"` |
 | `-v, --verbose` | 详细模式 | `-v` |
 | `-t, --thread` | 并行线程数 | `-t 50` |
 | `-f, --filter` | 字符串选择过滤器 | `-f ".gov.br"` |
 | `-module` | 特定模块选择 | `-module "ext:email"` |
-| `-pm` | 只显示模块结果 | `-pm` |
-| `-pf` | 只显示函数结果 | `-pf` |
+| `-pm` | 仅显示模块结果 | `-pm` |
+| `-pf` | 仅显示函数结果 | `-pf` |
 | `-of` | 将函数结果保存到文件 | `-of` |
-| `-sleep` | 线程间延迟（秒） | `-sleep 2` |
+| `-sleep` | 线程之间的延迟(秒) | `-sleep 2` |
 
 ## 💡 实际示例
 

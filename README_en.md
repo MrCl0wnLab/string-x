@@ -155,6 +155,10 @@ string-x/
 
 | Parameter | Description | Example |
 |-----------|-------------|---------|
+| `-h, --help`         | Show project help | `-h` |
+| `-types`             | List module types | `-types` |
+| `-examples`          | List modules and usage examples | `-examples` |
+| `-functions, -funcs` | List functions | `-funcs` |
 | `-l, --list` | File with strings for processing | `-l hosts.txt` |
 | `-st, --str` | Command template with `{STRING}` | `-st "curl {STRING}"` |
 | `-o, --out` | Output file for results | `-o results.txt` |
@@ -162,7 +166,7 @@ string-x/
 | `-v, --verbose` | Verbose mode with details | `-v` |
 | `-t, --thread` | Number of parallel threads | `-t 50` |
 | `-f, --filter` | Filter for string selection | `-f ".gov.br"` |
-| `-module` | Specific module selection | `-module "ext:email"` |
+| `-module` | Selection of specific module | `-module "ext:email"` |
 | `-pm` | Show only module results | `-pm` |
 | `-pf` | Show only function results | `-pf` |
 | `-of` | Save function results to file | `-of` |

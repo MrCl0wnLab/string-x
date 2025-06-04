@@ -150,6 +150,10 @@ string-x/
 
 | Parâmetro | Descrição | Exemplo |
 |-----------|-----------|---------|
+| `-h, --help`         |  Mostrar  help do projeto | `-h` |
+| `-types`             |  Lista tipos de módulos | `-types` |
+| `-examples`          |  Lista módulos e exemplos de uso | `-examples` |
+| `-functions, -funcs` |  Lista funções | `-funcs` |
 | `-l, --list` | Arquivo com strings para processamento | `-l hosts.txt` |
 | `-st, --str` | Template de comando com `{STRING}` | `-st "curl {STRING}"` |
 | `-o, --out` | Arquivo de saída para resultados | `-o results.txt` |

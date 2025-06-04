@@ -156,6 +156,10 @@ string-x/
 
 | Parámetro | Descripción | Ejemplo |
 |-----------|-------------|---------|
+| `-h, --help`         |  Mostrar ayuda del proyecto | `-h` |
+| `-types`             |  Lista tipos de módulos | `-types` |
+| `-examples`          |  Lista módulos y ejemplos de uso | `-examples` |
+| `-functions, -funcs` |  Lista funciones | `-funcs` |
 | `-l, --list` | Archivo con strings para procesamiento | `-l hosts.txt` |
 | `-st, --str` | Plantilla de comando con `{STRING}` | `-st "curl {STRING}"` |
 | `-o, --out` | Archivo de salida para resultados | `-o results.txt` |
@@ -167,7 +171,7 @@ string-x/
 | `-pm` | Mostrar solo resultados del módulo | `-pm` |
 | `-pf` | Mostrar solo resultados de funciones | `-pf` |
 | `-of` | Guardar resultados de funciones en archivo | `-of` |
-| `-sleep` | Retraso entre hilos (segundos) | `-sleep 2` |
+| `-sleep` | Retardo entre hilos (segundos) | `-sleep 2` |
 
 ## 💡 EJEMPLOS PRÁCTICOS
 
