@@ -13,7 +13,7 @@ import time
 import random
 from bs4 import BeautifulSoup
 from core.format import Format
-
+from urllib.parse import urljoin, urlparse
 
 class BingDorker(BaseModule):
     """
@@ -42,7 +42,6 @@ class BingDorker(BaseModule):
             'data': str(),  # Dork para busca
             'delay': 2,     # Delay entre requisições (segundos)
             'timeout': 15,  # Timeout para requisições
-            'extract_urls_only': True,  # True para extrair apenas URLs, False para incluir títulos e descrições
             'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:bing" -pm'
         }
         
@@ -75,23 +74,17 @@ class BingDorker(BaseModule):
             dork = Format.clear_value(self.options.get('data', '').strip())
             
             if not dork:
+                self.set_result("⚠️ Dork não fornecido.")
                 return
-            
-            
-            extract_urls_only = self.options.get('extract_urls_only', True)
-            
+
             # Coletando resultados
             results = self._search_bing(dork)
             
             if not results:
                 self.set_result(f"⚠️ Nenhum resultado encontrado para: {dork}")
                 return
-            
-            # Formatando resultados
-            if extract_urls_only:
-                # Mais eficiente: unir todas as URLs em um único resultado
-                urls = [result['url'] for result in results]
-                self.set_result("\n".join(urls))
+
+            self.set_result("\n".join(results))
         except Exception as e:
             self.set_result(f"✗ Erro na busca: {str(e)}")
     
@@ -105,8 +98,9 @@ class BingDorker(BaseModule):
         Returns:
             list: Lista de dicionários com os resultados (título, URL, descrição)
         """
+   
+        # Lista para armazenar resultados
         results = []
-        unique_urls = set()  # Para evitar duplicidades
         
         # Codificar a query
         encoded_dork = quote_plus(dork)
@@ -125,7 +119,7 @@ class BingDorker(BaseModule):
                 # Estratégia 1: URL padrão com paginação
 
                 # Usar os três templates de URL
-                for idx, template in enumerate(self.search_url_templates):
+                for _, template in enumerate(self.search_url_templates):
                     search_url = ""
                     search_url = template.format(DORK=encoded_dork)
                     try:
@@ -134,13 +128,12 @@ class BingDorker(BaseModule):
                             continue
                         
                         # Extrair resultados
-                        page_results = self._parse_bing_results(response.text)
+                        page_results = set(self._parse_bing_results(response.text))
                         
                         # Filtrar duplicidades
-                        for result in page_results:
-                            if result['url'] not in unique_urls:
-                                unique_urls.add(result['url'])
-                                results.append(result)
+                        for url in page_results:
+                            if url:
+                                results.append(url)
                         
                         # Respeitar delay entre requisições
                         time.sleep(self.options.get('delay', 2) + random.uniform(0.5, 1.5))
@@ -154,10 +147,112 @@ class BingDorker(BaseModule):
         except Exception as e:
             self.set_result(f"✗ Erro ao conectar ao Bing: {str(e)}")
             return []
+        
+    def _is_valid_url(self,url):
+        """Verifica se uma URL é válida"""
+        block_list = [
+            'bing.com', 'microsoft.com', 'msn.com', 'live.com', 'outlook.com',
+            'hotmail.com', 'office.com', 'skype.com', 'xbox.com', 'windows.com',
+            'microsoftonline.com', 'azurewebsites.net', 'uol.com.br','play.google.com'
+        ]
+
+        if not url:
+            return False
+
+        for block in block_list:
+            if block in url:
+                return False
+        
+        if url.startswith(('http://', 'https://', 'www.')):
+            return True
+        return False
+
+    def _normalize_url(self, url, base_url=None):
+        """Normaliza a URL e converte relativas para absolutas se houver base_url"""
+        url = url.strip()
+
+        if ' › ' in url:
+            # Remover partes desnecessárias da URL
+            url = url.replace(' › ','/')
+        if ('...' in url ) or ('…' in url):
+            url = url.replace('...','').replace('…','')
+
+        # Remover aspas do início e fim se existirem
+        if (url.startswith('"') and url.endswith('"')) or (url.startswith("'") and url.endswith("'")):
+            url = url[1:-1]
+        
+        # Converter URL relativa para absoluta se houver base_url
+        if base_url and not bool(urlparse(url).netloc):
+            return urljoin(base_url, url)
+        
+        return url
     
+    def _extract_urls_from_html(self, html_content, base_url=None):
+        """Extrai URLs de um conteúdo HTML"""
+        urls = set()
+        soup = BeautifulSoup(html_content, 'html.parser')
+        
+        # 1. Extrair URLs de elementos com atributos comuns de URL
+        url_attributes = {
+            'a': 'href',
+            'script': 'src',
+            'link': 'href',
+            'iframe': 'src',
+            'source': 'src',
+            'video': 'src',
+            'audio': 'src',
+            'embed': 'src',
+            'form': 'action',
+        }
+
+        # 2. Extrair URLs de qualquer elemento com atributos que podem conter URLs
+        potential_url_attrs = [
+            'href', 'src', 'data-src', 'data-href', 'data-url', 'poster', 
+            'background', 'data-original', 'content', 'data-sbihi-src', 
+            'data-bm', 'data-orighref', 'hover-url'
+        ]
+
+        for tag_name, attrs in url_attributes.items():
+            if isinstance(attrs, str):
+                attrs = [attrs]
+            for attr in attrs:
+                for tag in soup.find_all(tag_name, attrs={attr: True}):
+                    url = tag[attr]
+                    if self._is_valid_url(url):
+                        urls.add(self._normalize_url(url, base_url))
+
+        for attr in potential_url_attrs:
+            for tag in soup.find_all(attrs={attr: True}):
+                url = tag[attr]
+                if self._is_valid_url(url):
+                    urls.add(self._normalize_url(url, base_url))
+        
+        # 7. Extrair URLs de texto comum
+        for text in soup.stripped_strings:
+            url_matches = re.findall(r'http[s]?://[^\s\'"<>()]+', text)
+            for url in url_matches:
+                if self._is_valid_url(url):
+                    urls.add(self._normalize_url(url, base_url))
+        
+        # 8. Extrair URLs de tags <cite>
+        for cite_tag in soup.find_all('cite'):
+            if cite_tag.string:
+                url_text = cite_tag.get_text(strip=True)
+                # Verificar se o texto parece uma URL
+                if self._is_valid_url(url_text):
+                    urls.add(self._normalize_url(url_text, base_url))
+                        
+        # Extrair URLs de hover-url=
+        cite_urls = re.findall(r'hover-url="([^"]*)"', html_content)
+        for url in cite_urls:
+            if self._is_valid_url(url):
+                urls.add(self._normalize_url(url, base_url))
+    
+        return urls
+
     def _parse_bing_results(self, html_content: str) -> list:
         """
-        Extrai resultados da página de busca do Bing.
+        Extrai resultados da página de busca do Bing usando expressões regulares.
         
         Args:
             html_content (str): Conteúdo HTML da página de resultados
@@ -165,65 +260,18 @@ class BingDorker(BaseModule):
         Returns:
             list: Lista de dicionários com título, URL e descrição
         """
+        html_content = html_content.replace('<strong>', '').replace('</strong>', '')
+        html_content = re.sub(r'<strong>|</strong>',"",html_content)
+       
         results = []
         
         try:
-            soup = BeautifulSoup(html_content, 'html.parser')
-            
-            # Buscando por elementos de resultado do Bing
-            search_results = soup.select("li.b_algo")
-            
-            if not search_results:  # Formato alternativo
-                search_results = soup.select("div.b_title, div.b_caption")
-            
-            for result in search_results:
-                try:
-                    # Extrair título e URL do link
-                    title_element = result.select_one("h2 a") or result.select_one("a")
-                    if not title_element:
-                        continue
-                        
-                    title = title_element.get_text(strip=True)
-                    url = title_element.get('href', '')
-                    
-                    # Filtrar URLs inválidas e internas do Bing
-                    if not url or url.startswith('/') or 'bing.com' in url:
-                        continue
-                        
-                    # Extrair descrição
-                    description_element = result.select_one("p") or result.select_one("div.b_caption p")
-                    description = ""
-                    if description_element:
-                        description = description_element.get_text(strip=True)
-                    
-                    results.append({
-                        'title': title,
-                        'url': url,
-                        'description': description
-                    })
-                except Exception:
-                    continue
-            
-            # Método alternativo se não encontrou resultados
-            if not results:
-                # Buscar links diretamente
-                for link in soup.select("a[href^='http']"):
-                    url = link.get('href', '')
-                    
-                    # Filtrar URLs internas do Bing
-                    if 'bing.com' in url or 'microsoft.com' in url or not url:
-                        continue
-                        
-                    title = link.get_text(strip=True) or url
-                    
-                    results.append({
-                        'title': title,
-                        'url': url,
-                        'description': ""
-                    })
-            
+            # Definir uma URL base para converter URLs relativas em absolutas
+            base_url = "https://www.bing.com"
+            # Coletar URLs do HTML
+            results = self._extract_urls_from_html(html_content, base_url)
             return results
-            
+                
         except Exception as e:
             self.set_result(f"✗ Erro ao analisar resultados: {str(e)}")
             return []
