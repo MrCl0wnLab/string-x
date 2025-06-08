@@ -7,7 +7,9 @@
 <h4 align="center">Ferramenta de Automatização para Manipulação de Strings</h4>
 
 <p align="center">
-String-X (strx) é uma ferramenta modular de automatização desenvolvida para profissionais de Infosec e entusiastas de Hacking. Especializada na manipulação dinâmica de strings em ambiente Linux. Com arquitetura modular, oferece recursos avançados para OSINT, pentest e análise de dados, incluindo processamento paralelo, módulos especializados de extração, coleta e integração com APIs externas. Sistema baseado em templates flexíveis com mais de 25 funções integradas.
+String-X (strx) é uma ferramenta modular de automatização desenvolvida para profissionais de Infosec e entusiastas de Hacking. Especializada na manipulação dinâmica de strings em ambiente Linux. 
+
+Com arquitetura modular, oferece recursos avançados para OSINT, pentest e análise de dados, incluindo processamento paralelo, módulos especializados de extração, coleta e integração com APIs externas. Sistema baseado em templates flexíveis com mais de 25 funções integradas.
 </p>
 
 <p align="center">
@@ -486,21 +488,33 @@ Módulos para coleta de informações externas, APIs e análise:
 | `dns`         | Coleta registros DNS (A, MX, TXT, NS)     | `-module "clc:dns"` |
 | `emailverify` | Verifica validade de emails (MX, SMTP)    | `-module "clc:emailverify"` |
 | `geoip`       | Geolocalização de IPs                     | `-module "clc:geoip"` |
-| `ipinfo`      | Scanner de portas IP/host                  | `-module "clc:ipinfo"` |
-| `netscan`     | Scanner de rede (hosts, serviços)          | `-module "clc:netscan"` |
-| `shodan`      | Consulta API Shodan                        | `-module "clc:shodan"` |
-| `subdomain`   | Enumeração de subdomínios                  | `-module "clc:subdomain"` |
-| `virustotal`  | Consulta API VirusTotal                    | `-module "clc:virustotal"` |
-| `whois`       | Consulta WHOIS de domínios                 | `-module "clc:whois"` |
-| `bing`        | Realiza buscas avançadas com dorks no Bing  | `-module "clc:bing"` |
+| `ipinfo`      | Scanner de portas IP/host                 | `-module "clc:ipinfo"` |
+| `netscan`     | Scanner de rede (hosts, serviços)         | `-module "clc:netscan"` |
+| `shodan`      | Consulta API Shodan                       | `-module "clc:shodan"` |
+| `subdomain`   | Enumeração de subdomínios                 | `-module "clc:subdomain"` |
+| `virustotal`  | Consulta API VirusTotal                   | `-module "clc:virustotal"` |
+| `whois`       | Consulta WHOIS de domínios                | `-module "clc:whois"` |
+| `bing`        | Realiza buscas com dorks no Bing| `-module "clc:bing"` |
+| `duckduckgo`  | Realiza buscas com dorks no DuckDuckGo | `-module "clc:duckduckgo"` |
+| `google`      | Realiza buscas com dorks no Google | `-module "clc:google"` |
+| `lycos`       | Realiza buscas com dorks no Lycos | `-module "clc:lycos"` |
+| `naver`       | Realiza buscas com dorks no Naver (Coreano) | `-module "clc:naver"` |
+| `ezilon`      | Realiza buscas com dorks no Ezilon | `-module "clc:ezilon"` |
+| `sogou`       | Realiza buscas com dorks no Sogou (Chinês) | `-module "clc:sogou"` |
 
 ```bash
 # Exemplo: Coletar informações DNS
 ./strx -l domains.txt -st "echo {STRING}" -module "clc:dns" -pm
 
-# Exemplo: Coletar informações usando Bing
+# Exemplo: Coletar informações usando motores de busca
 ./strx -l dorks.txt -st "echo {STRING}" -module "clc:bing" -pm
-echo 'fbi.gov' | ./strx -st "echo {STRING}" -module "clc:bing" -pm
+./strx -l dorks.txt -st "echo {STRING}" -module "clc:google" -pm
+./strx -l dorks.txt -st "echo {STRING}" -module "clc:duckduckgo" -pm
+
+# Exemplos com dorking específico
+echo 'site:fbi.gov filetype:pdf' | ./strx -st "echo {STRING}" -module "clc:google" -pm
+echo 'inurl:admin' | ./strx -st "echo {STRING}" -module "clc:lycos" -pm
+echo 'site:github.com' | ./strx -st "echo {STRING}" -module "clc:ezilon" -pm
 ```
 
 
@@ -647,11 +661,17 @@ O sistema de filtros permite processar apenas strings que atendam critérios esp
 
 ### Combinação com Módulos
 ```bash
-# Extrair emails apenas de domínios específicos
-./strx -l data.txt -st "echo '{STRING}'" -module "ext:email" -pm -f "gmail.com"
+# Extrair emails e salvar ordenados
+./strx -l breach_data.txt -st "echo '{STRING}'" -module "ext:email" -pm | sort -u > emails.txt
 
-# DNS lookup apenas para subdomínios
-./strx -l domains.txt -st "echo {STRING}" -module "clc:dns" -pm -f "sub."
+# Verificar DNS de domínios suspeitos
+./strx -l suspicious_domains.txt -st "echo {STRING}" -module "clc:dns" -pm -v
+
+# Pipeline com múltiplos módulos
+cat logs.txt | ./strx -st "echo '{STRING}'" -module "ext:domain" -pm | ./strx -st "echo {STRING}" -module "clc:dns" -pm
+
+# Extrair URLs e verificar status
+./strx -l pages.txt -st "cat {STRING}" -module "ext:url" -pm | ./strx -st "curl -I {STRING}" -p "grep 'HTTP/'"
 ```
 
 ## ⚡ PROCESSAMENTO PARALELO
