@@ -112,6 +112,7 @@ class AutoModulo:
         try:
             self._import_module()
             classes = inspect.getmembers(self.module, inspect.isclass)
+            obj_centrao = None  # Initialize the variable
             for class_name, class_obj in classes:
                 if class_obj.__module__ == self.module.__name__:
                     # self._cli.console.print(f"[*] Found class: {class_name}")
