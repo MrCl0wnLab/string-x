@@ -9,8 +9,8 @@ from core.basemodule import BaseModule
 import random
 import re
 import time
-from urllib.parse import quote_plus
 import httpx
+import urllib.parse
 
 class GoogleCSEDorker(BaseModule):
     """
@@ -41,8 +41,7 @@ class GoogleCSEDorker(BaseModule):
             'data': str(),  # Dork para busca
             'delay': 3,     # Delay entre requisições (segundos)
             'timeout': 20,  # Timeout para requisições
-            'max_results': 50,  # Número máximo de resultados por CSE
-            'max_pages': 10,  # Número máximo de resultados por CSE
+            'max_pages': 15,  # Número máximo de resultados por CSE
             'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:googlecse" -pm'
         }
         
@@ -66,6 +65,17 @@ class GoogleCSEDorker(BaseModule):
             '009462381166450434430:frzo6adfjso', 
             '013879456795131126190:lft7oyifbd0', 
             '009081794347989224031:rrizk45lqzi', 
+            '006262502083096379805:t6_vdxxr_xy',
+            '001394533911082033616:3rmgu_htqw4',
+            'partner-pub-2353536094017743:1302913524',
+            '005797772976587943970:i7q6z1kjm1w',
+            '013991603413798772546:zu7epjqvunu',
+            '018413290510798844940:k69bxcfofe0',
+            'partner-pub-9033736287770724:5710551291',
+            '002717229081227036262:e-izaongzem',
+            '011545203169215625696:-yygy0imnne',
+            '011507650028433360591:mw4qttke1oe'
+
         ]
     
     def run(self):
@@ -76,7 +86,7 @@ class GoogleCSEDorker(BaseModule):
 
         # Obtém o dork da configuração e prepara para uso na URL
         dork = self.options.get('data').strip()
-        dork = quote_plus(dork)  # URL encoding para caracteres especiais
+        dork = urllib.parse.quote_plus(dork)  # URL encoding para caracteres especiais
 
         # Validação de entrada - verifica se o dork foi fornecido
         if not dork:
@@ -114,7 +124,8 @@ class GoogleCSEDorker(BaseModule):
             for num_page in range(1, max_pages):
                 # Constrói URL da API do Google CSE com todos os parâmetros necessários
                 # A URL simula uma requisição do frontend do Google CSE
-                url_request = f"https://cse.google.com/cse/element/v1?rsz=filtered_cse&num=10&hl=en&source=gcsc&start={num_page}&cselibv={info_js['cse_lib_version']}&cx={cse_id}&q={dork}&safe=off&rurl=https://cse.google.com/cse?cx={cse_id}&q={dork}&num=500&hl=en&as_qdr=all&start={num_page}&sa=N&cse_tok={info_js['cse_token']}&exp=cc,apo&callback=google.search.cse.api5630"
+                page_count = num_page * 10  # Converte para contador do Google
+                url_request = f"https://cse.google.com/cse/element/v1?rsz=filtered_cse&num={page_count}&hl=en&source=gcsc&start={page_count}&cselibv={info_js['cse_lib_version']}&cx={cse_id}&q={dork}&safe=off&rurl=https://cse.google.com/cse?cx={cse_id}&q={dork}&num=500&hl=en&as_qdr=all&start={num_page}&sa=N&cse_tok={info_js['cse_token']}&exp=cc,apo&callback=google.search.cse.api5630"
                 html_content = self._make_request(url_request)
                 
                 # Processa a resposta se obtida com sucesso
@@ -190,7 +201,7 @@ class GoogleCSEDorker(BaseModule):
                     for url in matches:
                         # Valida cada URL encontrada antes de adicionar aos resultados
                         if self._is_valid_url(url.strip()):
-                            results.append(url.strip())
+                            results.append(urllib.parse.unquote((url.strip())))
             return list(set(results))  # Remove duplicatas
             
         except Exception:
