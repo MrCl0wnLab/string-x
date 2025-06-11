@@ -502,6 +502,7 @@ Módulos para coleta de informações externas, APIs e análise:
 | `naver`       | Realiza buscas com dorks no Naver (Coreano) | `-module "clc:naver"` |
 | `ezilon`      | Realiza buscas com dorks no Ezilon | `-module "clc:ezilon"` |
 | `sogou`       | Realiza buscas com dorks no Sogou (Chinês) | `-module "clc:sogou"` |
+| `yahoo`       | Realiza buscas com dorks no Yahoo | `-module "clc:yahoo"` |
 
 ```bash
 # Exemplo: Coletar informações DNS
@@ -511,6 +512,7 @@ Módulos para coleta de informações externas, APIs e análise:
 ./strx -l dorks.txt -st "echo {STRING}" -module "clc:bing" -pm
 ./strx -l dorks.txt -st "echo {STRING}" -module "clc:google" -pm
 ./strx -l dorks.txt -st "echo {STRING}" -module "clc:googlecse" -pm
+./strx -l dorks.txt -st "echo {STRING}" -module "clc:yahoo" -pm
 ./strx -l dorks.txt -st "echo {STRING}" -module "clc:duckduckgo" -pm
 
 # Exemplos com dorking específico
@@ -518,6 +520,7 @@ echo 'site:fbi.gov filetype:pdf' | ./strx -st "echo {STRING}" -module "clc:googl
 echo 'site:github.com inurl:admin' | ./strx -st "echo {STRING}" -module "clc:googlecse" -pm
 echo 'inurl:admin' | ./strx -st "echo {STRING}" -module "clc:lycos" -pm
 echo 'site:github.com' | ./strx -st "echo {STRING}" -module "clc:ezilon" -pm
+echo 'filetype:pdf' | ./strx -st "echo {STRING}" -module "clc:yahoo" -pm
 ```
 
 
