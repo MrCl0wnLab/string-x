@@ -497,6 +497,7 @@ Módulos para coleta de informações externas, APIs e análise:
 | `bing`        | Realiza buscas com dorks no Bing| `-module "clc:bing"` |
 | `duckduckgo`  | Realiza buscas com dorks no DuckDuckGo | `-module "clc:duckduckgo"` |
 | `google`      | Realiza buscas com dorks no Google | `-module "clc:google"` |
+| `googlecse`   | Realiza buscas com dorks usando Google CSE | `-module "clc:googlecse"` |
 | `lycos`       | Realiza buscas com dorks no Lycos | `-module "clc:lycos"` |
 | `naver`       | Realiza buscas com dorks no Naver (Coreano) | `-module "clc:naver"` |
 | `ezilon`      | Realiza buscas com dorks no Ezilon | `-module "clc:ezilon"` |
@@ -509,10 +510,12 @@ Módulos para coleta de informações externas, APIs e análise:
 # Exemplo: Coletar informações usando motores de busca
 ./strx -l dorks.txt -st "echo {STRING}" -module "clc:bing" -pm
 ./strx -l dorks.txt -st "echo {STRING}" -module "clc:google" -pm
+./strx -l dorks.txt -st "echo {STRING}" -module "clc:googlecse" -pm
 ./strx -l dorks.txt -st "echo {STRING}" -module "clc:duckduckgo" -pm
 
 # Exemplos com dorking específico
 echo 'site:fbi.gov filetype:pdf' | ./strx -st "echo {STRING}" -module "clc:google" -pm
+echo 'site:github.com inurl:admin' | ./strx -st "echo {STRING}" -module "clc:googlecse" -pm
 echo 'inurl:admin' | ./strx -st "echo {STRING}" -module "clc:lycos" -pm
 echo 'site:github.com' | ./strx -st "echo {STRING}" -module "clc:ezilon" -pm
 ```
