@@ -42,7 +42,8 @@ class BingDorker(BaseModule):
             'data': str(),  # Dork para busca
             'delay': 2,     # Delay entre requisições (segundos)
             'timeout': 15,  # Timeout para requisições
-            'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:bing" -pm'
+            'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:bing" -pm',
+            'proxy': str(),  # Proxies para requisições (opcional)
         }
         
         self.user_agents = [
@@ -113,9 +114,16 @@ class BingDorker(BaseModule):
             'Referer': 'https://www.bing.com/',
             'DNT': '1'
         }
+
+        # Configurar parâmetros do cliente httpx
+        client_kwargs = {
+            'timeout': self.options.get('timeout', 30),
+            'follow_redirects': True,
+            'proxy': self.options.get('proxy') if self.options.get('proxy') else None
+        }
         
         try:
-            with httpx.Client(timeout=self.options.get('timeout', 15)) as client:
+            with httpx.Client(verify=False, **client_kwargs) as client:
                 # Estratégia 1: URL padrão com paginação
 
                 # Usar os três templates de URL

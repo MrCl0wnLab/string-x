@@ -191,6 +191,7 @@ if __name__ == '__main__':
         parser.add_argument('-sleep', metavar="<5>", help="Segundos de delay entre threads", default=None, required=False)
         parser.add_argument('-module', metavar="<type:module>", help="Selectionar o tipo e module", default=str(), required=False)
         parser.add_argument('-pm', help="Mostrar somente resultados de execução do module", action='store_true', default=False)
+        parser.add_argument('-proxy', help="Setar um proxy para request", default=str(), required=False)
        
         
         ARGS = parser.parse_args() 

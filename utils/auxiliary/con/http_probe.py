@@ -32,7 +32,8 @@ class HTTPProbe(BaseModule):
             'analyze_tech': True,
             'timeout': 10,
             'user_agent': 'Mozilla/5.0 (compatible; String-X Scanner)',
-            'example': './strx -l urls.txt -st "echo {STRING}" -module "con:http_probe" -pm'
+            'example': './strx -l urls.txt -st "echo {STRING}" -module "con:http_probe" -pm',
+            'proxy': str(),  # Proxies para requisições (opcional)
         }
     
     def run(self):
@@ -66,15 +67,19 @@ class HTTPProbe(BaseModule):
         headers = {
             'User-Agent': self.options.get('user_agent', 'String-X Scanner')
         }
+
+        # Configurar parâmetros do cliente httpx
+        client_kwargs = {
+            'timeout': self.options.get('timeout', 30),
+            'follow_redirects': True,
+            'proxy': self.options.get('proxy') if self.options.get('proxy') else None
+        }
         
         try:
             timeout = httpx.Timeout(self.options.get('timeout', 10))
             
             with httpx.Client(
-                headers=headers,
-                timeout=timeout,
-                follow_redirects=self.options.get('follow_redirects', True),
-                verify=False
+                headers=headers, verify=False, **client_kwargs
             ) as client:
                 response = client.get(url)
             

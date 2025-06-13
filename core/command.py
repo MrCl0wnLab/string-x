@@ -56,7 +56,8 @@ class Command:
         self.last_value: str = str()
         self.verbose: bool = False
         self._type_module: str = str()
-        
+        self._proxy : str = str()
+
         self._logging_config = {
             "version": 1,
             "handlers": {
@@ -148,7 +149,7 @@ class Command:
             return None
         auto_load = AutoModulo(_type_module)
         if obj_module := auto_load.load_module():
-            obj_module.options.update({"data": data})
+            obj_module.options.update({"data": data, "proxy": self._proxy})
             obj_module.run()
             return obj_module
         return None
@@ -281,6 +282,7 @@ class Command:
             self._sleep = args.sleep
             self._type_module = args.module
             self._print_result_module = args.pm
+            self._proxy = args.proxy
 
             if self._sleep: time.sleep(int(self._sleep))
 

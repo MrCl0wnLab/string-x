@@ -44,7 +44,8 @@ class DuckDuckGoDorker(BaseModule):
             'delay': 2,     # Delay entre requisições (segundos)
             'timeout': 15,  # Timeout para requisições
             'max_results': 30,  # Número máximo de resultados
-            'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:duckduckgo" -pm'
+            'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:duckduckgo" -pm',
+            'proxy': str(),  # Proxies para requisições (opcional)
         }
         
         self.user_agents = [
@@ -121,9 +122,16 @@ class DuckDuckGoDorker(BaseModule):
             'Connection': 'keep-alive',
             'Upgrade-Insecure-Requests': '1',
         }
+
+        # Configurar parâmetros do cliente httpx
+        client_kwargs = {
+            'timeout': self.options.get('timeout', 30),
+            'follow_redirects': True,
+            'proxy': self.options.get('proxy') if self.options.get('proxy') else None
+        }
         
         try:
-            with httpx.Client(timeout=self.options.get('timeout', 15), follow_redirects=True) as client:
+            with httpx.Client(verify=False, **client_kwargs) as client:
                 # Tentar diferentes templates de URL
                 for template in self.search_url_templates:
                     search_url = template.format(DORK=encoded_dork)

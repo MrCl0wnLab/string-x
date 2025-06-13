@@ -28,7 +28,8 @@ class SubdomainEnum(BaseModule):
             'data': str(),  # Domínio alvo
             'methods': ['crtsh', 'certspotter', 'hackertarget'],
             'timeout': 10,
-            'example': './strx -l domains.txt -st "echo {STRING}" -module "clc:subdomain" -pm'
+            'example': './strx -l domains.txt -st "echo {STRING}" -module "clc:subdomain" -pm',
+            'proxy': str(),  # Proxies para requisições (opcional)
         }
     
     def run(self):
@@ -65,7 +66,16 @@ class SubdomainEnum(BaseModule):
     def _crtsh_search(self, domain: str) -> set:
         """Busca subdomínios no crt.sh"""
         url = f"https://crt.sh/?q=%25.{domain}&output=json"
-        with httpx.Client(timeout=self.options['timeout']) as client:
+
+
+        # Configurar parâmetros do cliente httpx
+        client_kwargs = {
+            'timeout': self.options.get('timeout', 30),
+            'follow_redirects': True,
+            'proxy': self.options.get('proxy') if self.options.get('proxy') else None
+        }
+
+        with httpx.Client(verify=False, **client_kwargs) as client:
             response = client.get(url)
         
         subdomains = set()
@@ -86,7 +96,16 @@ class SubdomainEnum(BaseModule):
     def _certspotter_search(self, domain: str) -> set:
         """Busca subdomínios no CertSpotter"""
         url = f"https://api.certspotter.com/v1/issuances?domain={domain}&include_subdomains=true&expand=dns_names"
-        with httpx.Client(timeout=self.options['timeout']) as client:
+
+        # Configurar parâmetros do cliente httpx
+        client_kwargs = {
+            'timeout': self.options.get('timeout', 30),
+            'follow_redirects': True,
+            'proxy': self.options.get('proxy') if self.options.get('proxy') else None
+        }
+
+
+        with httpx.Client(verify=False, **client_kwargs) as client:
             response = client.get(url)
         
         subdomains = set()
@@ -104,7 +123,15 @@ class SubdomainEnum(BaseModule):
     def _hackertarget_search(self, domain: str) -> set:
         """Busca subdomínios no HackerTarget"""
         url = f"https://api.hackertarget.com/hostsearch/?q={domain}"
-        with httpx.Client(timeout=self.options['timeout']) as client:
+
+        # Configurar parâmetros do cliente httpx
+        client_kwargs = {
+            'timeout': self.options.get('timeout', 30),
+            'follow_redirects': True,
+            'proxy': self.options.get('proxy') if self.options.get('proxy') else None
+        }
+        
+        with httpx.Client(verify=False, **client_kwargs) as client:
             response = client.get(url)
         
         subdomains = set()

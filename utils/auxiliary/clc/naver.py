@@ -44,7 +44,8 @@ class NaverDorker(BaseModule):
             'timeout': 15,  # Timeout para requisições
             'max_results': 30,  # Número máximo de resultados
             'max_pages': 5,  # Número máximo de páginas para buscar
-            'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:naver" -pm'
+            'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:naver" -pm',
+            'proxy': str(),  # Proxies para requisições (opcional)
         }
         
         self.user_agents = [
@@ -118,9 +119,16 @@ class NaverDorker(BaseModule):
             'Upgrade-Insecure-Requests': '1',
             'Referer': 'https://search.naver.com/',
         }
+
+        # Configurar parâmetros do cliente httpx
+        client_kwargs = {
+            'timeout': self.options.get('timeout', 30),
+            'follow_redirects': True,
+            'proxy': self.options.get('proxy') if self.options.get('proxy') else None
+        }
         
         try:
-            with httpx.Client(timeout=self.options.get('timeout', 15), follow_redirects=True) as client:
+            with httpx.Client(verify=False, **client_kwargs) as client:
                 # Buscar em múltiplas páginas usando o padrão de URL do Naver
                 for page in range(1, max_pages + 1):
                     try:

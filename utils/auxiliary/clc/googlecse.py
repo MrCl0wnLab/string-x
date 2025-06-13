@@ -42,7 +42,8 @@ class GoogleCSEDorker(BaseModule):
             'delay': 3,     # Delay entre requisições (segundos)
             'timeout': 20,  # Timeout para requisições
             'max_pages': 15,  # Número máximo de resultados por CSE
-            'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:googlecse" -pm'
+            'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:googlecse" -pm',
+            'proxy': str(),  # Proxies para requisições
         }
         
         # Lista de CSE IDs do Google - cada ID representa um mecanismo de busca customizado
@@ -278,9 +279,17 @@ class GoogleCSEDorker(BaseModule):
             'Accept-Encoding': 'gzip, deflate, br, zstd'
         }
 
+        # Configurar parâmetros do cliente httpx
+        client_kwargs = {
+            'timeout': self.options.get('timeout', 30),
+            'follow_redirects': True,
+            'proxy': self.options.get('proxy') if self.options.get('proxy') else None
+        }
+
+
         try:
             # Cria cliente httpx com timeout configurável e redirecionamentos automáticos
-            with httpx.Client(timeout=self.options.get('timeout', 20), follow_redirects=True) as client:
+            with httpx.Client(verify=False, **client_kwargs) as client:
                 response = client.get(url, headers=headers)
                 if response.status_code == 200:
                     return response.text

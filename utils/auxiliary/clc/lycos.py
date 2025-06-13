@@ -44,7 +44,8 @@ class LycosDorker(BaseModule):
             'timeout': 15,  # Timeout para requisições
             'max_results': 30,  # Número máximo de resultados
             'max_pages': 5,  # Número máximo de páginas para buscar (usando paginação automática)
-            'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:lycos" -pm'
+            'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:lycos" -pm',
+            'proxy': str(),   # Proxies para requisições
         }
         
         self.user_agents = [
@@ -115,9 +116,16 @@ class LycosDorker(BaseModule):
             'Upgrade-Insecure-Requests': '1',
             'Referer': 'https://search.lycos.com/',
         }
-        
+
+        # Configurar parâmetros do cliente httpx
+        client_kwargs = {
+            'timeout': self.options.get('timeout', 30),
+            'follow_redirects': True,
+            'proxy': self.options.get('proxy') if self.options.get('proxy') else None
+        }
+
         try:
-            with httpx.Client(timeout=self.options.get('timeout', 15), follow_redirects=True) as client:
+            with httpx.Client(verify=False, **client_kwargs) as client:
                 # Primeiro, obter o keyvol fazendo uma requisição inicial
                 if not self._get_keyvol(client, headers):
                     self.set_result("✗ Erro ao obter keyvol do Lycos")

@@ -44,7 +44,8 @@ class SogouDorker(BaseModule):
             'timeout': 15,  # Timeout para requisições
             'max_results': 50,  # Número máximo de resultados
             'max_pages': 5,  # Número máximo de páginas para buscar
-            'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:sogou" -pm'
+            'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:sogou" -pm',
+            'proxy': str(),  # Proxies para requisições (opcional)
         }
         
         self.user_agents = [
@@ -119,9 +120,16 @@ class SogouDorker(BaseModule):
             'Upgrade-Insecure-Requests': '1',
             'Referer': 'http://www.sogou.com/',
         }
+
+        # Configurar parâmetros do cliente httpx
+        client_kwargs = {
+            'timeout': self.options.get('timeout', 30),
+            'follow_redirects': True,
+            'proxy': self.options.get('proxy') if self.options.get('proxy') else None
+        }
         
         try:
-            with httpx.Client(timeout=self.options.get('timeout', 15), follow_redirects=True) as client:
+            with httpx.Client(verify=False, **client_kwargs) as client:
                 # Primeira página - usar template específico e extrair sessiontime
                 first_page_urls = self._search_first_page(client, headers, encoded_dork)
                 results.extend(first_page_urls)

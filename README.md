@@ -175,9 +175,9 @@ string-x/
 ### Interface da Aplicação
 
 ```bash
-usage: strx [-h] [-types] [-examples] [-functions] [-list file] [-str cmd] [-out file] 
-            [-pipe cmd] [-verbose] [-thread <10>] [-pf] [-of] [-filter value] [-sleep <5>]
-            [-module <type:module>] [-pm]
+usage: strx [-h] [-types] [-examples] [-functions] [-list file] [-str cmd] [-out file]
+            [-pipe cmd] [-verbose] [-thread <10>] [-pf] [-of] [-filter value] [-sleep <5>] 
+            [-module <type:module>] [-pm] [-proxy PROXY]
 
  
                                              _
@@ -229,6 +229,8 @@ options:
              -sleep <5>             Segundos de delay entre threads
              -module <type:module>  Selectionar o tipo e module
              -pm                    Mostrar somente resultados de execução do module
+             -proxy PROXY           Setar um proxy para request
+
 ```
 
 ## 💡 EXEMPLOS PRÁTICOS
@@ -310,6 +312,47 @@ cat access.log | awk '{print $1}' | sort -u | ./strx -st "whois {STRING}" -p "gr
 
 # Análise de certificados SSL
 ./strx -l domains.txt -st "echo | openssl s_client -connect {STRING}:443 2>/dev/null" -p "openssl x509 -noout -subject"
+```
+
+### Dorking e Mecanismos de Busca
+```bash
+# Dorking básico no Google
+./strx -l dorks.txt -st "echo {STRING}" -module "clc:google" -pm
+
+# Busca de arquivos PDF em sites governamentais
+echo 'site:gov filetype:pdf "confidential"' | ./strx -st "echo {STRING}" -module "clc:googlecse" -pm
+
+# Encontrando painéis de administração expostos
+echo 'inurl:admin intitle:"login"' | ./strx -st "echo {STRING}" -module "clc:yahoo" -pm
+
+# Múltiplos motores de busca com a mesma dork
+echo 'intext:"internal use only"' | ./strx -st "echo {STRING}" -module "clc:duckduckgo" -pm > duckduckgo_results.txt
+echo 'intext:"internal use only"' | ./strx -st "echo {STRING}" -module "clc:bing" -pm > bing_results.txt
+
+# Comparação de resultados entre motores
+cat dorks.txt | ./strx -st "echo {STRING}" -module "clc:google" -pm | sort > google_results.txt
+cat dorks.txt | ./strx -st "echo {STRING}" -module "clc:bing" -pm | sort > bing_results.txt
+comm -23 google_results.txt bing_results.txt > google_exclusive.txt
+```
+
+### Dorking com Proxy
+```bash
+# Utilizando proxy com dorking para evitar bloqueios
+./strx -l dorks.txt -st "echo {STRING}" -module "clc:google" -proxy "http://127.0.0.1:9050" -pm
+
+# Utilizando proxy com autenticação
+cat dorks.txt | ./strx -st "echo {STRING}" -module "clc:yahoo" -proxy "http://user:pass@server:8080" -pm
+
+# Aplicando dorking com TOR
+./strx -l sensitive_dorks.txt -st "echo {STRING}" -module "clc:google" -proxy "https://127.0.0.1:9050" -pm -t 1 -sleep 5
+
+# Dorking com output estruturado + proxy com autenticação
+./strx -l sqli_dorks.txt -st "echo {STRING}" -module "clc:googlecse" -proxy "http://user:pass@10.0.0.1:8080" -pm -module "out:json_output" -pm
+
+# Coleta distribuída através de lista de proxies
+cat proxy_list.txt | while read proxy; do
+  ./strx -l target_dorks.txt -st "echo {STRING}" -module "clc:bing" -proxy "$proxy" -pm -t 3 -sleep 2
+done > combined_results.txt
 ```
 
 ## 🔧 FUNÇÕES INTEGRADAS
