@@ -49,7 +49,7 @@ class GoogleDorker(BaseModule):
             'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:google" -pm',  # Exemplo de uso do módulo
             'proxy': str(),                                                                # Proxies para requisições
         }
-        # http://user-stringx2025_Y9aqX:vidaQWER5@pr.lunaproxy.com:12233
+
         self.pagination = []  # Contador de páginas para navegação
         self.search_url = str()
 
