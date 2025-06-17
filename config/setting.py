@@ -43,3 +43,6 @@ THREAD_MAX = 10
 # OUTPUT FORMAT
 DEFAULT_OUTPUT_FORMAT = 'txt'
 OUTPUT_FORMATS = ['txt', 'csv', 'json']
+
+# GOOGLE CSE ID LIST
+GOOGLE_CSE_ID_LIST =  open('config/google_cse_id.txt', 'r').read().splitlines()
