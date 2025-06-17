@@ -14,6 +14,8 @@ Variables:
     BANNER_RANDOM (bool): Flag para exibir banner aleatório
     BANNER_HELP (str): Banner que será exibido na ajuda
     THREAD_MAX (int): Número máximo de threads permitidas
+    DEFAULT_OUTPUT_FORMAT (str): Formato padrão para saída (txt, csv, json)
+    OUTPUT_FORMATS (list): Formatos de saída suportados
 """
 from datetime import datetime
 from core.banner.asciiart import AsciiBanner
@@ -23,6 +25,9 @@ TIME = datetime.now().strftime("%d-%m-%Y-%H")
 LOG_DIRECTORY = './output'
 LOG_FILE_LAST = 'output-last-value.log'
 LOG_FILE_OUTPUT = f'{LOG_DIRECTORY}/output-{TIME}.log'
+
+# REQUEST
+REQUEST_USER_AGENT = 'String-X/1.0'
 
 # BANNERS
 BANNER = AsciiBanner()
@@ -34,3 +39,7 @@ BANNER_HELP = (
 
 # THREADS
 THREAD_MAX = 10
+
+# OUTPUT FORMAT
+DEFAULT_OUTPUT_FORMAT = 'txt'
+OUTPUT_FORMATS = ['txt', 'csv', 'json']

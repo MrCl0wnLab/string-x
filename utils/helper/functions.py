@@ -5,10 +5,12 @@ Este módulo contém a classe Funcs com métodos estáticos que implementam
 diversas funções auxiliares para formatação, codificação, rede e manipulação
 de dados. Essas funções são utilizadas pelo sistema de templates dinâmicos.
 """
+import os
 import re
 import json
 import base64
 import socket
+import hashlib
 import random
 import datetime
 import ipaddress
@@ -41,9 +43,17 @@ class Funcs:
         Returns:
             str: String limpa ou string vazia
         """
-        if value:
-            return Format.clear_value(value)
-        return str()
+        if not value:
+            return str()
+
+        try:
+            # Remove caracteres de controle e espaços extras
+            cleaned = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', value)
+            cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+            return Format.clear_value(cleaned)
+        except Exception:
+            return str()
+    
 
     @staticmethod
     def debase64(value: str) -> str:
@@ -195,7 +205,7 @@ class Funcs:
             try:
                 return socket.gethostbyname(value)
             except socket.gaierror:
-                pass
+                return str()
         return str()
 
     @staticmethod
@@ -470,12 +480,13 @@ class Funcs:
         Returns:
             str: Hashes separados por vírgula
         """
+        if not value or not os.path.exists(value):
+            return "file_not_found"
         try:
-            import hashlib
-            import os
-            
-            if not os.path.exists(value):
-                return "file_not_found"
+
+            file_size = os.path.getsize(value)
+            if file_size > 100 * 1024 * 1024:
+                return "file_too_large"
             
             md5_hash = hashlib.md5()
             sha1_hash = hashlib.sha1()
@@ -488,8 +499,8 @@ class Funcs:
                     sha256_hash.update(chunk)
             
             return f"MD5:{md5_hash.hexdigest()},SHA1:{sha1_hash.hexdigest()},SHA256:{sha256_hash.hexdigest()}"
-        except Exception:
-            return "error"
+        except Exception as e:
+            return f"error:{str(e)[:50]}"
 
     @staticmethod
     def encode_url_all(value: str) -> str:

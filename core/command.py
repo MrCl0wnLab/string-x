@@ -4,16 +4,20 @@ Módulo responsável pela execução de comandos e manipulação de templates.
 Este módulo contém a classe Command que é responsável por processar templates de comandos,
 executar os comandos no sistema operacional e gerenciar a saída dos resultados.
 """
+import re
+import os
 import time
 import shlex
 import argparse
 import subprocess
 import logging.config
+from config import setting
 from core.format import Format
 from core.func_format import FuncFormat
 from core.style_cli import StyleCli
 from core.filelocal import FileLocal
 from core.auto_module import AutoModulo
+from core.output_formatter import OutputFormatter
 
 class Command:
     """
@@ -46,6 +50,8 @@ class Command:
         self._file = FileLocal()
         self._format_func = FuncFormat()
         self._cli = StyleCli()
+        self._current_module: str = str()
+        self._current_function: str = str()
         self._print_func: bool = False
         self._output_func: bool = False
         self._print_result_module: bool = False
@@ -57,6 +63,8 @@ class Command:
         self.verbose: bool = False
         self._type_module: str = str()
         self._proxy : str = str()
+        self.output_format: str = "txt"  # formato padrão
+      
 
         self._logging_config = {
             "version": 1,
@@ -106,8 +114,45 @@ class Command:
         Args:
             value (str): Valor a ser salvo no arquivo de log
         """
+        if not value:
+            return 
+        
         if value:
-            self._file.save_value(f"{value}\n", self.file_output)
+            try:
+                # Formatar a saída de acordo com o formato especificado
+                formatted_output = OutputFormatter.format(
+                    self.output_format, 
+                    value, 
+                    module=self._current_module,
+                    function=self._current_function
+                )
+                
+                # Verificar se o file_output está configurado
+                if not self.file_output:
+                    self._cli.console.print("[bold red]Erro: Caminho de saída não definido![/bold red]")
+                    return
+
+                # Garantir que o nome do arquivo tenha um diretório válido
+                output_dir = os.path.dirname(self.file_output)
+                
+                # Se o diretório for vazio (arquivo no diretório atual), não precisa criar
+                if output_dir:
+                    os.makedirs(output_dir, exist_ok=True)
+
+                # Criar diretório de logs se não existir
+                # os.makedirs(os.path.dirname(self.file_output), exist_ok=True)
+                
+                # Abrir arquivo e escrever saída formatada
+                self._file.save_value(f"{formatted_output}\n", self.file_output)
+                '''with open(self.file_output, 'a+') as file_a:
+                    file_a.write(f"{formatted_output}\n")'''
+                
+                # Salvar último valor processado
+                self._save_last_target(formatted_output)
+                '''with open(self.file_last_output, 'w+') as file_w:
+                    file_w.write(str(value))'''
+            except Exception as e:
+                self._cli.console.print(f"[bold red]Erro ao salvar arquivo: {str(e)}[/bold red]")
 
     def _save_last_target(self, value: str) -> None:
         """
@@ -149,6 +194,8 @@ class Command:
             return None
         auto_load = AutoModulo(_type_module)
         if obj_module := auto_load.load_module():
+            # Update current module name
+            self._current_module = _type_module
             obj_module.options.update({"data": data, "proxy": self._proxy})
             obj_module.run()
             return obj_module
@@ -228,12 +275,24 @@ class Command:
         command_func: str = str()
         try:
             if command:
+                # Get the function name if available using regex
+                func_match = re.search(r'([a-zA-Z0-9_]+)\(', command)
+                if func_match:
+                    self._current_function = func_match.group(1)
+
                 command_func = self._format_func.func_format(command)
                 if self._print_func:
                     if self.verbose:
-                        if command_func: self._cli.console.log(command_func)
+                        if command_func: 
+                            self._cli.console.log(command_func)
                     else:
-                        if command_func: self._cli.console.print(command_func)
+                        if command_func:
+                            if self.output_format != "txt":
+                                # Formatar a saída de função
+                                formatted = OutputFormatter.format(self.output_format, command_func)
+                                self._cli.console.print(formatted)
+                            else:
+                                self._cli.console.print(command_func)
                 if self._output_func and command_func:
                     self._save_command_log(command_func)
             return command_func
@@ -276,13 +335,18 @@ class Command:
         if target and command:
             target = Format.clear_value(target)
             self._save_last_target(target)
+
             self._print_func = args.pf
             self._output_func = args.of
+
             self._filter = args.filter
             self._sleep = args.sleep
             self._type_module = args.module
             self._print_result_module = args.pm
             self._proxy = args.proxy
+            # Reset module and function information
+            self._current_module = str()
+            self._current_function = str()
 
             if self._sleep: time.sleep(int(self._sleep))
 

@@ -192,7 +192,7 @@ if __name__ == '__main__':
         parser.add_argument('-module', metavar="<type:module>", help="Selectionar o tipo e module", default=str(), required=False)
         parser.add_argument('-pm', help="Mostrar somente resultados de execução do module", action='store_true', default=False)
         parser.add_argument('-proxy', help="Setar um proxy para request", default=str(), required=False)
-       
+        parser.add_argument('-format', metavar="<format>", help=f"Formato de saída ({', '.join(setting.OUTPUT_FORMATS)})", default=setting.DEFAULT_OUTPUT_FORMAT, choices=setting.OUTPUT_FORMATS)
         
         ARGS = parser.parse_args() 
 
@@ -211,6 +211,10 @@ if __name__ == '__main__':
             CLI.console.print(f"{setting.BANNER_HELP}\n")
             exit(show_helper_functions())
         
+        # Define o formato de saída a ser utilizado
+        if ARGS.format:
+            CMD.output_format = ARGS.format
+
         # Verifica se o argumento -str foi fornecido quando não estamos em modo de ajuda
         if ARGS.str:
             stdin_get_list()
@@ -229,9 +233,13 @@ if __name__ == '__main__':
             CLI.console.print(f"{setting.BANNER_HELP}\n")
             exit(parser.parse_args('-h'))
 
+        if ARGS.out:
+            if setting.LOG_FILE_OUTPUT != ARGS.out:
+                CMD.file_output = f'{setting.LOG_DIRECTORY}/{ARGS.out}'
+            else:
+                CMD.file_output = ARGS.out
+            CMD.file_last_output = f'{setting.LOG_DIRECTORY}/{setting.LOG_FILE_LAST}'
 
-        CMD.file_output = ARGS.out
-        CMD.file_last_output = f'./{setting.LOG_DIRECTORY}/{setting.LOG_FILE_LAST}'
         CMD.verbose = ARGS.verbose
 
         main(
