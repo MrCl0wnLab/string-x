@@ -54,11 +54,13 @@ Com arquitetura modular, oferece recursos avançados para OSINT, pentest e anál
 - 🔌 **Integrações Externas**: Conexões com APIs, bancos de dados e serviços de notificação
 - 🔍 **Análise Avançada**: Extração de padrões complexos com regex e processamento especializado
 - 🔒 **Ferramentas para Segurança**: Recursos específicos para OSINT, pentest e análise de dados
+- 🌐 **Dorking Automatizado**: Integração com múltiplos motores de busca para OSINT
+- 🧠 **Integração com IA**: Módulo para processamento com Google Gemini
 
 ## 📦 INSTALAÇÃO
 
 ### Requisitos
-- Python 3.8+
+- Python 3.12+
 - Linux/MacOS
 - Bibliotecas listadas em `requirements.txt`
 
@@ -74,8 +76,18 @@ pip install -r requirements.txt
 # Torne o arquivo executável
 chmod +x strx
 
-# Teste a instalação
+# Teste a instalação com help
 ./strx --help
+
+# Lista tipos de módulos 
+./strx --types
+
+# Lista módulos e exemplos de uso
+./strx --examples
+
+# Lista funções
+./strx --funcs
+
 ```
 
 ## 🧠 CONCEITOS FUNDAMENTAIS
@@ -125,23 +137,23 @@ String-X utiliza uma arquitetura modular extensível com quatro tipos principais
 | **Connection** | `con` | Conexões especializadas (SSH, FTP, etc) | `utils/auxiliary/con/` |
 
 ### Estrutura de Diretórios
-```
+```bash
 string-x/
-├── strx                   # Executável principal
-├── config/                # Configurações globais
-├── core/                  # Núcleo da aplicação
-│   ├── command.py         # Processamento de comandos
-│   ├── auto_module.py     # Carregamento dinâmico de módulos
-│   ├── thread_process.py  # Sistema de threads
-│   ├── format.py          # Formatação e encoding
-│   └── style_cli.py       # Interface CLI estilizada
-└── utils/
-    ├── auxiliary/        # Módulos auxiliares
-    │   ├── ext/          # Módulos extratores
-    │   ├── clc/          # Módulos coletores
-    │   ├── out/          # Módulos de saída
-    │   └── con/          # Módulos de conexão
-    └── helper/           # Funções auxiliares
+      .
+      ├── asset             # Imagens, banners e logos usados na documentação e interface CLI
+      ├── config            # Arquivos de configuração global do projeto (settings, variáveis)
+      ├── core              # Núcleo da aplicação, engine principal e lógica central
+      │   └── banner        # Submódulo para banners ASCII art
+      │       └── asciiart  # Arquivos de arte ASCII para exibição no terminal
+      ├── output            # Diretório padrão para arquivos de saída e logs gerados pela ferramenta
+      └── utils             # Utilitários e módulos auxiliares para extensões e integrações
+          ├── auxiliary     # Módulos auxiliares organizados por função
+          │   ├── ai        # Módulos de inteligência artificial (ex: prompts Gemini)
+          │   ├── clc       # Módulos coletores (busca, DNS, whois, APIs externas)
+          │   ├── con       # Módulos de conexão (SSH, FTP, HTTP probe)
+          │   ├── ext       # Módulos extratores (regex: email, domínio, IP, hash, etc)
+          │   └── out       # Módulos de saída/integradores (JSON, CSV, banco de dados, APIs)
+          └── helper        # Funções utilitárias e helpers usados em todo o projeto
 ```
 
 ## 🚀 USO DA FERRAMENTA
@@ -155,10 +167,10 @@ string-x/
 
 | Parâmetro | Descrição | Exemplo |
 |-----------|-----------|---------|
-| `-h, --help`         |  Mostrar  help do projeto | `-h` |
-| `-types`             |  Lista tipos de módulos | `-types` |
-| `-examples`          |  Lista módulos e exemplos de uso | `-examples` |
-| `-functions, -funcs` |  Lista funções | `-funcs` |
+| `-h, --help`         | Mostrar help do projeto | `-h` |
+| `-types`             | Lista tipos de módulos | `-types` |
+| `-examples`          | Lista módulos e exemplos de uso | `-examples` |
+| `-functions, -funcs` | Lista funções | `-funcs` |
 | `-l, --list` | Arquivo com strings para processamento | `-l hosts.txt` |
 | `-st, --str` | Template de comando com `{STRING}` | `-st "curl {STRING}"` |
 | `-o, --out` | Arquivo de saída para resultados | `-o results.txt` |
@@ -171,13 +183,15 @@ string-x/
 | `-pf` | Mostrar apenas resultados de funções | `-pf` |
 | `-of` | Salvar resultados de funções em arquivo | `-of` |
 | `-sleep` | Delay entre threads (segundos) | `-sleep 2` |
+| `-proxy` | Setar proxy para requests | `-proxy "http://127.0.0.1:8080"` |
+| `-format` | Formato de saída (txt, csv, json) | `-format json` |
 
 ### Interface da Aplicação
 
 ```bash
-usage: strx [-h] [-types] [-examples] [-functions] [-list file] [-str cmd] [-out file]
+usage: strx [-h] [-types] [-examples] [-functions] [-list file] [-str cmd] [-out file] 
             [-pipe cmd] [-verbose] [-thread <10>] [-pf] [-of] [-filter value] [-sleep <5>] 
-            [-module <type:module>] [-pm] [-proxy PROXY]
+            [-module <type:module>] [-pm] [-proxy PROXY] [-format <format>]
 
  
                                              _
@@ -230,6 +244,7 @@ options:
              -module <type:module>  Selectionar o tipo e module
              -pm                    Mostrar somente resultados de execução do module
              -proxy PROXY           Setar um proxy para request
+             -format <format>       Formato de saída (txt, csv, json)
 
 ```
 
@@ -300,6 +315,9 @@ cat ips.txt | ./strx -st "curl -s 'https://ipinfo.io/{STRING}/json'" -p "jq -r '
 
 # Geração de hashes
 ./strx -l passwords.txt -st "md5({STRING}); sha256({STRING})" -pf -o hashes.txt
+
+# Uso de formatação json
+echo 'com.br' | ./strx  -st "echo {STRING}" -o bing.json -format json -module 'clc:bing' -pm -v
 ```
 
 ### Combinação com Pipes do Sistema
@@ -658,8 +676,9 @@ class ModuleName(BaseModule):
 
       # Define opções requeridas para este módulo
       self.options = {
-          "data": str(),
-          "regex": "YOUR_REGEX"
+          "data":   str(),
+          "regex":  str(),
+          "proxy":  str()
       }
     
     # Função obrigatoria para execução
