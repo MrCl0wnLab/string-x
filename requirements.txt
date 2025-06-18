@@ -1,6 +1,6 @@
 # Dependências core
 rich==13.6.0
-typing_extensions==4.9.0
+typing_extensions>=4.12.2
 PyYAML==6.0.1
 
 # HTTP e Requisições
@@ -14,12 +14,16 @@ python-whois==0.8.0
 
 # Bancos de Dados
 mysql-connector-python==8.2.0
-sqlite3-utils==3.35.1   # Para módulo out:sqlite
-
+sqlite-utils==3.35.2
 
 # Processamento de Dados
-lxml==4.9.3              # Parser XML/HTML mais rápido
 beautifulsoup4==4.12.2
 
 # Function decoration for backoff and retry
 backoff==2.2.1
+
+# Para upgrade manager
+packaging==23.2
+
+# Validação de dados (necessário para google-generativeai)
+pydantic>=2.0.0
