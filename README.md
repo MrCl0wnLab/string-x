@@ -80,14 +80,21 @@ chmod +x strx
 ./strx --help
 
 # Lista tipos de módulos 
-./strx --types
+./strx -types
 
 # Lista módulos e exemplos de uso
-./strx --examples
+./strx -examples
 
 # Lista funções
-./strx --funcs
+./strx -funcs
 
+```
+
+## ⏫ Sistema de Upgrade com Git
+usa comandos git para baixar novas versões
+```bash
+# Atualizar String-X
+./strx -upgrade
 ```
 
 ## 🧠 CONCEITOS FUNDAMENTAIS
