@@ -33,6 +33,7 @@ from core.filelocal import FileLocal
 from core.thread_process import ThreadProcess
 from core.style_cli import StyleCli, RichArgumentParser, RawDescriptionHelpFormatter
 from core.help_modules import *
+from core.upgrade_manager import UpgradeManager
 
 
 # Ensure the correct path is in sys.path
@@ -193,8 +194,16 @@ if __name__ == '__main__':
         parser.add_argument('-pm', help="Mostrar somente resultados de execução do module", action='store_true', default=False)
         parser.add_argument('-proxy', help="Setar um proxy para request", default=str(), required=False)
         parser.add_argument('-format', metavar="<format>", help=f"Formato de saída ({', '.join(setting.OUTPUT_FORMATS)})", default=setting.DEFAULT_OUTPUT_FORMAT, choices=setting.OUTPUT_FORMATS)
-        
+        parser.add_argument('-upgrade', help="Atualizar String-X via Git", action='store_true')
+
         ARGS = parser.parse_args() 
+
+        # Adicionar na lógica principal (linha ~200, antes de outros processamentos)
+        if ARGS.upgrade:
+            CLI.console.print(f"{setting.BANNER_HELP}\n")
+            upgrade_manager = UpgradeManager()
+            upgrade_manager.upgrade()
+            exit(0)
 
         # Exibe as categorias de módulos disponíveis
         if ARGS.types:
