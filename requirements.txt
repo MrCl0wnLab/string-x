@@ -20,3 +20,6 @@ sqlite3-utils==3.35.1   # Para módulo out:sqlite
 # Processamento de Dados
 lxml==4.9.3              # Parser XML/HTML mais rápido
 beautifulsoup4==4.12.2
+
+# Function decoration for backoff and retry
+backoff==2.2.1

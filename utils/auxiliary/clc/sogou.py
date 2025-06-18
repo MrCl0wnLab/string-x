@@ -14,6 +14,8 @@ import random
 from bs4 import BeautifulSoup
 from core.format import Format
 from urllib.parse import urljoin
+import backoff
+from requests.exceptions import RequestException
 
 class SogouDorker(BaseModule):
     """
@@ -91,7 +93,13 @@ class SogouDorker(BaseModule):
             self.set_result("\n".join(results))
         except Exception as e:
             self.set_result(f"✗ Erro na busca: {str(e)}")
-    
+
+    @backoff.on_exception(
+        backoff.expo,
+        RequestException,
+        max_tries=3,
+        max_time=30
+    )
     def _search_sogou(self, dork: str) -> list:
         """
         Realiza busca no Sogou usando paginação dinâmica e extrai resultados.
@@ -161,7 +169,7 @@ class SogouDorker(BaseModule):
                 
                 return self._filter_and_deduplicate(results, max_results)
                 
-        except Exception as e:
+        except RequestException as e:
             self.set_result(f"✗ Erro ao conectar ao Sogou: {str(e)}")
             return []
 

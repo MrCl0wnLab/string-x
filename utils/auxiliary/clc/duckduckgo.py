@@ -15,6 +15,8 @@ from bs4 import BeautifulSoup
 from core.format import Format
 from urllib.parse import urljoin, urlparse
 import json
+import backoff
+from requests.exceptions import RequestException
 
 class DuckDuckGoDorker(BaseModule):
     """
@@ -96,6 +98,12 @@ class DuckDuckGoDorker(BaseModule):
         except Exception as e:
             self.set_result(f"✗ Erro na busca: {str(e)}")
     
+    @backoff.on_exception(
+        backoff.expo,
+        RequestException,
+        max_tries=3,
+        max_time=30
+    )
     def _search_duckduckgo(self, dork: str) -> list:
         """
         Realiza busca no DuckDuckGo usando diferentes URLs e extrai resultados.
@@ -176,7 +184,7 @@ class DuckDuckGoDorker(BaseModule):
                 
                 return unique_results
                 
-        except Exception as e:
+        except RequestException as e:
             self.set_result(f"✗ Erro ao conectar ao DuckDuckGo: {str(e)}")
             return []
 

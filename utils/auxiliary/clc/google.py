@@ -17,6 +17,8 @@ from core.format import Format
 import logging
 import json
 from typing import List, Dict, Optional, Any, Tuple
+import backoff
+from requests.exceptions import RequestException
 
 class GoogleDorker(BaseModule):
     """
@@ -230,6 +232,12 @@ class GoogleDorker(BaseModule):
 
         return cookies
     
+    @backoff.on_exception(
+        backoff.expo,
+        RequestException,
+        max_tries=3,
+        max_time=30
+    ) 
     def _make_request(self, 
                      url: str, 
                      config: Dict[str, str],
@@ -262,7 +270,7 @@ class GoogleDorker(BaseModule):
                 # Faz a requisição
                 response = client.get(url, headers=headers, cookies=cookies,)
                 return response.text
-        except Exception as e:
+        except RequestException as e:
             if debug_mode:
                 self.set_result(f"⚠️ Erro na requisição para {config['host']}: {str(e)}")
             return None

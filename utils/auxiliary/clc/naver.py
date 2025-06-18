@@ -14,6 +14,8 @@ import random
 from bs4 import BeautifulSoup
 from core.format import Format
 from urllib.parse import urljoin, urlparse
+import backoff
+from requests.exceptions import RequestException
 
 class NaverDorker(BaseModule):
     """
@@ -91,6 +93,12 @@ class NaverDorker(BaseModule):
         except Exception as e:
             self.set_result(f"✗ Erro na busca: {str(e)}")
     
+    @backoff.on_exception(
+        backoff.expo,
+        RequestException,
+        max_tries=3,
+        max_time=30
+    )
     def _search_naver(self, dork: str) -> list:
         """
         Realiza busca no Naver usando paginação e extrai resultados.
@@ -164,7 +172,7 @@ class NaverDorker(BaseModule):
                 
                 return unique_results
                 
-        except Exception as e:
+        except RequestException as e:
             self.set_result(f"✗ Erro ao conectar ao Naver: {str(e)}")
             return []
 

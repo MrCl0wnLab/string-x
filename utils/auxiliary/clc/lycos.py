@@ -14,6 +14,8 @@ import random
 from bs4 import BeautifulSoup
 from core.format import Format
 from urllib.parse import urljoin, urlparse
+import backoff
+from requests.exceptions import RequestException
 
 class LycosDorker(BaseModule):
     """
@@ -88,6 +90,12 @@ class LycosDorker(BaseModule):
         except Exception as e:
             self.set_result(f"✗ Erro na busca: {str(e)}")
     
+    @backoff.on_exception(
+        backoff.expo,
+        RequestException,
+        max_tries=3,
+        max_time=30
+    ) 
     def _search_lycos(self, dork: str) -> list:
         """
         Realiza busca no Lycos usando paginação automática e extrai resultados.
@@ -163,7 +171,7 @@ class LycosDorker(BaseModule):
                         else:
                             break
                         
-                    except Exception as e:
+                    except RequestException as e:
                         # Parar em caso de erro
                         break
                 

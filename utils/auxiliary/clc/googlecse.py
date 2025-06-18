@@ -12,6 +12,8 @@ import re
 import time
 import httpx
 import urllib.parse
+import backoff
+from requests.exceptions import RequestException
 
 class GoogleCSEDorker(BaseModule):
     """
@@ -224,7 +226,13 @@ class GoogleCSEDorker(BaseModule):
             return False
         
         return True
-
+    
+    @backoff.on_exception(
+        backoff.expo,
+        RequestException,
+        max_tries=3,
+        max_time=30
+    )
     def _make_request(self, url: str) -> str | bool:
         """
         Faz uma requisição HTTP para a URL especificada.
@@ -268,7 +276,7 @@ class GoogleCSEDorker(BaseModule):
                 else:
                     self.set_result(f"⚠️ Erro ao acessar {url}: {response.status_code}")
                     return False
-        except httpx.RequestError as e:
+        except RequestException as e:
             self.set_result(f"⚠️ Erro de requisição: {e}")
             return False
     
