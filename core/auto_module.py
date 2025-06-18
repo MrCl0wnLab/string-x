@@ -5,9 +5,12 @@ Este módulo contém a classe AutoModulo que é utilizada para importar automati
 módulos e instanciar suas classes. Utiliza importação dinâmica baseada no tipo e nome
 do módulo para carregar e executar funcionalidades específicas.
 """
+import copy
 import importlib
 import inspect
 from core.style_cli import StyleCli
+import functools
+from typing import Dict, Optional
 
 class AutoModulo:
     """
@@ -24,6 +27,8 @@ class AutoModulo:
         name_module (str): Nome do módulo (ex: "email", "domain")
         class_instance: Instância da classe carregada
     """
+    _module_cache: Dict[str, object] = {}
+
     def __init__(self, type_module_name_module: str):
         """
         Inicializa o AutoModulo com o tipo e nome do módulo.
@@ -59,7 +64,8 @@ class AutoModulo:
             return False
         return True
 
-    def load_module(self):
+    @functools.lru_cache(maxsize=50)
+    def load_module(self) -> Optional[object]:
         """
         Carrega o módulo e instancia a classe definida nele.
         
@@ -68,6 +74,11 @@ class AutoModulo:
         Returns:
             object | None: Instância da classe carregada ou None se houver erro
         """
+        cache_key = f"{self.type_module}:{self.name_module}"
+        if cache_key in self._module_cache:
+            # Retornar cópia do módulo cached
+            return copy.deepcopy(self._module_cache[cache_key])
+        
         if not self._valid_type_module:
             self._cli.console.print("[!] Invalid type_module or name_module format")
             return None
@@ -76,6 +87,7 @@ class AutoModulo:
             obj_centrao = self._instantiate_class()
             if obj_centrao:
                 self.class_instance = obj_centrao
+                self._module_cache[cache_key] = self.class_instance
                 return obj_centrao
             else:
                 self._cli.console.print("[!] Failed to instantiate class from module")
