@@ -6,6 +6,7 @@ no motor de busca DuckDuckGo, permitindo a extração de resultados usando difer
 tipos de dorks de busca.
 """
 from core.basemodule import BaseModule
+from core.user_agent_generator import UserAgentGenerator
 import httpx
 import re
 from urllib.parse import quote_plus, unquote
@@ -49,14 +50,6 @@ class DuckDuckGoDorker(BaseModule):
             'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:duckduckgo" -pm',
             'proxy': str(),  # Proxies para requisições (opcional)
         }
-        
-        self.user_agents = [
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36',
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:90.0) Gecko/20100101 Firefox/90.0',
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Safari/605.1.15',
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.59'
-        ]
         
         # URLs de busca do DuckDuckGo com diferentes estratégias
         self.search_url_templates = [
@@ -122,7 +115,7 @@ class DuckDuckGoDorker(BaseModule):
         
         # Headers básicos para simular navegador
         headers = {
-            'User-Agent': random.choice(self.user_agents),
+            'User-Agent': UserAgentGenerator.get_random_lib(),
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
             'Accept-Language': 'en-US,en;q=0.9,pt-BR;q=0.8,pt;q=0.7',
             'Accept-Encoding': 'gzip, deflate, br',

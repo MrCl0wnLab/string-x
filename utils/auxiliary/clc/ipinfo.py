@@ -6,6 +6,7 @@ endereços IP utilizando a API do ipinfo.io, incluindo localização geográfica
 ASN, organização, entre outros dados.
 """
 from core.basemodule import BaseModule
+from core.user_agent_generator import UserAgentGenerator
 import httpx
 import json
 import socket
@@ -119,7 +120,7 @@ class IPInfo(BaseModule):
             base_url = f"https://ipinfo.io/{ip}/json"
             headers = {
                 'Accept': 'application/json',
-                'User-Agent': 'STRX/1.0 (https://github.com/MrCl0wnLab/string-x)'
+                'User-Agent': UserAgentGenerator.get_random_lib()
             }
             
             # Adiciona token de API se disponível (prioriza opção, depois variável de ambiente)

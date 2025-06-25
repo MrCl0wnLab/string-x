@@ -7,6 +7,7 @@ e realizando as consultas de forma sequencial.
 """
 from config import setting
 from core.basemodule import BaseModule
+from core.user_agent_generator import UserAgentGenerator
 import random
 import re
 import time
@@ -249,7 +250,7 @@ class GoogleCSEDorker(BaseModule):
         
         # Headers para simular um navegador real e evitar detecção como bot
         headers = {
-            'User-Agent': self._get_useragent(),  # User agent aleatório gerado dinamicamente
+            'User-Agent': UserAgentGenerator.get_random_lib(),  # User agent aleatório gerado dinamicamente
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
             'Accept-Language': 'en-US,en;q=0.5',
             'Referer': 'https://cse.google.com/cse',  # Referer do Google CSE
@@ -279,23 +280,3 @@ class GoogleCSEDorker(BaseModule):
         except RequestException as e:
             self.set_result(f"⚠️ Erro de requisição: {e}")
             return False
-    
-    def _get_useragent(self) -> str:
-        """
-        Generates a random user agent string mimicking the format of various software versions.
-
-        The user agent string is composed of:
-        - Lynx version: Lynx/x.y.z where x is 2-3, y is 8-9, and z is 0-2
-        - libwww version: libwww-FM/x.y where x is 2-3 and y is 13-15
-        - SSL-MM version: SSL-MM/x.y where x is 1-2 and y is 3-5
-        - OpenSSL version: OpenSSL/x.y.z where x is 1-3, y is 0-4, and z is 0-9
-
-        Returns:
-            str: A randomly generated user agent string.
-        """
-        # Gera versões aleatórias de diferentes componentes para criar user agent único
-        lynx_version = f"Lynx/{random.randint(2, 3)}.{random.randint(8, 9)}.{random.randint(0, 2)}"
-        libwww_version = f"libwww-FM/{random.randint(2, 3)}.{random.randint(13, 15)}"
-        ssl_mm_version = f"SSL-MM/{random.randint(1, 2)}.{random.randint(3, 5)}"
-        openssl_version = f"OpenSSL/{random.randint(1, 3)}.{random.randint(0, 4)}.{random.randint(0, 9)}"
-        return f"{lynx_version} {libwww_version} {ssl_mm_version} {openssl_version}"

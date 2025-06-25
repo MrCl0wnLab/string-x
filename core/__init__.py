@@ -10,6 +10,7 @@ Este pacote contém os módulos centrais do String-X, incluindo:
 - basemodule: Classe base para módulos auxiliares
 - filelocal: Manipulação de arquivos locais
 - randomvalue: Geração de valores aleatórios
+- user_agent_generator: Geração de User-Agents específicos por plataforma
 - request: Requisições HTTP
 - func_format: Processamento de funções em templates
 - banner: Exibição de banners ASCII

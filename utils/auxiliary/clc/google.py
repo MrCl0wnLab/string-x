@@ -5,17 +5,14 @@ Este módulo implementa funcionalidade para realizar buscas avançadas (dorking)
 no motor de busca Google, com técnicas avançadas para evitar detecção de bots.
 """
 from core.basemodule import BaseModule
+from core.user_agent_generator import UserAgentGenerator
 import httpx
 import re
-import zlib
-import brotli
 from urllib.parse import quote_plus, unquote, urlencode
 import time
 import random
 from bs4 import BeautifulSoup
 from core.format import Format
-import logging
-import json
 from typing import List, Dict, Optional, Any, Tuple
 import backoff
 from requests.exceptions import RequestException
@@ -100,25 +97,6 @@ class GoogleDorker(BaseModule):
         except Exception as e:
             self.set_result(f"✗ Erro na busca: {str(e)}")
     
-    def _get_useragent(self) -> str:
-        """
-        Generates a random user agent string mimicking the format of various software versions.
-
-        The user agent string is composed of:
-        - Lynx version: Lynx/x.y.z where x is 2-3, y is 8-9, and z is 0-2
-        - libwww version: libwww-FM/x.y where x is 2-3 and y is 13-15
-        - SSL-MM version: SSL-MM/x.y where x is 1-2 and y is 3-5
-        - OpenSSL version: OpenSSL/x.y.z where x is 1-3, y is 0-4, and z is 0-9
-
-        Returns:
-            str: A randomly generated user agent string.
-        """
-        lynx_version = f"Lynx/{random.randint(2, 3)}.{random.randint(8, 9)}.{random.randint(0, 2)}"
-        libwww_version = f"libwww-FM/{random.randint(2, 3)}.{random.randint(13, 15)}"
-        ssl_mm_version = f"SSL-MM/{random.randint(1, 2)}.{random.randint(3, 5)}"
-        openssl_version = f"OpenSSL/{random.randint(1, 3)}.{random.randint(0, 4)}.{random.randint(0, 9)}"
-        return f"{lynx_version} {libwww_version} {ssl_mm_version} {openssl_version}"
-
     def _first_search_google(self, dork: str) -> List[str]:
         """
         Realiza busca no Google usando diferentes técnicas.
@@ -253,7 +231,7 @@ class GoogleDorker(BaseModule):
 
         # Criar headers simulando um navegador real
         headers = {
-            'User-Agent': self._get_useragent(),
+            'User-Agent': UserAgentGenerator.get_random_lib(),
             'Accept':  "*/*",
             'Referer': f'https://{config["host"]}/',
         }
