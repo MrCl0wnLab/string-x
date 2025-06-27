@@ -553,24 +553,26 @@ Módulos para coleta de informações externas, APIs e análise:
 
 | Módulo        | Descrição                                 | Exemplo CLI |
 |---------------|-------------------------------------------|-------------|
+| `archive`     | Coleta URLs arquivadas do Wayback Machine | `-module "clc:archive"` |
+| `bing`        | Realiza buscas com dorks no Bing          | `-module "clc:bing"` |
+| `crtsh`       | Coleta certificados SSL/TLS e subdomínios | `-module "clc:crtsh"` |
 | `dns`         | Coleta registros DNS (A, MX, TXT, NS)     | `-module "clc:dns"` |
+| `duckduckgo`  | Realiza buscas com dorks no DuckDuckGo    | `-module "clc:duckduckgo"` |
 | `emailverify` | Verifica validade de emails (MX, SMTP)    | `-module "clc:emailverify"` |
+| `ezilon`      | Realiza buscas com dorks no Ezilon        | `-module "clc:ezilon"` |
 | `geoip`       | Geolocalização de IPs                     | `-module "clc:geoip"` |
+| `google`      | Realiza buscas com dorks no Google        | `-module "clc:google"` |
+| `googlecse`   | Realiza buscas com dorks usando Google CSE| `-module "clc:googlecse"` |
 | `ipinfo`      | Scanner de portas IP/host                 | `-module "clc:ipinfo"` |
+| `lycos`       | Realiza buscas com dorks no Lycos         | `-module "clc:lycos"` |
+| `naver`       | Realiza buscas com dorks no Naver (Coreano)| `-module "clc:naver"` |
 | `netscan`     | Scanner de rede (hosts, serviços)         | `-module "clc:netscan"` |
 | `shodan`      | Consulta API Shodan                       | `-module "clc:shodan"` |
+| `sogou`       | Realiza buscas com dorks no Sogou (Chinês)| `-module "clc:sogou"` |
 | `subdomain`   | Enumeração de subdomínios                 | `-module "clc:subdomain"` |
 | `virustotal`  | Consulta API VirusTotal                   | `-module "clc:virustotal"` |
 | `whois`       | Consulta WHOIS de domínios                | `-module "clc:whois"` |
-| `bing`        | Realiza buscas com dorks no Bing| `-module "clc:bing"` |
-| `duckduckgo`  | Realiza buscas com dorks no DuckDuckGo | `-module "clc:duckduckgo"` |
-| `google`      | Realiza buscas com dorks no Google | `-module "clc:google"` |
-| `googlecse`   | Realiza buscas com dorks usando Google CSE | `-module "clc:googlecse"` |
-| `lycos`       | Realiza buscas com dorks no Lycos | `-module "clc:lycos"` |
-| `naver`       | Realiza buscas com dorks no Naver (Coreano) | `-module "clc:naver"` |
-| `ezilon`      | Realiza buscas com dorks no Ezilon | `-module "clc:ezilon"` |
-| `sogou`       | Realiza buscas com dorks no Sogou (Chinês) | `-module "clc:sogou"` |
-| `yahoo`       | Realiza buscas com dorks no Yahoo | `-module "clc:yahoo"` |
+| `yahoo`       | Realiza buscas com dorks no Yahoo         | `-module "clc:yahoo"` |
 
 ```bash
 # Exemplo: Coletar informações DNS
