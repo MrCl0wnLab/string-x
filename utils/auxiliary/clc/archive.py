@@ -36,7 +36,7 @@ class archive(BaseModule):
         # Metadados do módulo
         self.meta = {
             'name': 'Wayback Machine URL Collector',
-            "author": "OSINT Brazuca",
+            "author": "MrCl0wn",
             'version': '1.0',
             'description': 'Coleta URLs arquivadas de um domínio usando o Wayback Machine (archive.org)',
             'type': 'collector'
