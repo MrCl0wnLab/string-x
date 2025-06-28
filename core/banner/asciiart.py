@@ -4,6 +4,7 @@ Módulo de banners ASCII.
 Este módulo contém a classe AsciiBanner responsável por carregar e exibir
 banners ASCII armazenados em arquivos, incluindo seleção aleatória de banners.
 """
+import os
 import random
 from core.filelocal import FileLocal
 from core.style_cli import StyleCli
@@ -27,7 +28,9 @@ class AsciiBanner:
         """
         self._file = FileLocal()
         self._cli = StyleCli()
-        self._files_path = './core/banner/asciiart'
+        # Usar caminho absoluto para o diretório de banners
+        SCRIPT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        self._files_path = os.path.join(SCRIPT_DIR, 'core', 'banner', 'asciiart')
 
     def _get_banner_file(self, banner_name: str):
         """
@@ -39,7 +42,10 @@ class AsciiBanner:
         Returns:
             list: Lista de arquivos que correspondem ao nome
         """
-        banners = self._get_banner_list().get('files')
+        banner_list = self._get_banner_list()
+        if not banner_list or 'files' not in banner_list:
+            return []
+        banners = banner_list.get('files')
         return [name for name in banners if banner_name in str(name)]
 
     def _get_banner_list(self):
@@ -49,7 +55,10 @@ class AsciiBanner:
         Returns:
             dict: Dicionário com lista de arquivos de banner
         """
-        return self._file.list_file_dir(self._files_path)
+        try:
+            return self._file.list_file_dir(self._files_path)
+        except Exception:
+            return {'files': []}
 
     def show(self, banner_name: str):
         """
@@ -59,16 +68,22 @@ class AsciiBanner:
             banner_name (str): Nome do banner a ser exibido
             
         Returns:
-            str: Conteúdo do banner ou None se não encontrado
+            str: Conteúdo do banner ou string vazia se não encontrado
         """
         if banner_name:
             try:
-                file_name = str(self._get_banner_file(banner_name)[0])
-                txt_line, data_return = self._file.open_file("./" + file_name, 'r')
+                banner_files = self._get_banner_file(banner_name)
+                if not banner_files:  # Verificar se a lista está vazia
+                    return ""
+                
+                file_name = str(banner_files[0])
+                txt_line, data_return = self._file.open_file(file_name, 'r')
                 if txt_line:
                     return ''.join(txt_line)
-            except Exception:
-                self._cli.console.print_exception(max_frames=3)
+            except (IndexError, FileNotFoundError):
+                # Silenciar exceção e retornar string vazia
+                return ""
+        return ""
 
     def show_random(self):
         """
@@ -77,8 +92,18 @@ class AsciiBanner:
         Returns:
             str: Conteúdo do banner aleatório
         """
-        banner_list = self._get_banner_list()
-        random.shuffle(banner_list.get('files'))
-        banner_file_name = banner_list.get('files')[0].stem
-        return self.show(banner_file_name)
+        try:
+            banner_list = self._get_banner_list()
+            if not banner_list or not banner_list.get('files'):
+                return ""
+                
+            files = banner_list.get('files')
+            random.shuffle(files)
+            if not files:
+                return ""
+                
+            banner_file_name = files[0].stem
+            return self.show(banner_file_name)
+        except Exception:
+            return ""
 

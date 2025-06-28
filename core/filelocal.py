@@ -4,6 +4,7 @@ Módulo responsável pela manipulação de arquivos locais.
 Este módulo contém classes para operações de arquivo, incluindo leitura, escrita,
 manipulação de CSV e navegação em diretórios, além de configurações INI.
 """
+import os
 import csv
 import pathlib
 import configparser
@@ -60,6 +61,8 @@ class FileLocal:
         """
         if value and file:
             try:
+                # Create directory if it doesn't exist
+                os.makedirs(os.path.dirname(file), exist_ok=True)
                 with open(file, mode) as data_return:
                     data_return.writelines(value)
             except Exception:
@@ -75,6 +78,8 @@ class FileLocal:
         """
         if value and file:
             try:
+                # Create directory if it doesn't exist
+                os.makedirs(os.path.dirname(file), exist_ok=True)
                 with open(file, 'w') as data_return:
                     data_return.write(value)
             except Exception:

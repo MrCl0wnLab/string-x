@@ -27,6 +27,12 @@ import os
 import sys
 import signal
 import select
+
+# CRÍTICO: Configurar caminhos ANTES de qualquer import local
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+os.chdir(SCRIPT_DIR)
+sys.path.insert(0, SCRIPT_DIR)
+
 from config import setting
 from core.command import Command
 from core.filelocal import FileLocal
@@ -35,9 +41,6 @@ from core.style_cli import StyleCli, RichArgumentParser, RawDescriptionHelpForma
 from core.help_modules import *
 from core.upgrade_manager import UpgradeManager
 
-
-# Ensure the correct path is in sys.path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 __author__ = "Cleiton Pinheiro aka MrCl0wn"
 __maintainer__ = "Cleiton Pinheiro aka MrCl0wn"

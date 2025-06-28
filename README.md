@@ -90,6 +90,16 @@ chmod +x strx
 
 ```
 
+### Criando link simbólico (opcional) 
+```bash
+# Verificar o link atual
+ls -la /usr/local/bin/strx
+
+# Se necessário, recriar o link
+sudo rm /usr/local/bin/strx
+sudo ln -sf $HOME/Documentos/string-x/strx /usr/local/bin/strx
+```
+
 ## ⏫ Sistema de Upgrade com Git
 usa comandos git para baixar novas versões
 ```bash

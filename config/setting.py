@@ -1,28 +1,15 @@
-"""
-Módulo de configuração global para String-X.
+import os
+import sys
 
-Este módulo contém todas as configurações globais utilizadas pela ferramenta String-X,
-incluindo configurações de logs, banners e threads.
+# Obter diretório do projeto
+SCRIPT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-Variables:
-    TIME (str): Timestamp atual no formato DD-MM-YYYY-HH para nomenclatura de arquivos
-    LOG_DIRECTORY (str): Diretório onde serão salvos os arquivos de log
-    LOG_FILE_LAST (str): Nome do arquivo que armazena o último valor processado
-    LOG_FILE_OUTPUT (str): Nome do arquivo de saída com timestamp
-    BANNER (AsciiBanner): Instância da classe de banners ASCII
-    BANNER_DEFAULT (str): Banner padrão a ser exibido
-    BANNER_RANDOM (bool): Flag para exibir banner aleatório
-    BANNER_HELP (str): Banner que será exibido na ajuda
-    THREAD_MAX (int): Número máximo de threads permitidas
-    DEFAULT_OUTPUT_FORMAT (str): Formato padrão para saída (txt, csv, json)
-    OUTPUT_FORMATS (list): Formatos de saída suportados
-"""
 from datetime import datetime
 from core.banner.asciiart import AsciiBanner
 
-# LOGS
+# LOGS - Use absolute paths
 TIME = datetime.now().strftime("%d-%m-%Y-%H")
-LOG_DIRECTORY = './output'
+LOG_DIRECTORY = os.path.join(SCRIPT_DIR, 'output')  # Absolute path for output directory
 LOG_FILE_LAST = 'output-last-value.log'
 LOG_FILE_OUTPUT = f'{LOG_DIRECTORY}/output-{TIME}.log'
 
@@ -44,5 +31,17 @@ THREAD_MAX = 10
 DEFAULT_OUTPUT_FORMAT = 'txt'
 OUTPUT_FORMATS = ['txt', 'csv', 'json']
 
-# GOOGLE CSE ID LIST
-GOOGLE_CSE_ID_LIST =  open('config/google_cse_id.txt', 'r').read().splitlines()
+# Remove duplicate SCRIPT_DIR definition
+PROJECT_ROOT = SCRIPT_DIR  # No need to redefine, already defined above
+
+# Usar caminho absoluto
+GOOGLE_CSE_ID_FILE = os.path.join(SCRIPT_DIR, 'config', 'google_cse_id.txt')
+try:
+    with open(GOOGLE_CSE_ID_FILE, 'r') as f:
+        GOOGLE_CSE_ID_LIST = f.read().splitlines()
+except FileNotFoundError:
+    # Criar arquivo vazio se não existir
+    GOOGLE_CSE_ID_LIST = []
+    os.makedirs(os.path.dirname(GOOGLE_CSE_ID_FILE), exist_ok=True)
+    with open(GOOGLE_CSE_ID_FILE, 'w') as f:
+        f.write('')
