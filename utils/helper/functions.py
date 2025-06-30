@@ -12,13 +12,14 @@ import base64
 import socket
 import hashlib
 import random
+import asyncio
 import datetime
 import ipaddress
 import subprocess
 from urllib.parse import urlparse
-from core.request import Request
 from core.format import Format
 from core.randomvalue import RandomValue
+from core.http_async import HTTPClient
 
 
 class Funcs:
@@ -236,16 +237,36 @@ class Funcs:
         Returns:
             str: Resposta da requisição ou string vazia
         """
-        if value.startswith('https://') or value.startswith('http://'):
-            request = Request()
+        if value.startswith('http'):
             try:
-                result = request.get(value)
-                if result:
-                    return result
+                request = HTTPClient()
+                results = asyncio.run(request.send_request([value]))[0]
+                if results.is_success or results.is_error or results.is_redirect:
+                    return f"{results.status_code}; {Funcs.title_html(results.text)}"
+                elif results.is_exception:
+                    return f"exception; {str(results.exception)}"
             except Exception:
                 pass
         return str() 
     
+    @staticmethod
+    def title_html(html: str) -> str:
+        """
+        Extrai o título de uma página HTML.
+        
+        Args:
+            html (str): Conteúdo HTML da página
+            
+        Returns:
+            str: Título extraído da página ou string vazia
+        """
+        if html:
+            title = Format.clear_value(Format.regex(html, r'<title[^>]*>([^<]+)</title>')[0])
+            title = title.replace("'", "")
+            if title:
+                return title
+        return str()
+
     @staticmethod
     def urlencode(value: str) -> str:
         """

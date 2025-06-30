@@ -1,29 +1,32 @@
 # Dependências core
-rich==13.6.0
+rich>=13.6.0
 typing_extensions>=4.12.2
-PyYAML==6.0.1
+PyYAML>=6.0.1
 
 # HTTP e Requisições
-httpx==0.27.0
-requests==2.31.0
-urllib3==2.0.7
+httpx>=0.27.0
+requests>=2.31.0
+urllib3>=2.0.7
 
 # Requisições e Networking
-dnspython==2.4.2
-python-whois==0.8.0
+dnspython>=2.4.2
+python-whois>=0.8.0
 
 # Bancos de Dados
-mysql-connector-python==8.2.0
-sqlite-utils==3.35.2
+mysql-connector-python>=8.2.0
+sqlite-utils>=3.35.2
 
 # Processamento de Dados
-beautifulsoup4==4.12.2
+beautifulsoup4>=4.12.2
 
 # Function decoration for backoff and retry
-backoff==2.2.1
+backoff>=2.2.1
 
 # Para upgrade manager
-packaging==23.2
+packaging>=23.2
 
 # Validação de dados (necessário para google-generativeai)
 pydantic>=2.0.0
+
+# Uso de asyncio
+asyncio>=3.4.3
