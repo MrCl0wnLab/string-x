@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "string-x"
+version = "0.1.0"
+description = "Ferramenta de Automatização para Manipulação de Strings"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "MrCl0wn", email = "mrcl0wnlab@gmail.com"}
+]
+
+[project.scripts]
+strx = "strx:main"
