@@ -115,9 +115,12 @@ class FileLocal:
         Returns:
             dict: Dicionário com chaves 'dirs' e 'files' contendo listas de caminhos
         """
+        if dir_str is None or 'banner' not in dir_str:
+            return {'dirs': [], 'files': []}
+        
         dir_list: list = []
         file_list: list = []
-        skipe_list: list = ["etc", "bin", "home"]
+        skipe_list: list = ["etc", "bin"]
         if dir_str:
             try:
                 obj_path = pathlib.Path(dir_str)

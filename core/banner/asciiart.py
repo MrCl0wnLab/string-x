@@ -58,6 +58,7 @@ class AsciiBanner:
         try:
             return self._file.list_file_dir(self._files_path)
         except Exception:
+            self._cli.console.print_exception(max_frames=3)
             return {'files': []}
 
     def show(self, banner_name: str):

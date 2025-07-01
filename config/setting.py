@@ -19,7 +19,7 @@ REQUEST_USER_AGENT = 'String-X/1.0'
 # BANNERS
 BANNER = AsciiBanner()
 BANNER_DEFAULT = 'strx'
-BANNER_RANDOM = False
+BANNER_RANDOM = True
 BANNER_HELP = (
     BANNER.show_random() if BANNER_RANDOM is True else BANNER.show(BANNER_DEFAULT)
 )
