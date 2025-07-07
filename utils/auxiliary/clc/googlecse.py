@@ -4,6 +4,21 @@ Módulo CLC para coleta usando Google Custom Search Engine (CSE).
 Este módulo implementa funcionalidade para realizar buscas usando múltiplas
 Custom Search Engines do Google, coletando automaticamente os tokens necessários
 e realizando as consultas de forma sequencial.
+
+O Google Custom Search Engine (CSE) é uma API oficial do Google que oferece
+benefícios significativos para coleta de dados:
+- Acesso programático e legítimo ao índice do Google
+- Contorna muitas das limitações de scraping do Google Search
+- Permite maior volume de consultas sem bloqueios (dentro das cotas da API)
+- Oferece resultados consistentes e estruturados em formato JSON
+- Possibilita a personalização dos parâmetros de busca
+- Evita captchas e bloqueios temporários comuns ao scraping direto
+
+Este módulo utiliza múltiplas chaves CSE configuradas para:
+- Distribuir consultas entre diferentes CSEs
+- Evitar atingir limites de quota individual
+- Garantir redundância caso uma das chaves seja limitada
+- Oferecer resultados mais abrangentes através de diferentes configurações de CSE
 """
 from config import setting
 from core.basemodule import BaseModule
@@ -11,10 +26,11 @@ from core.user_agent_generator import UserAgentGenerator
 import random
 import re
 import time
-import httpx
 import urllib.parse
 import backoff
 from requests.exceptions import RequestException
+import asyncio
+from core.http_async import HTTPClient
 
 class GoogleCSEDorker(BaseModule):
     """
@@ -39,6 +55,9 @@ class GoogleCSEDorker(BaseModule):
             'description': 'Realiza buscas avançadas usando Google Custom Search Engine',
             'type': 'collector'
         }
+        
+        # Instância do cliente HTTP assíncrono
+        self.http_client = HTTPClient()
         
         # Opções configuráveis do módulo
         self.options = {
@@ -82,15 +101,31 @@ class GoogleCSEDorker(BaseModule):
         if results := self._search(dork, cse_id, info_js):
             self.set_result("\n".join(results))
    
-            
     def _search(self, dork: str, cse_id: str, info_js: dict) -> list:
         """
-        Realiza a busca usando httpx e retorna os resultados.
+        Wrapper síncrono para realizar a busca e retornar os resultados.
         
         Args:
             dork: Query de busca (já codificada para URL)
             cse_id: ID do Custom Search Engine
             info_js: Dicionário com tokens necessários para autenticação
+            
+        Returns:
+            list: Lista de URLs encontradas
+        """
+        return asyncio.run(self._search_async(dork, cse_id, info_js))
+            
+    async def _search_async(self, dork: str, cse_id: str, info_js: dict) -> list:
+        """
+        Versão assíncrona para realizar a busca e retornar os resultados.
+        
+        Args:
+            dork: Query de busca (já codificada para URL)
+            cse_id: ID do Custom Search Engine
+            info_js: Dicionário com tokens necessários para autenticação
+            
+        Returns:
+            list: Lista de URLs encontradas
         """
         results = []
         max_pages = int(self.options.get('max_pages', 5))
@@ -102,16 +137,16 @@ class GoogleCSEDorker(BaseModule):
                 # A URL simula uma requisição do frontend do Google CSE
                 page_count = num_page * 10  # Converte para contador do Google
                 url_request = f"https://cse.google.com/cse/element/v1?rsz=filtered_cse&num={page_count}&hl=en&source=gcsc&start={page_count}&cselibv={info_js['cse_lib_version']}&cx={cse_id}&q={dork}&safe=off&rurl=https://cse.google.com/cse?cx={cse_id}&q={dork}&num=500&hl=en&as_qdr=all&start={num_page}&sa=N&cse_tok={info_js['cse_token']}&exp=cc,apo&callback=google.search.cse.api5630"
-                html_content = self._make_request(url_request)
+                html_content = await self._make_request_async(url_request)
                 
                 # Processa a resposta se obtida com sucesso
-                if  html_content:
+                if html_content:
                     # Extrai URLs dos resultados da busca
                     if url_info_js_result := self._extract_urls_from_html(html_content):
                         results.extend(url_info_js_result)
 
                 # Implementa delay para evitar rate limiting
-                time.sleep(self.options.get('delay', 3))
+                await asyncio.sleep(self.options.get('delay', 3))
         
         except Exception as e:
             return []
@@ -119,7 +154,19 @@ class GoogleCSEDorker(BaseModule):
     
     def _get_info_from_cse(self, cse_id: str) -> dict:
         """
-        Obtém informações de configuração do Google CSE.
+        Wrapper síncrono para obter informações de configuração do Google CSE.
+        
+        Args:
+            cse_id (str): ID do CSE
+            
+        Returns:
+            dict: Dicionário com tokens de configuração
+        """
+        return asyncio.run(self._get_info_from_cse_async(cse_id))
+    
+    async def _get_info_from_cse_async(self, cse_id: str) -> dict:
+        """
+        Versão assíncrona para obter informações de configuração do Google CSE.
         
         Faz requisição ao arquivo JavaScript de configuração do CSE
         e extrai tokens necessários para autenticação nas buscas.
@@ -132,7 +179,7 @@ class GoogleCSEDorker(BaseModule):
         """
         # URL do arquivo de configuração JavaScript do CSE
         config_url = f"https://cse.google.com/cse/cse.js?cx={cse_id}"
-        response = str(self._make_request(config_url))
+        response = await self._make_request_async(config_url)
 
         if not response:
             return {}
@@ -234,18 +281,30 @@ class GoogleCSEDorker(BaseModule):
         max_tries=3,
         max_time=30
     )
-    def _make_request(self, url: str) -> str | bool:
+    def _make_request(self, url: str) -> str:
         """
-        Faz uma requisição HTTP para a URL especificada.
+        Wrapper síncrono para fazer uma requisição HTTP para a URL especificada.
         
-        Utiliza httpx para fazer requisições HTTP com headers apropriados
+        Args:
+            url (str): URL para fazer a requisição
+            
+        Returns:
+            str: Conteúdo da resposta ou string vazia em caso de erro
+        """
+        return asyncio.run(self._make_request_async(url))
+    
+    async def _make_request_async(self, url: str) -> str:
+        """
+        Versão assíncrona para fazer uma requisição HTTP para a URL especificada.
+        
+        Utiliza HTTPClient para fazer requisições HTTP com headers apropriados
         para simular um navegador real e evitar bloqueios.
         
         Args:
             url (str): URL para fazer a requisição
             
         Returns:
-            str: Conteúdo da resposta ou False em caso de erro
+            str: Conteúdo da resposta ou string vazia em caso de erro
         """
         
         # Headers para simular um navegador real e evitar detecção como bot
@@ -260,23 +319,34 @@ class GoogleCSEDorker(BaseModule):
             'Accept-Encoding': 'gzip, deflate, br, zstd'
         }
 
-        # Configurar parâmetros do cliente httpx
-        client_kwargs = {
+        # Configurar parâmetros para o HTTPClient
+        kwargs = {
+            'headers': headers,
             'timeout': self.options.get('timeout', 30),
             'follow_redirects': True,
-            'proxy': self.options.get('proxy') if self.options.get('proxy') else None
         }
-
+        
+        if self.options.get('proxy'):
+            kwargs['proxies'] = {
+                'http://': self.options.get('proxy'),
+                'https://': self.options.get('proxy')
+            }
 
         try:
-            # Cria cliente httpx com timeout configurável e redirecionamentos automáticos
-            with httpx.Client(verify=False, **client_kwargs) as client:
-                response = client.get(url, headers=headers)
-                if response.status_code == 200:
-                    return response.text
-                else:
-                    self.set_result(f"⚠️ Erro ao acessar {url}: {response.status_code}")
-                    return False
-        except RequestException as e:
+            # Fazer requisição assíncrona
+            response = await self.http_client.send_request([url], **kwargs)
+            
+            if not response or isinstance(response[0], Exception):
+                self.set_result(f"⚠️ Erro ao acessar {url}: {str(response[0]) if response else 'Sem resposta'}")
+                return ""
+                
+            response = response[0]
+            
+            if response.status_code == 200:
+                return response.text
+            else:
+                self.set_result(f"⚠️ Erro ao acessar {url}: {response.status_code}")
+                return ""
+        except Exception as e:
             self.set_result(f"⚠️ Erro de requisição: {e}")
-            return False
+            return ""

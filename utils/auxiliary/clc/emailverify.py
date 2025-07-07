@@ -4,6 +4,16 @@ Módulo collector para verificação de emails.
 Este módulo implementa funcionalidade para verificação de emails,
 incluindo validação de sintaxe, verificação de domínio MX e
 verificação de SMTP quando possível.
+
+A verificação de emails é um processo importante para:
+- Validar se o formato do email está correto sintaticamente
+- Verificar se o domínio possui servidores MX configurados para receber emails
+- Tentar verificar a existência da conta de email (quando a opção SMTP está ativada)
+- Reduzir taxa de rejeição em campanhas de email marketing
+- Identificar emails potencialmente falsos ou inexistentes em investigações OSINT
+
+Este módulo implementa diferentes níveis de verificação, desde a simples
+validação de formato até tentativas de conexão SMTP para verificação de existência.
 """
 from core.basemodule import BaseModule
 

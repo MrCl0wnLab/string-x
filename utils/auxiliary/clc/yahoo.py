@@ -4,10 +4,22 @@ Módulo CLC para dorking usando motor de busca Yahoo.
 Este módulo implementa funcionalidade para realizar buscas avançadas (dorking)
 no motor de busca Yahoo, permitindo a extração de resultados usando diferentes
 tipos de dorks de busca.
+
+O Yahoo Search, embora tenha perdido participação de mercado para o Google,
+ainda oferece vantagens significativas para OSINT:
+- Algoritmo de indexação e classificação diferente dos concorrentes
+- Menor probabilidade de bloqueio para ferramentas de scraping
+- Indexação de conteúdos que podem estar ausentes em outros buscadores
+- Operadores de busca avançada com comportamentos distintos
+- Resultados potencialmente diferentes para as mesmas consultas
+- Menor implementação de filtros de personalização
+
+A diversificação de fontes de busca é fundamental para investigações OSINT
+abrangentes, e o Yahoo pode revelar informações que não seriam encontradas
+utilizando apenas um motor de busca principal como o Google.
 """
 from core.basemodule import BaseModule
 from core.user_agent_generator import UserAgentGenerator
-import httpx
 import re
 from urllib.parse import quote_plus
 import time
@@ -15,8 +27,12 @@ import random
 from bs4 import BeautifulSoup
 from core.format import Format
 from urllib.parse import urljoin, urlparse, unquote
+import asyncio
+from core.http_async import HTTPClient
 import backoff
 from requests.exceptions import RequestException
+import asyncio
+from core.http_async import HTTPClient
 
 class YahooDorker(BaseModule):
     """
@@ -40,6 +56,9 @@ class YahooDorker(BaseModule):
             'description': 'Realiza buscas avançadas com dorks no Yahoo',
             'type': 'collector'
         }
+        
+        # Instância do cliente HTTP assíncrono
+        self.http_client = HTTPClient()
         
         self.options = {
             'data': str(),  # Dork para busca
@@ -117,43 +136,49 @@ class YahooDorker(BaseModule):
             'DNT': '1'
         }
 
-        # Configurar parâmetros do cliente httpx
-        client_kwargs = {
+        # Configurar parâmetros para HTTPClient
+        kwargs = {
+            'headers': headers,
             'timeout': self.options.get('timeout', 30),
             'follow_redirects': True,
-            'proxy': self.options.get('proxy') if self.options.get('proxy') else None
         }
         
+        if self.options.get('proxy'):
+            kwargs['proxies'] = {
+                'http://': self.options.get('proxy'),
+                'https://': self.options.get('proxy')
+            }
+        
         try:
-            with httpx.Client(verify=False, **client_kwargs) as client:
-                # Estratégia 1: URL padrão com paginação
-
-                # Usar os três templates de URL
-                for _, template in enumerate(self.search_url_templates):
-                    search_url = ""
-                    search_url = template.format(DORK=encoded_dork)
-                    try:
-                        response = client.get(search_url, headers=headers)
-                        if response.status_code != 200:
-                            continue
-                        
-                        # Extrair resultados
-                        page_results = set(self._extract_urls(response.text))
-  
-                        # Filtrar duplicidades
-                        for url in page_results:
-                            if url:
-                                results.append(url)
-                        # Respeitar delay entre requisições
-                        time.sleep(self.options.get('delay', 2) + random.uniform(0.5, 1.5))
-                        
-                    except Exception as e:
-                        # Continuar para o próximo formato em caso de erro
+            # Usar o método assíncrono do HTTPClient
+            for _, template in enumerate(self.search_url_templates):
+                search_url = template.format(DORK=encoded_dork)
+                try:
+                    # Executar requisição assíncrona
+                    async def make_request():
+                        return await self.http_client.send_request([search_url], **kwargs)
+                    response = asyncio.run(make_request())[0]
+                    
+                    if response.status_code != 200:
                         continue
-
-                return results
+                    
+                    # Extrair resultados
+                    page_results = set(self._extract_urls(response.text))
+                    
+                    # Filtrar duplicidades
+                    for url in page_results:
+                        if url:
+                            results.append(url)
+                    # Respeitar delay entre requisições
+                    time.sleep(self.options.get('delay', 2) + random.uniform(0.5, 1.5))
+                    
+                except Exception:
+                    # Continuar para o próximo formato em caso de erro
+                    continue
+            
+            return results
                 
-        except RequestException as e:
+        except Exception as e:
             self.set_result(f"✗ Erro ao conectar ao Yahoo: {str(e)}")
             return []
         

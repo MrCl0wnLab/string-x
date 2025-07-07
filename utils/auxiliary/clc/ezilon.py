@@ -4,10 +4,20 @@ Módulo CLC para dorking usando motor de busca Ezilon.
 Este módulo implementa funcionalidade para realizar buscas avançadas (dorking)
 no motor de busca Ezilon, permitindo a extração de resultados usando diferentes
 tipos de dorks de busca.
+
+Ezilon é um motor de busca e diretório web menos conhecido que pode ser útil para:
+- Descobrir resultados que não aparecem em motores de busca mainstream
+- Obter informações alternativas quando outros motores limitam resultados
+- Contornar limitações de rate impostas por buscadores mais populares
+- Encontrar sites e conteúdos indexados apenas em diretórios específicos
+- Diversificar fontes de informação em investigações OSINT
+
+O uso de motores de busca alternativos como o Ezilon permite uma cobertura
+mais abrangente durante a coleta de informações e pode revelar conteúdos
+que não foram indexados ou são difíceis de encontrar em outros buscadores.
 """
 from core.basemodule import BaseModule
 from core.user_agent_generator import UserAgentGenerator
-import httpx
 import re
 from urllib.parse import quote_plus, unquote
 import time
@@ -17,6 +27,8 @@ from core.format import Format
 from urllib.parse import urljoin, urlparse
 import backoff
 from requests.exceptions import RequestException
+import asyncio
+from core.http_async import HTTPClient
 
 class EzilonDorker(BaseModule):
     """
@@ -41,6 +53,9 @@ class EzilonDorker(BaseModule):
             'type': 'collector'
         }
         
+        # Instância do cliente HTTP assíncrono
+        self.http_client = HTTPClient()
+        
         self.options = {
             'data': str(),  # Dork para busca
             'delay': 2,     # Delay entre requisições (segundos)
@@ -59,7 +74,6 @@ class EzilonDorker(BaseModule):
         self.search_url_templates = [
             "https://find.ezilon.com/search.php?q={DORK}&v={REGION}",
             "https://find.ezilon.com/search.php?q={DORK}&start={START}&t=&v={REGION}&f="
-
         ]
 
         # Regiões disponíveis para busca
@@ -104,7 +118,19 @@ class EzilonDorker(BaseModule):
     )
     def _search_ezilon(self, dork: str) -> list:
         """
-        Realiza busca no Ezilon usando paginação e extrai resultados.
+        Wrapper síncrono para busca no Ezilon usando paginação e extrair resultados.
+        
+        Args:
+            dork (str): Query de busca (dork)
+            
+        Returns:
+            list: Lista de URLs válidas encontradas
+        """
+        return asyncio.run(self._search_ezilon_async(dork))
+
+    async def _search_ezilon_async(self, dork: str) -> list:
+        """
+        Versão assíncrona para busca no Ezilon usando paginação e extrair resultados.
         
         Args:
             dork (str): Query de busca (dork)
@@ -131,64 +157,64 @@ class EzilonDorker(BaseModule):
             'Referer': 'https://find.ezilon.com/',
         }
 
-        # Configurar parâmetros do cliente httpx
-        client_kwargs = {
+        # Configurar parâmetros para o HTTPClient
+        kwargs = {
+            'headers': headers,
             'timeout': self.options.get('timeout', 30),
             'follow_redirects': True,
-            'proxy': self.options.get('proxy') if self.options.get('proxy') else None
         }
-
+        
+        if self.options.get('proxy'):
+            kwargs['proxies'] = {
+                'http://': self.options.get('proxy'),
+                'https://': self.options.get('proxy')
+            }
         
         try:
-            with httpx.Client(verify=False, **client_kwargs) as client:
-                # Buscar em múltiplas páginas usando o padrão de URL do Ezilon
-                for page in range(1, max_pages):
-                    try:
-                        page_urls = self._search_page(client, headers, encoded_dork, page)
-                        results.extend(page_urls)
-                        
-                        # Limitar número de resultados
-                        #if len(results) >= max_results:
-                        #    break
-                        
-                        # Se não encontrou resultados nesta página, parar
-                        if not page_urls:
-                            break
-                        
-                        # Delay entre páginas
-                        time.sleep(self.options.get('delay', 2) + random.uniform(0.5, 1.5))
-                        
-                    except Exception as e:
-                        # Continuar para próxima página em caso de erro
-                        continue
-                
-                # Remover duplicatas e filtrar URLs válidas
-                unique_results = []
-                seen = set()
-                
-                for url in results:
-                    if url and url not in seen and self._is_valid_url(url):
-                        seen.add(url)
-                        unique_results.append(url)
-                        
-                        #if len(unique_results) >= max_results:
-                        #    break
-                
-                return unique_results
-                
-        except RequestException as e:
+            # Buscar em múltiplas páginas usando o padrão de URL do Ezilon
+            for page in range(1, max_pages):
+                try:
+                    page_urls = await self._search_page_async(headers, encoded_dork, page, kwargs)
+                    results.extend(page_urls)
+                    
+                    # Se não encontrou resultados nesta página, parar
+                    if not page_urls:
+                        break
+                    
+                    # Delay entre páginas
+                    await asyncio.sleep(self.options.get('delay', 2) + random.uniform(0.5, 1.5))
+                    
+                except Exception as e:
+                    # Continuar para próxima página em caso de erro
+                    continue
+            
+            # Remover duplicatas e filtrar URLs válidas
+            unique_results = []
+            seen = set()
+            
+            for url in results:
+                if url and url not in seen and self._is_valid_url(url):
+                    seen.add(url)
+                    unique_results.append(url)
+                    
+                    if len(unique_results) >= max_results:
+                        break
+            
+            return unique_results
+            
+        except Exception as e:
             self.set_result(f"✗ Erro ao conectar ao Ezilon: {str(e)}")
             return []
 
-    def _search_page(self, client: httpx.Client, headers: dict, encoded_dork: str, page: int) -> list:
+    async def _search_page_async(self, headers: dict, encoded_dork: str, page: int, kwargs: dict) -> list:
         """
-        Realiza busca em uma página específica do Ezilon.
+        Versão assíncrona para realizar busca em uma página específica do Ezilon.
         
         Args:
-            client (httpx.Client): Cliente HTTP
             headers (dict): Headers da requisição
             encoded_dork (str): Query codificada
             page (int): Número da página
+            kwargs (dict): Argumentos adicionais para a requisição
             
         Returns:
             list: Lista de URLs encontradas na página
@@ -200,31 +226,33 @@ class EzilonDorker(BaseModule):
             # Página 3: start=30
             # Página 4: start=45
             # Padrão: start = (page - 1) * 15
-            # URLS de exemplo:
-            #   https://find.ezilon.com/search.php?q={DORK}&v=usa
-            #   https://find.ezilon.com/search.php?q={DORK}&start=15&t=&v=usa&f=
-            #   https://find.ezilon.com/search.php?q={DORK}&start=30&t=&v=usa&f=
-            #   https://find.ezilon.com/search.php?q={DORK}&start=45&t=&v=usa&f=
+            start = 0 if page == 1 else (page - 1) * 15
             
+            # Escolher uma região aleatória para variar as buscas
+            region = random.choice(self.regions)
+            
+            # Montar URL de busca com base no template adequado
             if page == 1:
-                # Primeira página: usar template simples
-                #search_url = f"https://find.ezilon.com/search.php?q={encoded_dork}&v=usa"
-                search_url = self.search_url_templates[0].replace("{DORK}", encoded_dork).replace("{REGION}", random.choice(self.regions))
+                search_url = self.search_url_templates[0].format(DORK=encoded_dork, REGION=region)
             else:
-                # Páginas subsequentes: calcular start
-                start = (page - 1) * 15
-                #search_url = f"https://find.ezilon.com/search.php?q={encoded_dork}&start={start}&t=&v=usa&f="
-                search_url = self.search_url_templates[0].replace("{DORK}", encoded_dork).replace("{START}", str(start)).replace("{REGION}", random.choice(self.regions))
+                search_url = self.search_url_templates[1].format(DORK=encoded_dork, START=start, REGION=region)
             
-            response = client.get(search_url, headers=headers)
+            # Fazer requisição HTTP
+            response = await self.http_client.send_request([search_url], **kwargs)
+            
+            if not response or isinstance(response[0], Exception):
+                return []
+                
+            response = response[0]
             
             if response.status_code == 200:
+                # Extrair URLs do HTML de resposta
                 return self._extract_urls_from_response(response.text)
+            else:
+                return []
             
         except Exception as e:
-            pass
-        
-        return []
+            return []
 
     def _extract_urls_from_response(self, html_content: str) -> list:
         """
@@ -242,44 +270,46 @@ class EzilonDorker(BaseModule):
             # Tentar extrair URLs usando BeautifulSoup primeiro
             soup = BeautifulSoup(html_content, 'html.parser')
             
-            # Buscar links de resultados com seletores específicos do Ezilon
-            selectors = [
-                'a[href*="http"]',  # Links gerais HTTP/HTTPS
-                '.result a[href^="http"]',  # Links em resultados
-                '.search-result a[href^="http"]',  # Links em resultados de busca
-                '.listing a[href^="http"]',  # Links em listagens
-                'h3 a[href^="http"]',  # Links em títulos h3
-                'div a[href^="http"]',  # Links em divs
-                'td a[href^="http"]',  # Links em células de tabela
-            ]
+            # Buscar elementos específicos da estrutura do Ezilon
+            # Padrão de resultado do Ezilon: <div class="web_result">...</div>
+            result_containers = soup.select('.web_result, .result_container, .result, .search_result')
             
-            for selector in selectors:
-                links = soup.select(selector)
-                for link in links:
-                    href = link.get('href', '')
+            for container in result_containers:
+                # Tentar extrair URL do título do resultado
+                title_link = container.select_one('a.title, a.result_title, h3 a')
+                if title_link and 'href' in title_link.attrs:
+                    href = title_link.get('href')
                     if href and self._is_external_url(href):
-                        # Decodificar URLs do Ezilon se necessário
-                        decoded_url = self._decode_ezilon_url(href)
-                        if decoded_url:
-                            urls.append(decoded_url)
+                        urls.append(href)
+                
+                # Também buscar outros links no container
+                other_links = container.select('a[href^="http"]')
+                for link in other_links:
+                    href = link.get('href')
+                    if href and self._is_external_url(href):
+                        urls.append(href)
             
-            # Se não encontrar com BeautifulSoup, usar regex
+            # Se não encontrar com seletores específicos, buscar links gerais
             if not urls:
-                # Padrões regex para extrair URLs
+                general_links = soup.select('a[href^="http"]')
+                for link in general_links:
+                    href = link.get('href')
+                    if href and self._is_external_url(href):
+                        urls.append(href)
+                        
+            # Se ainda não encontrou, usar regex
+            if not urls:
+                # Padrões regex para capturar URLs
                 url_patterns = [
-                    r'href=["\']([^"\']*https?://[^"\']+)["\']',  # URLs HTTP/HTTPS
-                    r'"url":\s*"([^"]*https?://[^"]*)"',  # URLs em JSON
-                    r'<a[^>]*href=["\']([^"\']*\.(?:com|org|net|edu|gov|mil)[^"\']*)["\']',  # URLs com domínios específicos
-                    r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+',  # URLs diretas
+                    r'href=["\']([^"\']*https?://[^"\']+)["\']',
+                    r'<a[^>]*href=["\']([^"\']*https?://[^"\']+)["\']'
                 ]
                 
                 for pattern in url_patterns:
                     matches = re.findall(pattern, html_content, re.IGNORECASE)
                     for match in matches:
                         if self._is_external_url(match):
-                            decoded_url = self._decode_ezilon_url(match)
-                            if decoded_url:
-                                urls.append(decoded_url)
+                            urls.append(match)
             
         except Exception as e:
             # Fallback para regex em caso de erro
@@ -288,55 +318,19 @@ class EzilonDorker(BaseModule):
                 matches = re.findall(pattern, html_content, re.IGNORECASE)
                 for match in matches:
                     if self._is_external_url(match):
-                        decoded_url = self._decode_ezilon_url(match)
-                        if decoded_url:
-                            urls.append(decoded_url)
+                        urls.append(match)
             except:
                 pass
         
-        return urls
-
-    def _decode_ezilon_url(self, encoded_url: str) -> str:
-        """
-        Decodifica URLs do Ezilon que podem estar codificadas ou redirecionadas.
+        # Remover URLs duplicadas preservando a ordem
+        unique_urls = []
+        seen = set()
+        for url in urls:
+            if url not in seen:
+                seen.add(url)
+                unique_urls.append(url)
         
-        Args:
-            encoded_url (str): URL potencialmente codificada
-            
-        Returns:
-            str: URL decodificada ou None se inválida
-        """
-        if not encoded_url:
-            return None
-        
-        try:
-            # Se a URL contém redirecionamento do Ezilon, extrair URL real
-            if 'ezilon.com' in encoded_url and ('url=' in encoded_url or 'link=' in encoded_url):
-                # Tentar extrair parâmetro url ou link
-                url_match = re.search(r'[?&](?:url|link)=([^&]+)', encoded_url)
-                if url_match:
-                    decoded_part = unquote(url_match.group(1))
-                    if decoded_part.startswith(('http://', 'https://')):
-                        return decoded_part
-            
-            # Se a URL está diretamente codificada
-            if encoded_url.startswith('http') and '%' in encoded_url:
-                decoded_url = unquote(encoded_url)
-                if decoded_url.startswith(('http://', 'https://')):
-                    return decoded_url
-            
-            # Se não tem codificação especial, verificar se é uma URL válida diretamente
-            if encoded_url.startswith(('http://', 'https://')):
-                return encoded_url
-            
-            # Se começar com //, adicionar https:
-            if encoded_url.startswith('//'):
-                return 'https:' + encoded_url
-            
-        except Exception:
-            pass
-        
-        return None
+        return unique_urls
 
     def _is_external_url(self, url: str) -> bool:
         """
@@ -352,7 +346,7 @@ class EzilonDorker(BaseModule):
             return False
         
         # Verificar se não é URL interna do Ezilon
-        ezilon_domains = ['ezilon.com', 'find.ezilon.com']
+        ezilon_domains = ['ezilon.com', 'findezilon.com', 'find.ezilon.com']
         for domain in ezilon_domains:
             if domain in url.lower():
                 return False
@@ -375,7 +369,7 @@ class EzilonDorker(BaseModule):
         
         # Lista de domínios a serem filtrados
         blocked_domains = [
-            'ezilon.com', 'find.ezilon.com',
+            'ezilon.com', 'findezilon.com', 'find.ezilon.com',
             'wikipedia.org', 'wikimedia.org',
             'facebook.com', 'twitter.com', 'instagram.com', 'youtube.com',
             'linkedin.com', 'reddit.com', 'pinterest.com'

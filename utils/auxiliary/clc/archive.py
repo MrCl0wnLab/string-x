@@ -4,15 +4,22 @@ Módulo CLC para coleta de URLs arquivadas no Wayback Machine (archive.org).
 Este módulo implementa um coletor de URLs arquivadas utilizando o serviço
 Wayback Machine do Internet Archive (archive.org), permitindo recuperar 
 histórico de URLs associadas a um domínio específico.
+
+O Internet Archive mantém snapshots históricos de páginas web, o que é útil para:
+- Análise histórica de conteúdos que não estão mais disponíveis online
+- Mapeamento de mudanças em sites ao longo do tempo
+- Recuperação de informações de versões anteriores de páginas
+- Descoberta de subdomínios e paths que podem não estar mais ativos
 """
 from core.basemodule import BaseModule
 from core.user_agent_generator import UserAgentGenerator
-import httpx
 import urllib.parse
 import re
 import backoff
 from requests.exceptions import RequestException
 import warnings
+import asyncio
+from core.http_async import HTTPClient
 
 # Suprimir avisos relacionados a verificação de certificados
 warnings.filterwarnings("ignore", category=Warning)
@@ -32,6 +39,9 @@ class archive(BaseModule):
         """
         # Chama o inicializador da classe pai para configurar estruturas básicas
         super().__init__()
+        
+        # Instância do cliente HTTP assíncrono
+        self.http_client = HTTPClient()
         
         # Metadados do módulo
         self.meta = {
@@ -112,13 +122,25 @@ class archive(BaseModule):
 
     @backoff.on_exception(
         backoff.expo,
-        (httpx.HTTPError, httpx.TimeoutException, RequestException),
+        RequestException,
         max_tries=3,
         max_time=30
     )
     def _query_archive(self, domain: str) -> list:
         """
-        Realiza consulta ao Wayback Machine e retorna as URLs arquivadas.
+        Wrapper síncrono para realizar consulta ao Wayback Machine e retornar as URLs arquivadas.
+        
+        Args:
+            domain (str): Domínio para pesquisa
+            
+        Returns:
+            list: Lista de URLs arquivadas para o domínio
+        """
+        return asyncio.run(self._query_archive_async(domain))
+        
+    async def _query_archive_async(self, domain: str) -> list:
+        """
+        Versão assíncrona para realizar consulta ao Wayback Machine e retornar as URLs arquivadas.
         
         Args:
             domain (str): Domínio para pesquisa
@@ -129,27 +151,37 @@ class archive(BaseModule):
         # Sanitiza o domínio de entrada (remove espaços e caracteres não imprimíveis)
         domain = re.sub(r'[^\x20-\x7E]', '', domain).strip()
         url = f'http://web.archive.org/cdx/search/cdx?url=*.{domain}/*&output=text&fl=original&collapse=urlkey'
-
-        
+        print(url)
         # Prepara headers para requisição
         headers = {
             'User-Agent': UserAgentGenerator.get_random_user_agent(),
             'Accept': 'text/plain',
         }
         
-        # Configurar parâmetros do cliente httpx
-        client_kwargs = {
+        # Configurar parâmetros para o HTTPClient
+        kwargs = {
+            'headers': headers,
             'timeout': self.options.get('timeout', 30),
             'follow_redirects': True,
-            'proxy': self.options.get('proxy') if self.options.get('proxy') else None
         }
+        
+        if self.options.get('proxy'):
+            kwargs['proxies'] = {
+                'http://': self.options.get('proxy'),
+                'https://': self.options.get('proxy')
+            }
         
         self.log_debug(f"URL de consulta: {url}")
         
         try:
-            # Realiza a requisição
-            with httpx.Client(verify=False, **client_kwargs) as client:
-                response = client.get(url, headers=headers)
+            # Realiza a requisição assíncrona
+            response = await self.http_client.send_request([url], **kwargs)
+            
+            if not response or isinstance(response[0], Exception):
+                self.log_debug(f"Erro na requisição: {str(response[0]) if response else 'Sem resposta'}")
+                return []
+                
+            response = response[0]
             
             self.log_debug(f"Status da resposta: {response.status_code}")
             

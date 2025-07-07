@@ -3,6 +3,19 @@ Módulo collector para escaneamento de rede.
 
 Este módulo implementa funcionalidade para escaneamento de redes,
 descoberta de hosts ativos e análise de serviços em rede.
+
+O escaneamento de rede é uma técnica fundamental para mapeamento de infraestrutura
+e descoberta de ativos, permitindo:
+- Identificar hosts ativos em uma rede ou faixa de IPs
+- Detectar portas abertas e serviços disponíveis
+- Mapear a topologia de rede básica
+- Identificar potenciais alvos para análises posteriores
+- Descobrir dispositivos e serviços expostos indevidamente
+- Realizar reconhecimento passivo e ativo de infraestrutura
+
+Este módulo suporta diferentes métodos de escaneamento, incluindo
+ping sweeps para descoberta de hosts, port scans para identificação
+de serviços disponíveis e fingerprinting básico de serviços.
 """
 import ipaddress
 import threading

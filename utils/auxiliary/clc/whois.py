@@ -3,6 +3,22 @@ Módulo CLC para coleta de informações WHOIS.
 
 Este módulo implementa um coletor de informações WHOIS que consulta
 dados de registro de domínios.
+
+O WHOIS é um protocolo que fornece informações de registro de domínios e
+endereços IP, revelando dados importantes para investigações OSINT:
+- Informações sobre proprietários de domínios (quando não protegidas por privacy)
+- Datas de criação, atualização e expiração do domínio
+- Servidores de nomes autoritativos (nameservers)
+- Registrar responsável pelo domínio
+- Informações de contato administrativas e técnicas
+- Status do domínio (ativo, bloqueado, transferência pendente)
+
+Estas informações são valiosas para:
+- Verificar a legitimidade de um site
+- Identificar relacionamentos entre diferentes domínios
+- Estabelecer cronologia e idade de um domínio
+- Correlacionar domínios pertencentes à mesma entidade
+- Identificar informações de contato para investigações adicionais
 """
 from core.basemodule import BaseModule
 import whois

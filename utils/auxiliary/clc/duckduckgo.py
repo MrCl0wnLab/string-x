@@ -4,20 +4,34 @@ Módulo CLC para dorking usando motor de busca DuckDuckGo.
 Este módulo implementa funcionalidade para realizar buscas avançadas (dorking)
 no motor de busca DuckDuckGo, permitindo a extração de resultados usando diferentes
 tipos de dorks de busca.
+
+O DuckDuckGo é um motor de busca que respeita a privacidade e oferece recursos de
+pesquisa avançada que podem ser utilizados para OSINT. Este coletor permite utilizar
+técnicas de dorking para:
+- Identificar arquivos sensíveis expostos publicamente
+- Descobrir diretórios e estruturas de sites
+- Encontrar informações específicas usando operadores de busca
+- Realizar buscas sem tracking ou personalização de resultados
+- Identificar potenciais vulnerabilidades expostas na web
+
+O uso do DuckDuckGo também evita limitações de rate e captchas frequentes
+encontrados em outros motores de busca.
 """
-from core.basemodule import BaseModule
-from core.user_agent_generator import UserAgentGenerator
-import httpx
 import re
-from urllib.parse import quote_plus, unquote
+import json
 import time
 import random
-from bs4 import BeautifulSoup
-from core.format import Format
-from urllib.parse import urljoin, urlparse
-import json
 import backoff
+from bs4 import BeautifulSoup
+from urllib.parse import urljoin, urlparse
+from urllib.parse import quote_plus, unquote
 from requests.exceptions import RequestException
+from core.basemodule import BaseModule
+from core.user_agent_generator import UserAgentGenerator
+from core.format import Format
+
+import asyncio
+from core.http_async import HTTPClient
 
 class DuckDuckGoDorker(BaseModule):
     """
@@ -112,42 +126,47 @@ class DuckDuckGoDorker(BaseModule):
         
         # Codificar a query
         encoded_dork = quote_plus(dork)
-        
+        proxy = self.options.get('proxy') if self.options.get('proxy') else None
         # Headers básicos para simular navegador
-        headers = {
-            'User-Agent': UserAgentGenerator.get_random_lib(),
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.9,pt-BR;q=0.8,pt;q=0.7',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'DNT': '1',
-            'Connection': 'keep-alive',
-            'Upgrade-Insecure-Requests': '1',
+        kwargs = {
+            'headers' : {
+                'User-Agent': UserAgentGenerator.get_random_lib(),
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.9,pt-BR;q=0.8,pt;q=0.7',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'DNT': '1',
+                'Connection': 'keep-alive',
+                'Upgrade-Insecure-Requests': '1',
+                },
+            'proxies': {
+                'http://': proxy,
+                'https://': proxy
+                },
+            'timeout': self.options.get('timeout', 30),  # Timeout de 10 segundos,
+            'follow_redirects': True,
         }
 
-        # Configurar parâmetros do cliente httpx
-        client_kwargs = {
-            'timeout': self.options.get('timeout', 30),
-            'follow_redirects': True,
-            'proxy': self.options.get('proxy') if self.options.get('proxy') else None
-        }
+
+        request = HTTPClient()
         
         try:
-            with httpx.Client(verify=False, **client_kwargs) as client:
-                # Tentar diferentes templates de URL
+            
                 for template in self.search_url_templates:
                     search_url = template.format(DORK=encoded_dork)
                     
                     try:
                         # Adicionar referer específico para cada tipo de busca
                         if 'lite.duckduckgo.com' in search_url:
-                            headers['Referer'] = 'https://lite.duckduckgo.com/'
+                            kwargs['headers']['Referer'] = 'https://lite.duckduckgo.com/'
                         elif 'html' in search_url:
-                            headers['Referer'] = 'https://duckduckgo.com/html/'
+                            kwargs['headers']['Referer'] = 'https://duckduckgo.com/html/'
                         else:
-                            headers['Referer'] = 'https://duckduckgo.com/'
-                        
-                        response = client.get(search_url, headers=headers)
-                        
+                            kwargs['headers']['Referer'] = 'https://duckduckgo.com/'
+
+                        async def make_request():
+                            return await request.send_request([search_url], **kwargs)
+                        response = asyncio.run(make_request())[0]
+
                         if response.status_code == 200:
                             page_urls = self._extract_urls_from_response(response.text)
                             results.extend(page_urls)

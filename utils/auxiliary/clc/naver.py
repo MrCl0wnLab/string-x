@@ -4,10 +4,21 @@ Módulo CLC para dorking usando motor de busca Naver.
 Este módulo implementa funcionalidade para realizar buscas avançadas (dorking)
 no motor de busca Naver, permitindo a extração de resultados usando diferentes
 tipos de dorks de busca.
+
+Naver é o maior motor de busca da Coreia do Sul, oferecendo vantagens específicas
+para OSINT e reconhecimento digital:
+- Cobertura extensa de conteúdo asiático, particularmente coreano
+- Indexação de sites e conteúdos que não aparecem em buscadores ocidentais
+- Algoritmo de busca diferente que pode revelar resultados exclusivos
+- Menor probabilidade de implementação de medidas anti-scraping para ferramentas ocidentais
+- Fonte valiosa para investigações relacionadas à região asiática
+
+A utilização de motores de busca regionais como Naver é especialmente importante
+para investigações que envolvam alvos ou operações na Ásia Oriental, permitindo
+acessar dados que podem estar ausentes ou menos visíveis em motores de busca ocidentais.
 """
 from core.basemodule import BaseModule
 from core.user_agent_generator import UserAgentGenerator
-import httpx
 import re
 from urllib.parse import quote_plus, unquote
 import time
@@ -17,6 +28,8 @@ from core.format import Format
 from urllib.parse import urljoin, urlparse
 import backoff
 from requests.exceptions import RequestException
+import asyncio
+from core.http_async import HTTPClient
 
 class NaverDorker(BaseModule):
     """
@@ -40,6 +53,9 @@ class NaverDorker(BaseModule):
             'description': 'Realiza buscas avançadas com dorks no Naver',
             'type': 'collector'
         }
+        
+        # Instância do cliente HTTP assíncrono
+        self.http_client = HTTPClient()
         
         self.options = {
             'data': str(),  # Dork para busca
@@ -94,7 +110,19 @@ class NaverDorker(BaseModule):
     )
     def _search_naver(self, dork: str) -> list:
         """
-        Realiza busca no Naver usando paginação e extrai resultados.
+        Wrapper síncrono para realizar busca no Naver usando paginação e extrair resultados.
+        
+        Args:
+            dork (str): Query de busca (dork)
+            
+        Returns:
+            list: Lista de URLs válidas encontradas
+        """
+        return asyncio.run(self._search_naver_async(dork))
+    
+    async def _search_naver_async(self, dork: str) -> list:
+        """
+        Versão assíncrona para realizar busca no Naver usando paginação e extrair resultados.
         
         Args:
             dork (str): Query de busca (dork)
@@ -121,63 +149,68 @@ class NaverDorker(BaseModule):
             'Referer': 'https://search.naver.com/',
         }
 
-        # Configurar parâmetros do cliente httpx
-        client_kwargs = {
+        # Configurar parâmetros para o HTTPClient
+        kwargs = {
+            'headers': headers,
             'timeout': self.options.get('timeout', 30),
             'follow_redirects': True,
-            'proxy': self.options.get('proxy') if self.options.get('proxy') else None
         }
         
+        if self.options.get('proxy'):
+            kwargs['proxies'] = {
+                'http://': self.options.get('proxy'),
+                'https://': self.options.get('proxy')
+            }
+        
         try:
-            with httpx.Client(verify=False, **client_kwargs) as client:
-                # Buscar em múltiplas páginas usando o padrão de URL do Naver
-                for page in range(1, max_pages + 1):
-                    try:
-                        page_urls = self._search_page(client, headers, encoded_dork, page)
-                        results.extend(page_urls)
-                        
-                        # Limitar número de resultados
-                        if len(results) >= max_results:
-                            break
-                        
-                        # Se não encontrou resultados nesta página, parar
-                        if not page_urls:
-                            break
-                        
-                        # Delay entre páginas
-                        time.sleep(self.options.get('delay', 2) + random.uniform(0.5, 1.5))
-                        
-                    except Exception as e:
-                        # Continuar para próxima página em caso de erro
-                        continue
+            # Buscar em múltiplas páginas usando o padrão de URL do Naver
+            for page in range(1, max_pages + 1):
+                try:
+                    page_urls = await self._search_page_async(headers, encoded_dork, page, kwargs)
+                    results.extend(page_urls)
+                    
+                    # Limitar número de resultados
+                    if len(results) >= max_results:
+                        break
+                    
+                    # Se não encontrou resultados nesta página, parar
+                    if not page_urls:
+                        break
+                    
+                    # Delay entre páginas
+                    await asyncio.sleep(self.options.get('delay', 2) + random.uniform(0.5, 1.5))
+                    
+                except Exception as e:
+                    # Continuar para próxima página em caso de erro
+                    continue
+            
+            # Remover duplicatas e filtrar URLs válidas
+            unique_results = []
+            seen = set()
+            
+            for url in results:
+                if url and url not in seen and self._is_valid_url(url):
+                    seen.add(url)
+                    unique_results.append(url)
+                    
+                    if len(unique_results) >= max_results:
+                        break
+            
+            return unique_results
                 
-                # Remover duplicatas e filtrar URLs válidas
-                unique_results = []
-                seen = set()
-                
-                for url in results:
-                    if url and url not in seen and self._is_valid_url(url):
-                        seen.add(url)
-                        unique_results.append(url)
-                        
-                        if len(unique_results) >= max_results:
-                            break
-                
-                return unique_results
-                
-        except RequestException as e:
+        except Exception as e:
             self.set_result(f"✗ Erro ao conectar ao Naver: {str(e)}")
             return []
 
-    def _search_page(self, client: httpx.Client, headers: dict, encoded_dork: str, page: int) -> list:
+    async def _search_page_async(self, headers: dict, encoded_dork: str, page: int, kwargs: dict) -> list:
         """
-        Realiza busca em uma página específica do Naver.
+        Versão assíncrona para realizar busca em uma página específica do Naver.
         
         Args:
-            client (httpx.Client): Cliente HTTP
             headers (dict): Headers da requisição
             encoded_dork (str): Query codificada
             page (int): Número da página
+            kwargs (dict): Argumentos adicionais para a requisição
             
         Returns:
             list: Lista de URLs encontradas na página
@@ -203,7 +236,12 @@ class NaverDorker(BaseModule):
                 start = (page - 1) * 15 + 1 if page > 2 else 1
                 search_url = f"https://search.naver.com/search.naver?nso=&page={page}&query={encoded_dork}&sm=tab_pge&start={start}&where=web"
             
-            response = client.get(search_url, headers=headers)
+            response = await self.http_client.send_request([search_url], **kwargs)
+            
+            if not response or isinstance(response[0], Exception):
+                return []
+                
+            response = response[0]
             
             if response.status_code == 200:
                 return self._extract_urls_from_response(response.text)

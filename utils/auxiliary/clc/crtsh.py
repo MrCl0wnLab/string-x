@@ -4,6 +4,14 @@ Módulo CLC para coleta de certificados SSL/TLS de crt.sh.
 Este módulo implementa um coletor de informações de certificados SSL/TLS
 utilizando o Certificate Transparency Search (crt.sh), permitindo enumerar
 certificados e subdomínios associados a um domínio.
+
+O Certificate Transparency (CT) é um sistema que monitora e registra certificados
+SSL/TLS à medida que são emitidos em tempo real. O serviço crt.sh permite consultar
+esses logs, o que é útil para:
+- Enumeração de subdomínios de um determinado domínio
+- Descoberta de certificados emitidos historicamente
+- Identificação de certificados potencialmente maliciosos
+- Monitoramento de emissão de certificados para um domínio
 """
 from core.basemodule import BaseModule
 from core.user_agent_generator import UserAgentGenerator
@@ -14,6 +22,9 @@ import urllib.parse
 import backoff
 from requests.exceptions import RequestException
 import warnings
+
+import asyncio
+from core.http_async import HTTPClient
 
 # Suprimir avisos relacionados a verificação de certificados
 warnings.filterwarnings("ignore", category=Warning)
@@ -140,33 +151,33 @@ class CrtshCollector(BaseModule):
         encoded_domain = urllib.parse.quote(query_domain) # Encode properly
         # Constrói a URL final com parâmetros codificados adequadamente
         url = f"https://crt.sh/?q={encoded_domain}&output=json"
-        
+        proxy = self.options.get('proxy') if self.options.get('proxy') else None
 
-        # Prepara headers para requisição
-        headers = {
-            'User-Agent': UserAgentGenerator.get_random_user_agent(),
-            'Accept': 'application/json',
-        }
-        
-        # Configurar parâmetros do cliente httpx
-        client_kwargs = {
-            'timeout': self.options.get('timeout', 30),
+
+        kwargs = {
+            'headers' : {
+                'User-Agent': UserAgentGenerator.get_desktop_user_agent(),
+                'Accept': 'application/json',
+                },
+            'proxies': {
+                'http://': proxy,
+                'https://': proxy
+                },
+            'timeout': self.options.get('timeout', 30),  # Timeout de 10 segundos,
             'follow_redirects': True,
         }
-        
-        # Adiciona proxy se configurado
-        if proxy := self.options.get('proxy'):
-            client_kwargs['proxy'] = proxy
-            
+
         self.log_debug(f"URL de consulta: {url}")
-        self.log_debug(f"Parâmetros cliente: {client_kwargs}")
-        
+        self.log_debug(f"Parâmetros cliente: {kwargs}")
+        request = HTTPClient()
         try:
             # Realiza a requisição
-            with httpx.Client(verify=False, **client_kwargs) as client:
-                self.log_debug("Enviando requisição...")
-                response = client.get(url, headers=headers)
-                self.log_debug(f"Status code: {response.status_code}")
+            async def make_request():
+                return await request.send_request([url], **kwargs)
+            
+            self.log_debug("Enviando requisição...")     
+            response = asyncio.run(make_request())[0]
+            self.log_debug(f"Status code: {response.status_code}")
                 
             if response.status_code == 200:
                 try:

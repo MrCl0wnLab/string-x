@@ -4,10 +4,21 @@ Módulo CLC para dorking usando motor de busca Lycos.
 Este módulo implementa funcionalidade para realizar buscas avançadas (dorking)
 no motor de busca Lycos, permitindo a extração de resultados usando diferentes
 tipos de dorks de busca.
+
+Lycos é um dos motores de busca mais antigos ainda em operação, oferecendo
+vantagens específicas para OSINT:
+- Algoritmo de indexação e classificação diferente dos grandes buscadores
+- Menor uso de filtros de personalização e bolhas de informação
+- Menor probabilidade de limitação de consultas e bloqueio de bots
+- Potencial para encontrar conteúdos mais antigos ou históricos
+- Indexação de sites que podem não aparecer em buscadores principais
+
+A diversificação de fontes de busca é uma estratégia importante para OSINT,
+e o Lycos pode revelar informações que não são facilmente descobertas
+através dos motores de busca mainstream como Google ou Bing.
 """
 from core.basemodule import BaseModule
 from core.user_agent_generator import UserAgentGenerator
-import httpx
 import re
 from urllib.parse import quote_plus, unquote
 import time
@@ -17,6 +28,8 @@ from core.format import Format
 from urllib.parse import urljoin, urlparse
 import backoff
 from requests.exceptions import RequestException
+import asyncio
+from core.http_async import HTTPClient
 
 class LycosDorker(BaseModule):
     """
@@ -40,6 +53,9 @@ class LycosDorker(BaseModule):
             'description': 'Realiza buscas avançadas com dorks no Lycos',
             'type': 'collector'
         }
+        
+        # Instância do cliente HTTP assíncrono
+        self.http_client = HTTPClient()
         
         self.options = {
             'data': str(),  # Dork para busca
@@ -83,15 +99,66 @@ class LycosDorker(BaseModule):
         except Exception as e:
             self.set_result(f"✗ Erro na busca: {str(e)}")
     
-    @backoff.on_exception(
-        backoff.expo,
-        RequestException,
-        max_tries=3,
-        max_time=30
-    ) 
-    def _search_lycos(self, dork: str) -> list:
+    async def _get_keyvol_async(self, headers: dict) -> bool:
         """
-        Realiza busca no Lycos usando paginação automática e extrai resultados.
+        Versão assíncrona para obter o valor keyvol necessário para as buscas no Lycos.
+        
+        Args:
+            headers (dict): Headers da requisição
+            
+        Returns:
+            bool: True se conseguiu obter o keyvol, False caso contrário
+        """
+        try:
+            # Fazer requisição inicial para obter o keyvol
+            response = await self.http_client.send_request([self.base_url + self.search_path], 
+                                                         headers=headers, 
+                                                         follow_redirects=True)
+            
+            if not response or isinstance(response[0], Exception):
+                return False
+                
+            response = response[0]
+            
+            if response.status_code == 200:
+                html = response.text
+                
+                # Extrair keyvol usando regex baseado no código PHP fornecido
+                # Padrão: name="keyvol".*value=".*"
+                pattern = r'name="keyvol"[^>]*value="([^"]*)"'
+                match = re.search(pattern, html, re.IGNORECASE)
+               
+                if match:
+                    self.keyvol = match.group(1)
+                    return True
+                
+                # Tentar padrão alternativo
+                pattern_alt = r'<input[^>]*name=["\']keyvol["\'][^>]*value=["\']([^"\']*)["\']'
+                match_alt = re.search(pattern_alt, html, re.IGNORECASE)
+                if match_alt:
+                    self.keyvol = match_alt.group(1)
+                    return True
+                
+            return False
+            
+        except Exception as e:
+            return False
+
+    def _get_keyvol(self, headers: dict) -> bool:
+        """
+        Wrapper síncrono para obter o valor keyvol necessário para as buscas no Lycos.
+        
+        Args:
+            headers (dict): Headers da requisição
+            
+        Returns:
+            bool: True se conseguiu obter o keyvol, False caso contrário
+        """
+        return asyncio.run(self._get_keyvol_async(headers))
+
+    async def _search_lycos_async(self, dork: str) -> list:
+        """
+        Versão assíncrona para realizar busca no Lycos usando paginação automática e extrair resultados.
         
         Args:
             dork (str): Query de busca (dork)
@@ -118,73 +185,101 @@ class LycosDorker(BaseModule):
             'Referer': 'https://search.lycos.com/',
         }
 
-        # Configurar parâmetros do cliente httpx
-        client_kwargs = {
+        # Configurar parâmetros para o HTTPClient
+        kwargs = {
+            'headers': headers,
             'timeout': self.options.get('timeout', 30),
             'follow_redirects': True,
-            'proxy': self.options.get('proxy') if self.options.get('proxy') else None
         }
 
+        if self.options.get('proxy'):
+            kwargs['proxies'] = {
+                'http://': self.options.get('proxy'),
+                'https://': self.options.get('proxy')
+            }
+
         try:
-            with httpx.Client(verify=False, **client_kwargs) as client:
-                # Primeiro, obter o keyvol fazendo uma requisição inicial
-                if not self._get_keyvol(client, headers):
-                    self.set_result("✗ Erro ao obter keyvol do Lycos")
-                    return []
+            # Primeiro, obter o keyvol fazendo uma requisição inicial
+            if not await self._get_keyvol_async(headers):
+                self.set_result("✗ Erro ao obter keyvol do Lycos")
+                return []
                 
-                # Iniciar com a primeira página
-                next_page_url = f"{self.base_url}{self.search_path}?q={encoded_dork}&keyvol={self.keyvol}&pageInfo=Keywords={encoded_dork}&pn=1"
-                page_count = 0
+            # Iniciar com a primeira página
+            next_page_url = f"{self.base_url}{self.search_path}?q={encoded_dork}&keyvol={self.keyvol}&pageInfo=Keywords={encoded_dork}&pn=1"
+            page_count = 0
                 
-                # Buscar páginas usando paginação automática
-                while next_page_url and page_count < max_pages:
-                    try:
-                        response = client.get(next_page_url, headers=headers)
-                        
-                        if response.status_code == 200:
-                            # Extrair URLs da página atual
-                            page_urls = self._extract_urls_from_response(response.text)
-                            results.extend(page_urls)
-                            
-                            # Limitar número de resultados
-                            if len(results) >= max_results:
-                                break
-                            
-                            # Se não encontrou resultados nesta página, parar
-                            if not page_urls:
-                                break
-                            
-                            # Buscar próxima página usando link de paginação
-                            next_page_url = self._get_next_page_url(response.text)
-                            page_count += 1
-                            
-                            # Delay entre páginas
-                            if next_page_url:
-                                time.sleep(self.options.get('delay', 2) + random.uniform(0.5, 1.5))
-                        else:
-                            break
-                        
-                    except RequestException as e:
-                        # Parar em caso de erro
+            # Buscar páginas usando paginação automática
+            while next_page_url and page_count < max_pages:
+                try:
+                    response = await self.http_client.send_request([next_page_url], **kwargs)
+                    
+                    if not response or isinstance(response[0], Exception):
                         break
-                
-                # Remover duplicatas e filtrar URLs válidas
-                unique_results = []
-                seen = set()
-                
-                for url in results:
-                    if url and url not in seen and self._is_valid_url(url):
-                        seen.add(url)
-                        unique_results.append(url)
                         
-                        if len(unique_results) >= max_results:
+                    response = response[0]
+                    
+                    if response.status_code == 200:
+                        # Extrair URLs da página atual
+                        page_urls = self._extract_urls_from_response(response.text)
+                        results.extend(page_urls)
+                        
+                        # Limitar número de resultados
+                        if len(results) >= max_results:
                             break
-                
-                return unique_results
+                        
+                        # Se não encontrou resultados nesta página, parar
+                        if not page_urls:
+                            break
+                        
+                        # Buscar próxima página usando link de paginação
+                        next_page_url = self._get_next_page_url(response.text)
+                        page_count += 1
+                        
+                        # Delay entre páginas
+                        if next_page_url:
+                            await asyncio.sleep(self.options.get('delay', 2) + random.uniform(0.5, 1.5))
+                    else:
+                        break
+                    
+                except Exception as e:
+                    # Parar em caso de erro
+                    break
+            
+            # Remover duplicatas e filtrar URLs válidas
+            unique_results = []
+            seen = set()
+            
+            for url in results:
+                if url and url not in seen and self._is_valid_url(url):
+                    seen.add(url)
+                    unique_results.append(url)
+                    
+                    if len(unique_results) >= max_results:
+                        break
+            
+            return unique_results
                 
         except Exception as e:
             self.set_result(f"✗ Erro ao conectar ao Lycos: {str(e)}")
             return []
+    
+    @backoff.on_exception(
+        backoff.expo,
+        RequestException,
+        max_tries=3,
+        max_time=30
+    ) 
+    def _search_lycos(self, dork: str) -> list:
+        """
+        Wrapper síncrono para realizar busca no Lycos usando paginação automática e extrair resultados.
+        
+        Args:
+            dork (str): Query de busca (dork)
+            
+        Returns:
+            list: Lista de URLs válidas encontradas
+        """
+        return asyncio.run(self._search_lycos_async(dork))
 
     def _get_next_page_url(self, html_content: str) -> str:
         """
@@ -221,45 +316,6 @@ class LycosDorker(BaseModule):
             
         except Exception as e:
             return None
-
-    def _get_keyvol(self, client: httpx.Client, headers: dict) -> bool:
-        """
-        Obtém o valor keyvol necessário para as buscas no Lycos.
-        
-        Args:
-            client (httpx.Client): Cliente HTTP
-            headers (dict): Headers da requisição
-            
-        Returns:
-            bool: True se conseguiu obter o keyvol, False caso contrário
-        """
-        try:
-            # Fazer requisição inicial para obter o keyvol
-            response = client.get(self.base_url + self.search_path, headers=headers)
-            
-            if response.status_code == 200:
-                html = response.text
-                
-                # Extrair keyvol usando regex baseado no código PHP fornecido
-                # Padrão: name="keyvol".*value=".*"
-                pattern = r'name="keyvol"[^>]*value="([^"]*)"'
-                match = re.search(pattern, html, re.IGNORECASE)
-               
-                if match:
-                    self.keyvol = match.group(1)
-                    return True
-                
-                # Tentar padrão alternativo
-                pattern_alt = r'<input[^>]*name=["\']keyvol["\'][^>]*value=["\']([^"\']*)["\']'
-                match_alt = re.search(pattern_alt, html, re.IGNORECASE)
-                if match_alt:
-                    self.keyvol = match_alt.group(1)
-                    return True
-                
-            return False
-            
-        except Exception as e:
-            return False
 
     def _extract_urls_from_response(self, html_content: str) -> list:
         """

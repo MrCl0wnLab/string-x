@@ -4,6 +4,15 @@ Módulo CLC para coleta de informações DNS.
 Este módulo implementa um coletor de informações DNS que consulta diferentes
 tipos de registros DNS (A, MX, TXT, NS) para hosts especificados, utilizando
 dig como ferramenta subjacente.
+
+O sistema DNS (Domain Name System) é a infraestrutura fundamental da Internet
+que traduz nomes de domínios em endereços IP e fornece outros tipos de informações.
+Este coletor permite obter vários tipos de registros DNS, o que é útil para:
+- Mapeamento da infraestrutura de rede de um domínio
+- Identificação de servidores de e-mail (registros MX)
+- Verificação de políticas de segurança (registros TXT)
+- Enumeração de servidores de nomes autoritativos (registros NS)
+- Descoberta de relacionamentos entre domínios
 """
 from core.basemodule import BaseModule
 import subprocess

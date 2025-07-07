@@ -3,6 +3,19 @@ Módulo CLC para dorking usando motor de busca Google.
 
 Este módulo implementa funcionalidade para realizar buscas avançadas (dorking)
 no motor de busca Google, com técnicas avançadas para evitar detecção de bots.
+
+O Google é o maior motor de busca do mundo e oferece operadores avançados
+de busca (dorks) que podem ser utilizados para:
+- Encontrar informações específicas usando operadores como site:, filetype:, intitle:
+- Identificar arquivos sensíveis expostos publicamente
+- Descobrir configurações incorretas em servidores e aplicações web
+- Localizar páginas de login, painéis administrativos e interfaces de gestão
+- Encontrar dados sensíveis que foram indexados acidentalmente
+- Mapear a superfície de ataque de um alvo específico
+
+Este módulo implementa diversas técnicas anti-detecção para evitar bloqueios
+e captchas durante as pesquisas, como rotação de user agents, delays aleatórios
+e múltiplas estratégias de requisição.
 """
 from core.basemodule import BaseModule
 from core.user_agent_generator import UserAgentGenerator
@@ -16,6 +29,9 @@ from core.format import Format
 from typing import List, Dict, Optional, Any, Tuple
 import backoff
 from requests.exceptions import RequestException
+
+import asyncio
+from core.http_async import HTTPClient
 
 class GoogleDorker(BaseModule):
     """
@@ -225,29 +241,33 @@ class GoogleDorker(BaseModule):
         """
 
         debug_mode = True
-
+        proxy = self.options.get('proxy') if self.options.get('proxy') else None
         # Gerar cookies para simular um navegador real
         cookies = self._generate_cookies(config["host"])
 
-        # Criar headers simulando um navegador real
-        headers = {
-            'User-Agent': UserAgentGenerator.get_random_lib(),
-            'Accept':  "*/*",
-            'Referer': f'https://{config["host"]}/',
+        kwargs = {
+            'headers' : {
+                'User-Agent': UserAgentGenerator.get_random_lib(),
+                'Accept':  "*/*",
+                'Referer': f'https://{config["host"]}/',
+                },
+            'proxies': {
+                'http://': proxy,
+                'https://': proxy
+                },
+            'timeout': self.options.get('timeout', 30),  # Timeout de 10 segundos,
+            'follow_redirects': True,
+            'cookies': cookies
         }
 
-        # Configurar parâmetros do cliente httpx
-        client_kwargs = {
-            'timeout': self.options.get('timeout', 30),
-            'follow_redirects': True,
-            'proxy': self.options.get('proxy') if self.options.get('proxy') else None
-        }
+        request = HTTPClient()
 
         try:
-            with httpx.Client(verify=False, **client_kwargs) as client:
-                # Faz a requisição
-                response = client.get(url, headers=headers, cookies=cookies,)
-                return response.text
+            async def make_request():
+                return await request.send_request([url], **kwargs)
+            response = asyncio.run(make_request())[0]
+            # Faz a requisição
+            return response.text
         except RequestException as e:
             if debug_mode:
                 self.set_result(f"⚠️ Erro na requisição para {config['host']}: {str(e)}")

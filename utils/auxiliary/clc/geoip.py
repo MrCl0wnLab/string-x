@@ -3,9 +3,24 @@ Módulo collector para geolocalização de IPs.
 
 Este módulo implementa funcionalidade para obter informações de
 geolocalização de endereços IP usando APIs públicas gratuitas.
+
+A geolocalização de endereços IP fornece informações valiosas para:
+- Identificar a localização aproximada (país, cidade) da origem do tráfego
+- Detectar potenciais ameaças com base na região de origem
+- Analisar logs de acesso e tentativas de intrusão
+- Verificar a legitimidade de conexões e requisições
+- Mapear a distribuição geográfica de visitantes ou atacantes
+- Identificar o provedor de serviços associado ao endereço IP
+
+Este módulo utiliza múltiplas fontes de informação para obter dados
+de geolocalização com maior precisão e confiabilidade, alternando
+entre diferentes APIs quando necessário.
 """
 from core.basemodule import BaseModule
 import ipaddress
+import asyncio
+import json
+from core.http_async import HTTPClient
 
 class GeoIPCollector(BaseModule):
     """
@@ -24,7 +39,7 @@ class GeoIPCollector(BaseModule):
         self.meta = {
             'name': 'GeoIP Collector',
             'author': 'MrCl0wn',
-            'version': '1.0',
+            'version': '1.1',
             'description': 'Geolocalização de endereços IP',
             'type': 'collector'
         }
@@ -36,6 +51,9 @@ class GeoIPCollector(BaseModule):
             'timeout': 10,
             'example': './strx -l ips.txt -st "echo {STRING}" -module "clc:geoip" -pm'
         }
+        
+        # Instância do cliente HTTP assíncrono
+        self.http_client = HTTPClient()
     
     def run(self):
         """
@@ -64,7 +82,7 @@ class GeoIPCollector(BaseModule):
             
             for api in apis:
                 try:
-                    result = self._query_api(ip, api)
+                    result = asyncio.run(self._query_api(ip, api))
                     if result:
                         self.set_result(result)
                         return
@@ -92,27 +110,35 @@ class GeoIPCollector(BaseModule):
         except ValueError:
             return False
     
-    def _query_api(self, ip: str, api: str) -> str:
+    async def _query_api(self, ip: str, api: str) -> str:
         """Consulta API específica."""
         if api == 'ipapi':
-            return self._query_ipapi(ip)
+            return await self._query_ipapi(ip)
         elif api == 'ipinfo':
-            return self._query_ipinfo(ip)
+            return await self._query_ipinfo(ip)
         elif api == 'freegeoip':
-            return self._query_freegeoip(ip)
+            return await self._query_freegeoip(ip)
         else:
             raise ValueError(f"API não suportada: {api}")
     
-    def _query_ipapi(self, ip: str) -> str:
+    async def _query_ipapi(self, ip: str) -> str:
         """Consulta API ip-api.com (gratuita)."""
         try:
-            import json
-            import urllib.request
-            
             url = f"http://ip-api.com/json/{ip}?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,query"
             
-            with urllib.request.urlopen(url, timeout=self.options.get('timeout', 10)) as response:
-                data = json.loads(response.read().decode('utf-8'))
+            kwargs = {
+                'headers': {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                    'Accept': 'application/json',
+                },
+                'timeout': self.options.get('timeout', 10),
+            }
+            
+            response = await self.http_client.send_request([url], **kwargs)
+            response = response[0]  # Obtém o primeiro resultado da lista
+            
+            if response.status_code == 200:
+                data = json.loads(response.text)
                 
                 if data.get('status') == 'success':
                     result = f"🌍 IP: {data.get('query', ip)}\n"
@@ -131,22 +157,30 @@ class GeoIPCollector(BaseModule):
                     
                     result += f"📊 Fonte: ip-api.com"
                     return result
-                else:
-                    return None
+            
+            return None
                     
         except Exception:
             return None
     
-    def _query_ipinfo(self, ip: str) -> str:
+    async def _query_ipinfo(self, ip: str) -> str:
         """Consulta API ipinfo.io (gratuita com limite)."""
         try:
-            import json
-            import urllib.request
-            
             url = f"https://ipinfo.io/{ip}/json"
             
-            with urllib.request.urlopen(url, timeout=self.options.get('timeout', 10)) as response:
-                data = json.loads(response.read().decode('utf-8'))
+            kwargs = {
+                'headers': {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                    'Accept': 'application/json',
+                },
+                'timeout': self.options.get('timeout', 10),
+            }
+            
+            response = await self.http_client.send_request([url], **kwargs)
+            response = response[0]
+            
+            if response.status_code == 200:
+                data = json.loads(response.text)
                 
                 if 'ip' in data and 'bogon' not in data:
                     result = f"🌍 IP: {data.get('ip', ip)}\n"
@@ -169,22 +203,30 @@ class GeoIPCollector(BaseModule):
                     
                     result += f"📊 Fonte: ipinfo.io"
                     return result
-                else:
-                    return None
+            
+            return None
                     
         except Exception:
             return None
     
-    def _query_freegeoip(self, ip: str) -> str:
+    async def _query_freegeoip(self, ip: str) -> str:
         """Consulta API freegeoip.app (gratuita)."""
         try:
-            import json
-            import urllib.request
-            
             url = f"https://freegeoip.app/json/{ip}"
             
-            with urllib.request.urlopen(url, timeout=self.options.get('timeout', 10)) as response:
-                data = json.loads(response.read().decode('utf-8'))
+            kwargs = {
+                'headers': {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                    'Accept': 'application/json',
+                },
+                'timeout': self.options.get('timeout', 10),
+            }
+            
+            response = await self.http_client.send_request([url], **kwargs)
+            response = response[0]
+            
+            if response.status_code == 200:
+                data = json.loads(response.text)
                 
                 if data.get('ip') == ip:
                     result = f"🌍 IP: {data.get('ip', ip)}\n"
@@ -197,8 +239,8 @@ class GeoIPCollector(BaseModule):
                     result += f"⏰ Timezone: {data.get('time_zone', 'N/A')}\n"
                     result += f"📊 Fonte: freegeoip.app"
                     return result
-                else:
-                    return None
+            
+            return None
                     
         except Exception:
             return None

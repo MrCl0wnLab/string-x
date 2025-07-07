@@ -4,12 +4,26 @@ Módulo collector para Shodan API.
 Este módulo implementa funcionalidade para consultar a API do Shodan
 e obter informações detalhadas sobre hosts, incluindo serviços expostos,
 vulnerabilidades e dados de geolocalização.
+
+Shodan é uma ferramenta especializada que realiza varreduras constantes da Internet,
+indexando serviços e dispositivos conectados, fornecendo informações valiosas para:
+- Descoberta de dispositivos IoT, sistemas industriais e servidores expostos
+- Identificação de serviços vulneráveis e versões desatualizadas
+- Reconhecimento de infraestrutura e superfície de ataque
+- Análise de configurações incorretas e serviços expostos inadvertidamente
+- Monitoramento da própria infraestrutura para detecção de exposições acidentais
+- Identificação de tecnologias específicas através de banners e fingerprints
+- Avaliação de risco externo com base em dados objetivos
+
+Este módulo implementa acesso à API do Shodan para integrar seus recursos
+de descoberta de dispositivos e reconhecimento com o fluxo de trabalho do String-X.
 """
 from core.basemodule import BaseModule
 import json
-import urllib.request
 import urllib.parse
 import ipaddress
+import asyncio
+from core.http_async import HTTPClient
 
 class ShodanCollector(BaseModule):
     """
@@ -33,6 +47,9 @@ class ShodanCollector(BaseModule):
             'description': 'Coleta informações via API Shodan',
             'type': 'collector'
         }
+        
+        # Instância do cliente HTTP assíncrono
+        self.http_client = HTTPClient()
         
         self.options = {
             'data': str(),  # IP ou hostname
@@ -75,18 +92,27 @@ class ShodanCollector(BaseModule):
         except Exception as e:
             self.set_result(f"✗ Erro Shodan: {str(e)}")
     
-    def _query_host(self, ip: str, api_key: str) -> str:
+    async def _query_host_async(self, ip: str, api_key: str) -> str:
         """Consulta informações de um host específico."""
         try:
-            
-            
             # Validar se é um IP válido
             ipaddress.ip_address(ip)
             
             url = f"https://api.shodan.io/shodan/host/{ip}?key={api_key}"
             
-            with urllib.request.urlopen(url, timeout=15) as response:
-                data = json.loads(response.read().decode('utf-8'))
+            kwargs = {
+                'headers': {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                    'Accept': 'application/json',
+                },
+                'timeout': 15,
+            }
+            
+            response = await self.http_client.send_request([url], **kwargs)
+            response = response[0]  # Obtém o primeiro resultado da lista
+            
+            if response.status_code == 200:
+                data = json.loads(response.text)
                 
                 result = f"📍 Host: {data.get('ip_str', ip)}\n"
                 result += f"🌍 País: {data.get('country_name', 'N/A')}\n"
@@ -113,14 +139,16 @@ class ShodanCollector(BaseModule):
                 
         except ValueError:
             return "✗ Erro: IP inválido"
-        except urllib.error.HTTPError as e:
-            if e.code == 404:
-                return f"ℹ️ Host {ip}: Nenhuma informação disponível"
-            return f"✗ Erro HTTP {e.code}: {e.reason}"
         except Exception as e:
+            if hasattr(e, 'status_code') and e.status_code == 404:
+                return f"ℹ️ Host {ip}: Nenhuma informação disponível"
             return f"✗ Erro na consulta: {str(e)}"
     
-    def _query_search(self, query: str, api_key: str) -> str:
+    def _query_host(self, ip: str, api_key: str) -> str:
+        """Consulta informações de um host específico (wrapper para método assíncrono)."""
+        return asyncio.run(self._query_host_async(ip, api_key))
+    
+    async def _query_search_async(self, query: str, api_key: str) -> str:
         """Realiza busca por query no Shodan."""
         try:
             limit = self.options.get('limit', 100)
@@ -128,8 +156,19 @@ class ShodanCollector(BaseModule):
             
             url = f"https://api.shodan.io/shodan/host/search?key={api_key}&query={encoded_query}&limit={limit}"
             
-            with urllib.request.urlopen(url, timeout=20) as response:
-                data = json.loads(response.read().decode('utf-8'))
+            kwargs = {
+                'headers': {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                    'Accept': 'application/json',
+                },
+                'timeout': 20,
+            }
+            
+            response = await self.http_client.send_request([url], **kwargs)
+            response = response[0]
+            
+            if response.status_code == 200:
+                data = json.loads(response.text)
                 
                 total = data.get('total', 0)
                 matches = data.get('matches', [])
@@ -148,12 +187,14 @@ class ShodanCollector(BaseModule):
                 
                 return result
                 
-        except urllib.error.HTTPError as e:
-            return f"✗ Erro HTTP {e.code}: {e.reason}"
         except Exception as e:
             return f"✗ Erro na busca: {str(e)}"
+            
+    def _query_search(self, query: str, api_key: str) -> str:
+        """Realiza busca por query no Shodan (wrapper para método assíncrono)."""
+        return asyncio.run(self._query_search_async(query, api_key))
     
-    def _query_count(self, query: str, api_key: str) -> str:
+    async def _query_count_async(self, query: str, api_key: str) -> str:
         """Conta resultados para uma query."""
         try:
             encoded_query = urllib.parse.quote(query)
@@ -163,8 +204,19 @@ class ShodanCollector(BaseModule):
             if facets:
                 url += f"&facets={urllib.parse.quote(facets)}"
             
-            with urllib.request.urlopen(url, timeout=15) as response:
-                data = json.loads(response.read().decode('utf-8'))
+            kwargs = {
+                'headers': {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                    'Accept': 'application/json',
+                },
+                'timeout': 15,
+            }
+            
+            response = await self.http_client.send_request([url], **kwargs)
+            response = response[0]
+            
+            if response.status_code == 200:
+                data = json.loads(response.text)
                 
                 total = data.get('total', 0)
                 result = f"🔍 Query: {query}\n"
@@ -179,7 +231,9 @@ class ShodanCollector(BaseModule):
                 
                 return result
                 
-        except urllib.error.HTTPError as e:
-            return f"✗ Erro HTTP {e.code}: {e.reason}"
         except Exception as e:
             return f"✗ Erro na contagem: {str(e)}"
+            
+    def _query_count(self, query: str, api_key: str) -> str:
+        """Conta resultados para uma query (wrapper para método assíncrono)."""
+        return asyncio.run(self._query_count_async(query, api_key))

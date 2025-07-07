@@ -3,10 +3,27 @@ Módulo CLC para enumeração de subdomínios.
 
 Este módulo implementa um coletor de subdomínios usando múltiplas técnicas
 incluindo certificate transparency e bruteforce DNS.
+
+A enumeração de subdomínios é uma técnica essencial para mapeamento de superfície
+de ataque e reconhecimento digital, permitindo:
+- Descobrir domínios e serviços ocultos ou não divulgados publicamente
+- Identificar sistemas de desenvolvimento, teste ou staging
+- Mapear a infraestrutura completa de uma organização
+- Encontrar pontos de entrada potenciais para testes de segurança
+- Descobrir aplicações e sistemas esquecidos que podem conter vulnerabilidades
+- Compreender a estrutura organizacional através da nomenclatura de subdomínios
+
+Este módulo utiliza múltiplas fontes e técnicas para maximizar a descoberta
+de subdomínios, incluindo:
+- Registros de Certificate Transparency (CT)
+- Consultas a serviços públicos especializados
+- Técnicas passivas que não geram tráfego direto para o alvo
+- Consolidação e deduplicação de resultados de múltiplas fontes
 """
 from core.basemodule import BaseModule
-import httpx
 import json
+import asyncio
+from core.http_async import HTTPClient
 
 class SubdomainEnum(BaseModule):
     """
@@ -23,6 +40,9 @@ class SubdomainEnum(BaseModule):
             'description': 'Enumera subdomínios usando CT logs e bruteforce',
             'type': 'collector'
         }
+        
+        # Instância do cliente HTTP assíncrono
+        self.http_client = HTTPClient()
         
         self.options = {
             'data': str(),  # Domínio alvo
@@ -67,16 +87,27 @@ class SubdomainEnum(BaseModule):
         """Busca subdomínios no crt.sh"""
         url = f"https://crt.sh/?q=%25.{domain}&output=json"
 
-
-        # Configurar parâmetros do cliente httpx
-        client_kwargs = {
+        # Configurar parâmetros para HTTPClient
+        kwargs = {
+            'headers': {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'Accept': 'application/json',
+            },
             'timeout': self.options.get('timeout', 30),
             'follow_redirects': True,
-            'proxy': self.options.get('proxy') if self.options.get('proxy') else None
         }
-
-        with httpx.Client(verify=False, **client_kwargs) as client:
-            response = client.get(url)
+        
+        if self.options.get('proxy'):
+            kwargs['proxies'] = {
+                'http://': self.options.get('proxy'),
+                'https://': self.options.get('proxy')
+            }
+            
+        # Executar requisição assíncrona
+        async def make_request():
+            return await self.http_client.send_request([url], **kwargs)
+        
+        response = asyncio.run(make_request())[0]
         
         subdomains = set()
         if response.status_code == 200:
@@ -97,16 +128,27 @@ class SubdomainEnum(BaseModule):
         """Busca subdomínios no CertSpotter"""
         url = f"https://api.certspotter.com/v1/issuances?domain={domain}&include_subdomains=true&expand=dns_names"
 
-        # Configurar parâmetros do cliente httpx
-        client_kwargs = {
+        # Configurar parâmetros para HTTPClient
+        kwargs = {
+            'headers': {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'Accept': 'application/json',
+            },
             'timeout': self.options.get('timeout', 30),
             'follow_redirects': True,
-            'proxy': self.options.get('proxy') if self.options.get('proxy') else None
         }
-
-
-        with httpx.Client(verify=False, **client_kwargs) as client:
-            response = client.get(url)
+        
+        if self.options.get('proxy'):
+            kwargs['proxies'] = {
+                'http://': self.options.get('proxy'),
+                'https://': self.options.get('proxy')
+            }
+            
+        # Executar requisição assíncrona
+        async def make_request():
+            return await self.http_client.send_request([url], **kwargs)
+        
+        response = asyncio.run(make_request())[0]
         
         subdomains = set()
         if response.status_code == 200:
@@ -124,15 +166,27 @@ class SubdomainEnum(BaseModule):
         """Busca subdomínios no HackerTarget"""
         url = f"https://api.hackertarget.com/hostsearch/?q={domain}"
 
-        # Configurar parâmetros do cliente httpx
-        client_kwargs = {
+        # Configurar parâmetros para HTTPClient
+        kwargs = {
+            'headers': {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            },
             'timeout': self.options.get('timeout', 30),
             'follow_redirects': True,
-            'proxy': self.options.get('proxy') if self.options.get('proxy') else None
         }
         
-        with httpx.Client(verify=False, **client_kwargs) as client:
-            response = client.get(url)
+        if self.options.get('proxy'):
+            kwargs['proxies'] = {
+                'http://': self.options.get('proxy'),
+                'https://': self.options.get('proxy')
+            }
+            
+        # Executar requisição assíncrona
+        async def make_request():
+            return await self.http_client.send_request([url], **kwargs)
+        
+        response = asyncio.run(make_request())[0]
         
         subdomains = set()
         if response.status_code == 200:

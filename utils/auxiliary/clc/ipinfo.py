@@ -4,15 +4,30 @@ Módulo collector para informações detalhadas de endereços IP.
 Este módulo implementa funcionalidade para obter informações detalhadas sobre 
 endereços IP utilizando a API do ipinfo.io, incluindo localização geográfica,
 ASN, organização, entre outros dados.
+
+A análise detalhada de endereços IP fornece informações essenciais para:
+- Investigação de incidentes de segurança
+- Análise forense de logs e tráfego de rede
+- Identificação da infraestrutura de uma organização
+- Mapeamento de redes e sistemas
+- Detecção de atividades suspeitas
+- Atribuição de origem de ataques
+- Verificação de VPNs, proxies e serviços de anonimização
+
+O serviço ipinfo.io fornece dados detalhados sobre cada endereço IP,
+incluindo informações de geolocalização precisas, detalhes da organização
+responsável e dados de roteamento de rede que são essenciais para
+investigações de segurança e OSINT.
 """
 from core.basemodule import BaseModule
 from core.user_agent_generator import UserAgentGenerator
-import httpx
 import json
 import socket
 import os
 import time
 from datetime import datetime, timedelta
+import asyncio
+from core.http_async import HTTPClient
 
 
 class IPInfo(BaseModule):
@@ -50,6 +65,9 @@ class IPInfo(BaseModule):
             'description': 'Coleta informações detalhadas sobre endereços IP usando ipinfo.io',
             'type': 'collector'
         }
+        
+        # Instância do cliente HTTP assíncrono
+        self.http_client = HTTPClient()
         
         self.options = {
             'data': str(),          # Endereço IP a ser consultado (pode ser múltiplos IPs separados por nova linha)
@@ -102,10 +120,9 @@ class IPInfo(BaseModule):
         except Exception:
             return False
     
-
-    def _query_ipinfo(self, ip: str) -> dict:
+    async def _query_ipinfo_async(self, ip: str) -> dict:
         """
-        Consulta a API do ipinfo.io para obter informações do IP.
+        Versão assíncrona para consultar a API do ipinfo.io para obter informações do IP.
         
         Args:
             ip (str): Endereço IP para consulta
@@ -113,10 +130,7 @@ class IPInfo(BaseModule):
         Returns:
             dict: Dicionário com informações do IP ou None em caso de erro
         """
-     
-        
         try:
-
             base_url = f"https://ipinfo.io/{ip}/json"
             headers = {
                 'Accept': 'application/json',
@@ -128,12 +142,20 @@ class IPInfo(BaseModule):
             if token:
                 headers['Authorization'] = f"Bearer {token}"
             
-            response = httpx.get(
-                url=base_url, 
-                headers=headers,
-                timeout=self.options.get('timeout', 10),
-                follow_redirects=True
-            )
+            # Configurar parâmetros para o HTTPClient
+            kwargs = {
+                'headers': headers,
+                'timeout': self.options.get('timeout', 10),
+                'follow_redirects': True,
+            }
+            
+            response = await self.http_client.send_request([base_url], **kwargs)
+            
+            if not response or isinstance(response[0], Exception):
+                self.set_result(f"✗ {ip}: Erro ao consultar API: {str(response[0]) if response else 'Sem resposta'}")
+                return None
+                
+            response = response[0]
             
             if response.status_code == 200:
                 data = response.json()
@@ -146,14 +168,22 @@ class IPInfo(BaseModule):
                 self.set_result(f"⚠️ {ip}: API retornou código {response.status_code}")
                 return None
             
-        except httpx.RequestError as e:
-            self.set_result(f"✗ {ip}: Erro de conexão: {str(e)}")
-            return None
         except Exception as e:
             self.set_result(f"✗ {ip}: Erro ao consultar API: {str(e)}")
             return None
     
-
+    def _query_ipinfo(self, ip: str) -> dict:
+        """
+        Wrapper síncrono para consultar a API do ipinfo.io para obter informações do IP.
+        
+        Args:
+            ip (str): Endereço IP para consulta
+            
+        Returns:
+            dict: Dicionário com informações do IP ou None em caso de erro
+        """
+        return asyncio.run(self._query_ipinfo_async(ip))
+    
     def run(self, **kwargs):
         """
         Executa consulta de informações do IP.

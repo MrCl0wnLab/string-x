@@ -4,13 +4,27 @@ Módulo collector para VirusTotal API.
 Este módulo implementa funcionalidade para consultar a API do VirusTotal
 e obter informações sobre análise de arquivos, URLs, domínios e IPs,
 incluindo detecções de malware e reputação.
+
+O VirusTotal é um serviço que agrega múltiplos mecanismos de antivírus e
+ferramentas de análise, oferecendo informações críticas para segurança:
+- Análise de arquivos por dezenas de mecanismos antivírus diferentes
+- Verificação da reputação de URLs, domínios e endereços IP
+- Detecção de phishing, malware e outros conteúdos maliciosos
+- Inteligência de ameaças baseada em dados históricos e atuais
+- Informações detalhadas sobre comportamentos suspeitos
+- Relacionamentos entre amostras de malware, domínios e infraestrutura
+
+Este módulo permite integrar os recursos do VirusTotal ao fluxo de trabalho
+do String-X, auxiliando na identificação de recursos maliciosos e avaliação
+de risco durante investigações OSINT.
 """
 from core.basemodule import BaseModule
 import json
-import urllib.request
 import urllib.parse
 import hashlib
 import re
+import asyncio
+from core.http_async import HTTPClient
 
 class VirusTotalCollector(BaseModule):
     """
@@ -34,6 +48,9 @@ class VirusTotalCollector(BaseModule):
             'description': 'Coleta informações via API VirusTotal',
             'type': 'collector'
         }
+        
+        # Instância do cliente HTTP assíncrono
+        self.http_client = HTTPClient()
         
         self.options = {
             'data': str(),  # URL, IP, domain ou hash
@@ -110,7 +127,7 @@ class VirusTotalCollector(BaseModule):
         
         return 'unknown'
     
-    def _query_url(self, url: str, api_key: str) -> str:
+    async def _query_url_async(self, url: str, api_key: str) -> str:
         """Consulta análise de URL."""
         try:
             import base64
@@ -120,11 +137,20 @@ class VirusTotalCollector(BaseModule):
             
             api_url = f"https://www.virustotal.com/api/v3/urls/{url_id}"
             
-            req = urllib.request.Request(api_url)
-            req.add_header('x-apikey', api_key)
+            kwargs = {
+                'headers': {
+                    'x-apikey': api_key,
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                    'Accept': 'application/json',
+                },
+                'timeout': 15,
+            }
             
-            with urllib.request.urlopen(req, timeout=15) as response:
-                data = json.loads(response.read().decode('utf-8'))
+            response = await self.http_client.send_request([api_url], **kwargs)
+            response = response[0]
+            
+            if response.status_code == 200:
+                data = json.loads(response.text)
                 
                 attributes = data.get('data', {}).get('attributes', {})
                 stats = attributes.get('last_analysis_stats', {})
@@ -148,24 +174,37 @@ class VirusTotalCollector(BaseModule):
                     result += f"🔄 Redirecionamentos: {len(redirects)}\n"
                 
                 return result
-                
-        except urllib.error.HTTPError as e:
-            if e.code == 404:
+            elif response.status_code == 404:
                 return f"ℹ️ URL {url}: Não analisada ainda"
-            return f"✗ Erro HTTP {e.code}: {e.reason}"
+            else:
+                return f"✗ Erro HTTP {response.status_code}"
+                
         except Exception as e:
             return f"✗ Erro na consulta: {str(e)}"
+            
+    def _query_url(self, url: str, api_key: str) -> str:
+        """Consulta análise de URL (wrapper para método assíncrono)."""
+        return asyncio.run(self._query_url_async(url, api_key))
     
-    def _query_ip(self, ip: str, api_key: str) -> str:
+    async def _query_ip_async(self, ip: str, api_key: str) -> str:
         """Consulta análise de IP."""
         try:
             api_url = f"https://www.virustotal.com/api/v3/ip_addresses/{ip}"
             
-            req = urllib.request.Request(api_url)
-            req.add_header('x-apikey', api_key)
+            kwargs = {
+                'headers': {
+                    'x-apikey': api_key,
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                    'Accept': 'application/json',
+                },
+                'timeout': 15,
+            }
             
-            with urllib.request.urlopen(req, timeout=15) as response:
-                data = json.loads(response.read().decode('utf-8'))
+            response = await self.http_client.send_request([api_url], **kwargs)
+            response = response[0]
+            
+            if response.status_code == 200:
+                data = json.loads(response.text)
                 
                 attributes = data.get('data', {}).get('attributes', {})
                 stats = attributes.get('last_analysis_stats', {})
@@ -186,24 +225,37 @@ class VirusTotalCollector(BaseModule):
                 result += f"🏢 ASN: {asn} ({as_owner})\n"
                 
                 return result
-                
-        except urllib.error.HTTPError as e:
-            if e.code == 404:
+            elif response.status_code == 404:
                 return f"ℹ️ IP {ip}: Nenhuma informação disponível"
-            return f"✗ Erro HTTP {e.code}: {e.reason}"
+            else:
+                return f"✗ Erro HTTP {response.status_code}"
+                
         except Exception as e:
             return f"✗ Erro na consulta: {str(e)}"
+            
+    def _query_ip(self, ip: str, api_key: str) -> str:
+        """Consulta análise de IP (wrapper para método assíncrono)."""
+        return asyncio.run(self._query_ip_async(ip, api_key))
     
-    def _query_domain(self, domain: str, api_key: str) -> str:
+    async def _query_domain_async(self, domain: str, api_key: str) -> str:
         """Consulta análise de domínio."""
         try:
             api_url = f"https://www.virustotal.com/api/v3/domains/{domain}"
             
-            req = urllib.request.Request(api_url)
-            req.add_header('x-apikey', api_key)
+            kwargs = {
+                'headers': {
+                    'x-apikey': api_key,
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                    'Accept': 'application/json',
+                },
+                'timeout': 15,
+            }
             
-            with urllib.request.urlopen(req, timeout=15) as response:
-                data = json.loads(response.read().decode('utf-8'))
+            response = await self.http_client.send_request([api_url], **kwargs)
+            response = response[0]
+            
+            if response.status_code == 200:
+                data = json.loads(response.text)
                 
                 attributes = data.get('data', {}).get('attributes', {})
                 stats = attributes.get('last_analysis_stats', {})
@@ -236,24 +288,37 @@ class VirusTotalCollector(BaseModule):
                     result += f"📅 Whois: {date_obj.strftime('%Y-%m-%d')}\n"
                 
                 return result
-                
-        except urllib.error.HTTPError as e:
-            if e.code == 404:
+            elif response.status_code == 404:
                 return f"ℹ️ Domínio {domain}: Nenhuma informação disponível"
-            return f"✗ Erro HTTP {e.code}: {e.reason}"
+            else:
+                return f"✗ Erro HTTP {response.status_code}"
+                
         except Exception as e:
             return f"✗ Erro na consulta: {str(e)}"
+            
+    def _query_domain(self, domain: str, api_key: str) -> str:
+        """Consulta análise de domínio (wrapper para método assíncrono)."""
+        return asyncio.run(self._query_domain_async(domain, api_key))
     
-    def _query_file(self, file_hash: str, api_key: str) -> str:
+    async def _query_file_async(self, file_hash: str, api_key: str) -> str:
         """Consulta análise de arquivo por hash."""
         try:
             api_url = f"https://www.virustotal.com/api/v3/files/{file_hash}"
             
-            req = urllib.request.Request(api_url)
-            req.add_header('x-apikey', api_key)
+            kwargs = {
+                'headers': {
+                    'x-apikey': api_key,
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                    'Accept': 'application/json',
+                },
+                'timeout': 15,
+            }
             
-            with urllib.request.urlopen(req, timeout=15) as response:
-                data = json.loads(response.read().decode('utf-8'))
+            response = await self.http_client.send_request([api_url], **kwargs)
+            response = response[0]
+            
+            if response.status_code == 200:
+                data = json.loads(response.text)
                 
                 attributes = data.get('data', {}).get('attributes', {})
                 stats = attributes.get('last_analysis_stats', {})
@@ -287,10 +352,14 @@ class VirusTotalCollector(BaseModule):
                     result += f"⚠️ Detecções: {'; '.join(detections[:3])}\n"
                 
                 return result
-                
-        except urllib.error.HTTPError as e:
-            if e.code == 404:
+            elif response.status_code == 404:
                 return f"ℹ️ Hash {file_hash}: Arquivo não encontrado"
-            return f"✗ Erro HTTP {e.code}: {e.reason}"
+            else:
+                return f"✗ Erro HTTP {response.status_code}"
+                
         except Exception as e:
             return f"✗ Erro na consulta: {str(e)}"
+            
+    def _query_file(self, file_hash: str, api_key: str) -> str:
+        """Consulta análise de arquivo por hash (wrapper para método assíncrono)."""
+        return asyncio.run(self._query_file_async(file_hash, api_key))

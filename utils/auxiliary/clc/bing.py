@@ -6,6 +6,7 @@ no motor de busca Bing, permitindo a extração de resultados usando diferentes
 tipos de dorks de busca.
 """
 from core.basemodule import BaseModule
+from core.user_agent_generator import UserAgentGenerator
 import httpx
 import re
 from urllib.parse import quote_plus
@@ -16,6 +17,9 @@ from core.format import Format
 from urllib.parse import urljoin, urlparse
 import backoff
 from requests.exceptions import RequestException
+
+import asyncio
+from core.http_async import HTTPClient
 
 class BingDorker(BaseModule):
     """
@@ -47,14 +51,6 @@ class BingDorker(BaseModule):
             'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:bing" -pm',
             'proxy': str(),  # Proxies para requisições (opcional)
         }
-        
-        self.user_agents = [
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.107 Safari/537.36',
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:90.0) Gecko/20100101 Firefox/90.0',
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Safari/605.1.15',
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.59'
-        ]
         
         self.search_url_templates = [
             "https://www.bing.com/search?q={DORK}&form=DEEPSH&shm=cr&shajax=2",
@@ -110,55 +106,54 @@ class BingDorker(BaseModule):
    
         # Lista para armazenar resultados
         results = []
-        
+        proxy = self.options.get('proxy') if self.options.get('proxy') else None
         # Codificar a query
         encoded_dork = quote_plus(dork)
         
-        # User-agent aleatório
-        headers = {
-            'User-Agent': random.choice(self.user_agents),
-            'Accept': 'text/html,application/xhtml+xml,application/xml',
-            'Accept-Language': 'en-US,en;q=0.9',
-            'Referer': 'https://www.bing.com/',
-            'DNT': '1'
+        kwargs = {
+            'headers' : {
+                'User-Agent': UserAgentGenerator.get_desktop_user_agent(),
+                'Accept': 'text/html,application/xhtml+xml,application/xml',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Referer': 'https://www.bing.com/',
+                'DNT': '1'
+                },
+            'proxies': {
+                'http://': proxy,
+                'https://': proxy
+                },
+            'timeout': self.options.get('timeout', 30),  # Timeout de 10 segundos,
         }
 
-        # Configurar parâmetros do cliente httpx
-        client_kwargs = {
-            'timeout': self.options.get('timeout', 30),
-            'follow_redirects': True,
-            'proxy': self.options.get('proxy') if self.options.get('proxy') else None
-        }
+        request = HTTPClient()
         
         try:
-            with httpx.Client(verify=False, **client_kwargs) as client:
-                # Estratégia 1: URL padrão com paginação
-
-                # Usar os três templates de URL
-                for _, template in enumerate(self.search_url_templates):
-                    search_url = ""
-                    search_url = template.format(DORK=encoded_dork)
-                    try:
-                        response = client.get(search_url, headers=headers)
-                        if response.status_code != 200:
-                            continue
-                        
-                        # Extrair resultados
-                        page_results = set(self._parse_bing_results(response.text))
-                        
-                        # Filtrar duplicidades
-                        for url in page_results:
-                            if url:
-                                results.append(url)
-                        
-                        # Respeitar delay entre requisições
-                        time.sleep(self.options.get('delay', 2) + random.uniform(0.5, 1.5))
-                        
-                    except Exception as e:
-                        # Continuar para o próximo formato em caso de erro
+            # Usar os três templates de URL
+            for _, template in enumerate(self.search_url_templates):
+                url = ""
+                url = template.format(DORK=encoded_dork)
+                try:
+                    async def make_request():
+                        return await request.send_request([url], **kwargs)
+                    response = asyncio.run(make_request())[0]
+                    if response.status_code != 200:
                         continue
-
-                return results
+                    
+                    # Extrair resultados
+                    page_results = set(self._parse_bing_results(response.text))
+                    
+                    # Filtrar duplicidades
+                    for url in page_results:
+                        if url:
+                            results.append(url)
+                    
+                    # Respeitar delay entre requisições
+                    time.sleep(self.options.get('delay', 2) + random.uniform(0.5, 1.5))
+                    
+                except Exception as e:
+                    # Continuar para o próximo formato em caso de erro
+                    continue
+            return results
                 
         except RequestException as e:
             self.set_result(f"✗ Erro ao conectar ao Bing: {str(e)}")

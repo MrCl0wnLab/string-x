@@ -4,10 +4,23 @@ Módulo CLC para dorking usando motor de busca Sogou.
 Este módulo implementa funcionalidade para realizar buscas avançadas (dorking)
 no motor de busca Sogou, permitindo a extração de resultados usando diferentes
 tipos de dorks de busca com paginação dinâmica.
+
+Sogou é um dos principais motores de busca chineses, oferecendo vantagens
+significativas para OSINT e reconhecimento digital:
+- Indexação extensiva de conteúdo em chinês e asiático em geral
+- Acesso a websites e informações focados no mercado chinês
+- Resultados diferentes dos obtidos em motores de busca ocidentais
+- Cobertura de sites hospedados em infraestrutura chinesa que podem ter
+  menor visibilidade em outros buscadores
+- Fonte crucial para investigações envolvendo entidades, empresas ou indivíduos
+  com presença digital na China
+
+A utilização do Sogou é especialmente importante para investigações que
+envolvem o mercado chinês ou operações com conexões à China, fornecendo
+uma perspectiva local que complementa as informações de buscadores ocidentais.
 """
 from core.basemodule import BaseModule
 from core.user_agent_generator import UserAgentGenerator
-import httpx
 import re
 from urllib.parse import quote_plus, unquote, urlparse, parse_qs
 import time
@@ -17,6 +30,8 @@ from core.format import Format
 from urllib.parse import urljoin
 import backoff
 from requests.exceptions import RequestException
+import asyncio
+from core.http_async import HTTPClient
 
 class SogouDorker(BaseModule):
     """
@@ -40,6 +55,9 @@ class SogouDorker(BaseModule):
             'description': 'Realiza buscas avançadas com dorks no Sogou',
             'type': 'collector'
         }
+        
+        # Instância do cliente HTTP assíncrono
+        self.http_client = HTTPClient()
         
         self.options = {
             'data': str(),  # Dork para busca
@@ -122,57 +140,61 @@ class SogouDorker(BaseModule):
             'Referer': 'http://www.sogou.com/',
         }
 
-        # Configurar parâmetros do cliente httpx
-        client_kwargs = {
+        # Configurar parâmetros para HTTPClient
+        kwargs = {
+            'headers': headers,
             'timeout': self.options.get('timeout', 30),
             'follow_redirects': True,
-            'proxy': self.options.get('proxy') if self.options.get('proxy') else None
         }
         
+        if self.options.get('proxy'):
+            kwargs['proxies'] = {
+                'http://': self.options.get('proxy'),
+                'https://': self.options.get('proxy')
+            }
+        
         try:
-            with httpx.Client(verify=False, **client_kwargs) as client:
-                # Primeira página - usar template específico e extrair sessiontime
-                first_page_urls = self._search_first_page(client, headers, encoded_dork)
-                results.extend(first_page_urls)
-                
-                # Se não conseguiu extrair sessiontime ou não há resultados, parar
-                if not self.sessiontime or not first_page_urls:
-                    return self._filter_and_deduplicate(results, max_results)
-                
-                # Buscar páginas subsequentes usando sessiontime
-                for page in range(2, max_pages + 1):
-                    try:
-                        page_urls = self._search_pagination_page(client, headers, encoded_dork, page)
-                        results.extend(page_urls)
-                        
-                        # Limitar número de resultados
-                        if len(results) >= max_results:
-                            break
-                        
-                        # Se não encontrou resultados nesta página, parar
-                        if not page_urls:
-                            break
-                        
-                        # Delay entre páginas
-                        time.sleep(self.options.get('delay', 2) + random.uniform(0.5, 1.5))
-                        
-                    except Exception as e:
-                        # Continuar para próxima página em caso de erro
-                        continue
-                
+            # Primeira página - usar template específico e extrair sessiontime
+            first_page_urls = asyncio.run(self._search_first_page_async(kwargs, encoded_dork))
+            results.extend(first_page_urls)
+            
+            # Se não conseguiu extrair sessiontime ou não há resultados, parar
+            if not self.sessiontime or not first_page_urls:
                 return self._filter_and_deduplicate(results, max_results)
+            
+            # Buscar páginas subsequentes usando sessiontime
+            for page in range(2, max_pages + 1):
+                try:
+                    page_urls = asyncio.run(self._search_pagination_page_async(kwargs, encoded_dork, page))
+                    results.extend(page_urls)
+                    
+                    # Limitar número de resultados
+                    if len(results) >= max_results:
+                        break
+                    
+                    # Se não encontrou resultados nesta página, parar
+                    if not page_urls:
+                        break
+                    
+                    # Delay entre páginas
+                    time.sleep(self.options.get('delay', 2) + random.uniform(0.5, 1.5))
+                    
+                except Exception:
+                    # Continuar para próxima página em caso de erro
+                    continue
+            
+            return self._filter_and_deduplicate(results, max_results)
                 
-        except RequestException as e:
+        except Exception as e:
             self.set_result(f"✗ Erro ao conectar ao Sogou: {str(e)}")
             return []
 
-    def _search_first_page(self, client: httpx.Client, headers: dict, encoded_dork: str) -> list:
+    async def _search_first_page_async(self, kwargs: dict, encoded_dork: str) -> list:
         """
-        Realiza busca na primeira página do Sogou e extrai sessiontime.
+        Realiza busca na primeira página do Sogou e extrai sessiontime de forma assíncrona.
         
         Args:
-            client (httpx.Client): Cliente HTTP
-            headers (dict): Headers da requisição
+            kwargs (dict): Parâmetros da requisição
             encoded_dork (str): Query codificada
             
         Returns:
@@ -182,7 +204,8 @@ class SogouDorker(BaseModule):
             # Construir URL da primeira página
             search_url = self.first_page_template.replace("{DORK}", encoded_dork)
             
-            response = client.get(search_url, headers=headers)
+            response = await self.http_client.send_request([search_url], **kwargs)
+            response = response[0]
             
             if response.status_code == 200:
                 # Extrair sessiontime do HTML
@@ -191,18 +214,17 @@ class SogouDorker(BaseModule):
                 # Extrair URLs dos resultados
                 return self._extract_urls_from_response(response.text)
             
-        except Exception as e:
+        except Exception:
             pass
         
         return []
 
-    def _search_pagination_page(self, client: httpx.Client, headers: dict, encoded_dork: str, page: int) -> list:
+    async def _search_pagination_page_async(self, kwargs: dict, encoded_dork: str, page: int) -> list:
         """
-        Realiza busca em uma página de paginação específica do Sogou.
+        Realiza busca em uma página de paginação específica do Sogou de forma assíncrona.
         
         Args:
-            client (httpx.Client): Cliente HTTP
-            headers (dict): Headers da requisição
+            kwargs (dict): Parâmetros da requisição
             encoded_dork (str): Query codificada
             page (int): Número da página
             
@@ -213,12 +235,13 @@ class SogouDorker(BaseModule):
             # Construir URL da página usando sessiontime
             search_url = self.pagination_template.replace("{DORK}", encoded_dork).replace("{SESSIONTIME}", self.sessiontime).replace("{PAGE}", str(page))
             
-            response = client.get(search_url, headers=headers)
+            response = await self.http_client.send_request([search_url], **kwargs)
+            response = response[0]
             
             if response.status_code == 200:
                 return self._extract_urls_from_response(response.text)
             
-        except Exception as e:
+        except Exception:
             pass
         
         return []
@@ -257,7 +280,7 @@ class SogouDorker(BaseModule):
             if matches:
                 return matches[0]
             
-        except Exception as e:
+        except Exception:
             pass
         
         return None
@@ -317,7 +340,7 @@ class SogouDorker(BaseModule):
                             if decoded_url:
                                 urls.append(decoded_url)
             
-        except Exception as e:
+        except Exception:
             # Fallback para regex em caso de erro
             try:
                 pattern = r'href=["\']([^"\']*https?://[^"\']+)["\']'
