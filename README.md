@@ -107,6 +107,87 @@ usa comandos git para baixar novas versões
 ./strx -upgrade
 ```
 
+## 🐋 DOCKER
+O String-X está disponível como imagem Docker, permitindo execução em ambientes isolados sem necessidade de instalação local de dependências.
+
+### Construindo a Imagem
+
+```bash
+# Construa a imagem Docker
+docker build -t string-x .
+```
+
+### Uso Básico com Docker
+
+```bash
+# Executar com comando padrão (mostra exemplos)
+docker run --rm string-x
+
+# Visualizar ajuda
+docker run --rm string-x -h
+
+# Listar funções disponíveis
+docker run --rm string-x -funcs
+
+# Listar tipos de módulos
+docker run --rm string-x -types
+```
+
+### Processamento de Arquivos Locais
+
+Para processar arquivos do host, monte o diretório como volume:
+
+```bash
+# Montar diretório atual e processar arquivo
+docker run --rm -v $(pwd):/dados string-x -l /dados/urls.txt -st "curl -I {STRING}"
+
+# Processar com múltiplas threads
+docker run --rm -v $(pwd):/dados string-x -l /dados/hosts.txt -st "nmap -p 80,443 {STRING}" -t 20
+
+# Salvar resultados no host
+docker run --rm -v $(pwd):/dados string-x -l /dados/domains.txt -st "dig +short {STRING}" -o /dados/results.txt
+```
+
+### Uso com Módulos
+
+```bash
+# Extrair emails de arquivo
+docker run --rm -v $(pwd):/dados string-x -l /dados/dump.txt -st "echo {STRING}" -module "ext:email" -pm
+
+# Dorking com Google
+docker run --rm -v $(pwd):/dados string-x -l /dados/dorks.txt -st "echo {STRING}" -module "clc:google" -pm
+
+# Coletar informações DNS
+docker run --rm -v $(pwd):/dados string-x -l /dados/domains.txt -st "echo {STRING}" -module "clc:dns" -pm
+```
+
+### Processamento via Pipe
+
+```bash
+# Pipe de comandos do host
+echo "github.com" | docker run --rm -i string-x -st "whois {STRING}"
+
+# Combinação com ferramentas do host
+cat urls.txt | docker run --rm -i string-x -st "curl -skL {STRING}" -p "grep '<title>'"
+
+# Pipeline complexo
+cat domains.txt | docker run --rm -i string-x -st "echo {STRING}" -module "clc:crtsh" -pm | sort -u
+```
+
+### Configurações Avançadas
+
+```bash
+# Usar proxy dentro do container
+docker run --rm -v $(pwd):/dados string-x -l /dados/dorks.txt -st "echo {STRING}" -module "clc:bing" -proxy "http://172.17.0.1:8080" -pm
+
+# Definir formato de saída
+docker run --rm -v $(pwd):/dados string-x -l /dados/targets.txt -st "echo {STRING}" -format json -o /dados/output.json
+
+# Executar com delay entre threads
+docker run --rm -v $(pwd):/dados string-x -l /dados/apis.txt -st "curl {STRING}" -t 10 -sleep 2
+```
+
+
 ## 🧠 CONCEITOS FUNDAMENTAIS
 
 ### Sistema de Template {STRING}
