@@ -38,7 +38,9 @@ class SqliteOutput(BaseModule):
             'database': 'strx_results.db',
             'table': 'results',
             'data': str(),
-            'example': './strx -l domains.txt -st "echo {STRING}" -module "out:sqlite" -pm'
+            'example': './strx -l domains.txt -st "echo {STRING}" -module "out:sqlite" -pm',
+            'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'timeout': 10  # Tempo limite para operações de banco de dados
         }
     
     def run(self):

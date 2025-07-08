@@ -59,7 +59,8 @@ class AuxRegexDomain(BaseModule):
         self.options = {
             "data": str(),
             "regex": rf'(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-]{{0,61}}[a-zA-Z0-9])?\.)+(?:{tld_pattern})\b',
-            "example": "./strx -l documents.txt -st \"{STRING}\" -module \"ext:domain\" -pm -f \".com\""
+            "example": './strx -l documents.txt -st "{STRING}" -module "ext:domain" -pm -f ".com"',
+            'debug': False  # Modo de debug para mostrar informações detalhadas
         }
         
     def run(self):

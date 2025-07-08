@@ -34,6 +34,7 @@ class HTTPProbe(BaseModule):
             'user_agent': 'Mozilla/5.0 (compatible; String-X Scanner)',
             'example': './strx -l urls.txt -st "echo {STRING}" -module "con:http_probe" -pm',
             'proxy': str(),  # Proxies para requisições (opcional)
+            'debug': False,  # Modo de debug para mostrar informações detalhadas    
         }
     
     def run(self):

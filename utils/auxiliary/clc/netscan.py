@@ -52,7 +52,8 @@ class NetworkScanner(BaseModule):
             'threads': 50,
             'timeout': 3,
             'service_detection': False,
-            'example': './strx -l networks.txt -st "echo {STRING}" -module "clc:netscan" -pm'
+            'example': './strx -l networks.txt -st "echo {STRING}" -module "clc:netscan" -pm',
+            'debug': False  # Modo de debug para mostrar informações detalhadas 
         }
         
         self.results = []

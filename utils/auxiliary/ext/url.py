@@ -36,7 +36,8 @@ class AuxRegexURL(BaseModule):
         self.options = {
             "data": str(),
             "regex": r'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+(?:/[-\w%/.]*)*(?:\?[-\w%&=.]*)?',
-            "example": "./strx -l webpages.txt -st \"{STRING}\" -module \"ext:url\" -pm"
+            "example": "./strx -l webpages.txt -st \"{STRING}\" -module \"ext:url\" -pm",
+            'debug': False  # Modo de debug para mostrar informações detalhadas 
         }
     
     def run(self):

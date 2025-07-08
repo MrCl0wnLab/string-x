@@ -47,7 +47,9 @@ class DuckDuckGoDorker(BaseModule):
         Inicializa o módulo de dorking DuckDuckGo.
         """
         super().__init__()
-        
+        # Instância do cliente HTTP assíncrono
+        self.request  = HTTPClient()
+        # Metadados do módulo
         self.meta = {
             'name': 'DuckDuckGo Dorking Tool',
             'author': 'MrCl0wn',
@@ -55,7 +57,7 @@ class DuckDuckGoDorker(BaseModule):
             'description': 'Realiza buscas avançadas com dorks no DuckDuckGo',
             'type': 'collector'
         }
-        
+        # Opções configuráveis do módulo
         self.options = {
             'data': str(),  # Dork para busca
             'delay': 2,     # Delay entre requisições (segundos)
@@ -63,6 +65,7 @@ class DuckDuckGoDorker(BaseModule):
             'max_results': 30,  # Número máximo de resultados
             'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:duckduckgo" -pm',
             'proxy': str(),  # Proxies para requisições (opcional)
+            'debug': False,  # Modo de debug para mostrar informações detalhadas    
         }
         
         # URLs de busca do DuckDuckGo com diferentes estratégias
@@ -147,7 +150,7 @@ class DuckDuckGoDorker(BaseModule):
         }
 
 
-        request = HTTPClient()
+        
         
         try:
             
@@ -164,7 +167,7 @@ class DuckDuckGoDorker(BaseModule):
                             kwargs['headers']['Referer'] = 'https://duckduckgo.com/'
 
                         async def make_request():
-                            return await request.send_request([search_url], **kwargs)
+                            return await self.request.send_request([search_url], **kwargs)
                         response = asyncio.run(make_request())[0]
 
                         if response.status_code == 200:

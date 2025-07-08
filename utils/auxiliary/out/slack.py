@@ -38,7 +38,9 @@ class SlackOutput(BaseModule):
             'webhook_url': str(),
             'channel': str(),
             'data': str(),
-            'example': './strx -l alerts.txt -st "echo {STRING}" -module "out:slack" -pm'
+            'example': './strx -l alerts.txt -st "echo {STRING}" -module "out:slack" -pm',
+            'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'timeout': 10  # Tempo limite para requisição HTTP
         }
     
     def run(self):

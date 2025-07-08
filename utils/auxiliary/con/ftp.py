@@ -31,7 +31,8 @@ class FTPConnector(BaseModule):
             'timeout': 10,
             'passive': True,
             'list_files': True,
-            'example': './strx -l ftp_servers.txt -st "echo {STRING}" -module "con:ftp" -pm'
+            'example': './strx -l ftp_servers.txt -st "echo {STRING}" -module "con:ftp" -pm',
+            'debug': False,  # Modo de debug para mostrar informações detalhadas
         }
     
     def run(self):

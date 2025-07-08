@@ -31,7 +31,8 @@ class JSONOutput(BaseModule):
             'file': 'output.json',
             'append': True,
             'pretty': True,
-            'example': './strx -l data.txt -st "echo {STRING}" -module "out:json_output" -pm'
+            'example': './strx -l data.txt -st "echo {STRING}" -module "out:json_output" -pm',
+            'debug': False  # Modo de debug para mostrar informações detalhadas 
         }
     
     def run(self):

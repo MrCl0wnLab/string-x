@@ -45,7 +45,9 @@ class NaverDorker(BaseModule):
         Inicializa o módulo de dorking Naver.
         """
         super().__init__()
-        
+        # Instância do cliente HTTP assíncrono
+        self.request = HTTPClient()
+        # Metadados do módulo
         self.meta = {
             'name': 'Naver Dorking Tool',
             'author': 'MrCl0wn',
@@ -53,10 +55,7 @@ class NaverDorker(BaseModule):
             'description': 'Realiza buscas avançadas com dorks no Naver',
             'type': 'collector'
         }
-        
-        # Instância do cliente HTTP assíncrono
-        self.http_client = HTTPClient()
-        
+        # Opções configuráveis do módulo        
         self.options = {
             'data': str(),  # Dork para busca
             'delay': 2,     # Delay entre requisições (segundos)
@@ -65,6 +64,7 @@ class NaverDorker(BaseModule):
             'max_pages': 5,  # Número máximo de páginas para buscar
             'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:naver" -pm',
             'proxy': str(),  # Proxies para requisições (opcional)
+            'debug': False,  # Modo de debug para mostrar informações detalhadas    
         }
         
         # Base URL do Naver
@@ -236,7 +236,7 @@ class NaverDorker(BaseModule):
                 start = (page - 1) * 15 + 1 if page > 2 else 1
                 search_url = f"https://search.naver.com/search.naver?nso=&page={page}&query={encoded_dork}&sm=tab_pge&start={start}&where=web"
             
-            response = await self.http_client.send_request([search_url], **kwargs)
+            response = await self.request.send_request([search_url], **kwargs)
             
             if not response or isinstance(response[0], Exception):
                 return []

@@ -31,7 +31,8 @@ class XMLOutput(BaseModule):
             'file': 'output.xml',
             'root_element': 'stringx_results',
             'item_element': 'result',
-            'example': './strx -l data.txt -st "echo {STRING}" -module "out:xml_output" -pm'
+            'example': './strx -l data.txt -st "echo {STRING}" -module "out:xml_output" -pm',
+            'debug': False,  # Modo de debug para mostrar informações detalhadas
         }
     
     def run(self):

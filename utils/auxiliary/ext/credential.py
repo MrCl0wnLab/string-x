@@ -26,7 +26,8 @@ class CredentialExtractor(BaseModule):
         self.options = {
             'data': str(),
             'types': ['all'],  # aws, github, slack, password, ssh
-            'example': './strx -l config_files.txt -st "echo {STRING}" -module "ext:credential" -pm'
+            'example': './strx -l config_files.txt -st "echo {STRING}" -module "ext:credential" -pm',
+            'debug': False  # Modo de debug para mostrar informações detalhadas
         }
     
     def run(self):

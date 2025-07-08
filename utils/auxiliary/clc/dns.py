@@ -48,7 +48,8 @@ class DnsInfo(BaseModule):
             'records': ['A', 'MX', 'TXT', 'NS'],  # Tipos de registros DNS
             'timeout': 5,  # Timeout para consultas DNS
             'resolver': '8.8.8.8',  # Servidor DNS resolver
-            'example': './strx -l domains.txt -st "echo {STRING}" -module "clc:dns" -pm'
+            'example': './strx -l domains.txt -st "echo {STRING}" -module "clc:dns" -pm',
+            'debug': False  # Modo de debug para mostrar informações detalhadas 
         }
     
     def _get_dns_record(self, host: str, record_type: str) -> list:

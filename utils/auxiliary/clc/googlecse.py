@@ -46,7 +46,8 @@ class GoogleCSEDorker(BaseModule):
         Inicializa o módulo de dorking Google CSE.
         """
         super().__init__()
-        
+        # Instância do cliente HTTP assíncrono
+        self.request = HTTPClient()
         # Metadados do módulo - informações sobre versão, autor e descrição
         self.meta = {
             'name': 'Google CSE Dorking Tool',
@@ -55,10 +56,6 @@ class GoogleCSEDorker(BaseModule):
             'description': 'Realiza buscas avançadas usando Google Custom Search Engine',
             'type': 'collector'
         }
-        
-        # Instância do cliente HTTP assíncrono
-        self.http_client = HTTPClient()
-        
         # Opções configuráveis do módulo
         self.options = {
             'data': str(),  # Dork para busca
@@ -306,35 +303,30 @@ class GoogleCSEDorker(BaseModule):
         Returns:
             str: Conteúdo da resposta ou string vazia em caso de erro
         """
-        
-        # Headers para simular um navegador real e evitar detecção como bot
-        headers = {
-            'User-Agent': UserAgentGenerator.get_random_lib(),  # User agent aleatório gerado dinamicamente
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.5',
-            'Referer': 'https://cse.google.com/cse',  # Referer do Google CSE
-            'Connection': 'keep-alive',
-            'Upgrade-Insecure-Requests': '1',
-            'Cache-Control': 'max-age=0',
-            'Accept-Encoding': 'gzip, deflate, br, zstd'
-        }
-
-        # Configurar parâmetros para o HTTPClient
+        proxy = self.options.get('proxy') if self.options.get('proxy') else None
         kwargs = {
-            'headers': headers,
-            'timeout': self.options.get('timeout', 30),
+            'headers' : {
+                    'User-Agent': UserAgentGenerator.get_random_lib(),  # User agent aleatório gerado dinamicamente
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.5',
+                    'Referer': 'https://cse.google.com/cse',  # Referer do Google CSE
+                    'Connection': 'keep-alive',
+                    'Upgrade-Insecure-Requests': '1',
+                    'Cache-Control': 'max-age=0',
+                    'Accept-Encoding': 'gzip, deflate, br, zstd'
+                },
+            'proxies': {
+                'http://': proxy,
+                'https://': proxy
+                },
+            'timeout': self.options.get('timeout', 30),  # Timeout de 10 segundos,
             'follow_redirects': True,
         }
-        
-        if self.options.get('proxy'):
-            kwargs['proxies'] = {
-                'http://': self.options.get('proxy'),
-                'https://': self.options.get('proxy')
-            }
+
 
         try:
             # Fazer requisição assíncrona
-            response = await self.http_client.send_request([url], **kwargs)
+            response = await self.request.send_request([url], **kwargs)
             
             if not response or isinstance(response[0], Exception):
                 self.set_result(f"⚠️ Erro ao acessar {url}: {str(response[0]) if response else 'Sem resposta'}")

@@ -44,7 +44,9 @@ class EzilonDorker(BaseModule):
         Inicializa o módulo de dorking Ezilon.
         """
         super().__init__()
-        
+        # Instância do cliente HTTP assíncrono
+        self.request  = HTTPClient()
+        # Metadados do módulo
         self.meta = {
             'name': 'Ezilon Dorking Tool',
             'author': 'MrCl0wn',
@@ -52,10 +54,7 @@ class EzilonDorker(BaseModule):
             'description': 'Realiza buscas avançadas com dorks no Ezilon',
             'type': 'collector'
         }
-        
-        # Instância do cliente HTTP assíncrono
-        self.http_client = HTTPClient()
-        
+        # Opções configuráveis do módulo
         self.options = {
             'data': str(),  # Dork para busca
             'delay': 2,     # Delay entre requisições (segundos)
@@ -64,6 +63,7 @@ class EzilonDorker(BaseModule):
             'max_pages': 5,  # Número máximo de páginas para buscar
             'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:ezilon" -pm',
             'proxy': str(),  # Proxies para requisições (opcional)
+            'debug': False,  # Modo de debug para mostrar informações detalhadas    
         }
         
         # Base URL do Ezilon
@@ -238,7 +238,7 @@ class EzilonDorker(BaseModule):
                 search_url = self.search_url_templates[1].format(DORK=encoded_dork, START=start, REGION=region)
             
             # Fazer requisição HTTP
-            response = await self.http_client.send_request([search_url], **kwargs)
+            response = await self.request.send_request([search_url], **kwargs)
             
             if not response or isinstance(response[0], Exception):
                 return []

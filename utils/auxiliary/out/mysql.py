@@ -41,7 +41,8 @@ class MySqlOutput(BaseModule):
             'password': str(),
             'table': 'results',
             'data': str(),
-            'example': './strx -l data.txt -st "echo {STRING}" -module "out:mysql" -pm'
+            'example': './strx -l data.txt -st "echo {STRING}" -module "out:mysql" -pm',
+            'debug': False,  # Modo de debug para mostrar informações detalhadas
         }
     
     def run(self):

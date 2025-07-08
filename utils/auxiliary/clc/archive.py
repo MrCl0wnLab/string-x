@@ -39,10 +39,8 @@ class archive(BaseModule):
         """
         # Chama o inicializador da classe pai para configurar estruturas básicas
         super().__init__()
-        
         # Instância do cliente HTTP assíncrono
-        self.http_client = HTTPClient()
-        
+        self.request  = HTTPClient()
         # Metadados do módulo
         self.meta = {
             'name': 'Wayback Machine URL Collector',
@@ -51,7 +49,6 @@ class archive(BaseModule):
             'description': 'Coleta URLs arquivadas de um domínio usando o Wayback Machine (archive.org)',
             'type': 'collector'
         }
-        
         # Opções configuráveis do módulo
         self.options = {
             'data': str(),           # Domínio alvo
@@ -175,7 +172,7 @@ class archive(BaseModule):
         
         try:
             # Realiza a requisição assíncrona
-            response = await self.http_client.send_request([url], **kwargs)
+            response = await self.request.send_request([url], **kwargs)
             
             if not response or isinstance(response[0], Exception):
                 self.log_debug(f"Erro na requisição: {str(response[0]) if response else 'Sem resposta'}")

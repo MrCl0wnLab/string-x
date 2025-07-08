@@ -48,7 +48,9 @@ class YahooDorker(BaseModule):
         Inicializa o módulo de dorking Yahoo.
         """
         super().__init__()
-        
+        # Instância do cliente HTTP assíncrono
+        self.request = HTTPClient()
+        # Metadados do módulo
         self.meta = {
             'name': 'Yahoo Dorking Tool',
             'author': 'MrCl0wn',
@@ -56,16 +58,14 @@ class YahooDorker(BaseModule):
             'description': 'Realiza buscas avançadas com dorks no Yahoo',
             'type': 'collector'
         }
-        
-        # Instância do cliente HTTP assíncrono
-        self.http_client = HTTPClient()
-        
+        # Opções configuráveis do módulo
         self.options = {
             'data': str(),  # Dork para busca
             'delay': 2,     # Delay entre requisições (segundos)
             'timeout': 15,  # Timeout para requisições
             'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:yahoo" -pm',
             'proxy': str(),  # Proxies para requisições (opcional)
+            'debug': False,  # Modo de debug para mostrar informações detalhadas    
         }
         
         self.search_url_templates = [
@@ -126,28 +126,24 @@ class YahooDorker(BaseModule):
         
         # Codificar a query
         encoded_dork = quote_plus(dork)
-        
-        # User-agent aleatório
-        headers = {
-            'User-Agent': UserAgentGenerator.get_random_lib(),
-            'Accept': 'text/html,application/xhtml+xml,application/xml',
-            'Accept-Language': 'en-US,en;q=0.9',
-            'Referer': 'https://br.search.yahoo.com',
-            'DNT': '1'
-        }
-
+        # Definir proxy se fornecido
+        proxy = self.options.get('proxy') if self.options.get('proxy') else None
         # Configurar parâmetros para HTTPClient
         kwargs = {
-            'headers': headers,
+            'headers': {
+                'User-Agent': UserAgentGenerator.get_random_lib(),
+                'Accept': 'text/html,application/xhtml+xml,application/xml',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Referer': 'https://br.search.yahoo.com',
+                'DNT': '1'
+            },
+            'proxies': {
+                'http://': proxy,
+                'https://': proxy
+            },
             'timeout': self.options.get('timeout', 30),
             'follow_redirects': True,
         }
-        
-        if self.options.get('proxy'):
-            kwargs['proxies'] = {
-                'http://': self.options.get('proxy'),
-                'https://': self.options.get('proxy')
-            }
         
         try:
             # Usar o método assíncrono do HTTPClient
@@ -156,7 +152,7 @@ class YahooDorker(BaseModule):
                 try:
                     # Executar requisição assíncrona
                     async def make_request():
-                        return await self.http_client.send_request([search_url], **kwargs)
+                        return await self.request.send_request([search_url], **kwargs)
                     response = asyncio.run(make_request())[0]
                     
                     if response.status_code != 200:

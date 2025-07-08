@@ -31,7 +31,7 @@ class EmailVerifier(BaseModule):
         Inicializa o módulo de verificação de email.
         """
         super().__init__()
-        
+        # Metadados do módulo
         self.meta = {
             'name': 'Email Verifier',
             'author': 'MrCl0wn',
@@ -39,13 +39,14 @@ class EmailVerifier(BaseModule):
             'description': 'Verificação e validação de endereços de email',
             'type': 'collector'
         }
-        
+        # Opções configuráveis do módulo
         self.options = {
             'data': str(),  # Email address
             'check_mx': True,
             'check_smtp': False,  # Pode ser detectado como spam
             'timeout': 10,
-            'example': './strx -l emails.txt -st "echo {STRING}" -module "clc:emailverify" -pm'
+            'example': './strx -l emails.txt -st "echo {STRING}" -module "clc:emailverify" -pm',
+            'debug': False  # Modo de debug para mostrar informações detalhadas 
         }
     
     def run(self):

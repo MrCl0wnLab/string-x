@@ -31,7 +31,8 @@ class SSHConnector(BaseModule):
             'key_file': str(),
             'command': 'whoami',
             'timeout': 10,
-            'example': './strx -l servers.txt -st "echo {STRING}" -module "con:ssh" -pm'
+            'example': './strx -l servers.txt -st "echo {STRING}" -module "con:ssh" -pm',
+            'debug': False,  # Modo de debug para mostrar informações detalhadas    
         }
     
     def run(self):

@@ -57,7 +57,9 @@ class IPInfo(BaseModule):
         Para acesso a recursos premium, defina um token de API.
         """
         super().__init__()
-        
+        # Instância do cliente HTTP assíncrono
+        self.request  = HTTPClient()
+        # Metadados do módulo 
         self.meta = {
             'name': 'IP Information Collector',
             'author': 'MrCl0wn',
@@ -65,16 +67,14 @@ class IPInfo(BaseModule):
             'description': 'Coleta informações detalhadas sobre endereços IP usando ipinfo.io',
             'type': 'collector'
         }
-        
-        # Instância do cliente HTTP assíncrono
-        self.http_client = HTTPClient()
-        
+        # Opções configuráveis do módulo
         self.options = {
             'data': str(),          # Endereço IP a ser consultado (pode ser múltiplos IPs separados por nova linha)
             'api_token': str(),     # Token de API do ipinfo.io (opcional, pode usar env IPINFO_TOKEN)
             'timeout': 10,          # Timeout para requisições
             'user-agent': 'STRX/1.0 (https://github.com/MrCl0wnLab/string-x)', # User-Agent para requisições
-            'example': './strx -l ips.txt -st "echo {STRING}" -module "clc:ipinfo" -pm' # Exemplo de uso
+            'example': './strx -l ips.txt -st "echo {STRING}" -module "clc:ipinfo" -pm', # Exemplo de uso
+            'debug': False,        # Modo de debug para mostrar informações detalhadas      
         }
     
     def _is_valid_ip(self, ip: str) -> bool:
@@ -149,7 +149,7 @@ class IPInfo(BaseModule):
                 'follow_redirects': True,
             }
             
-            response = await self.http_client.send_request([base_url], **kwargs)
+            response = await self.request.send_request([base_url], **kwargs)
             
             if not response or isinstance(response[0], Exception):
                 self.set_result(f"✗ {ip}: Erro ao consultar API: {str(response[0]) if response else 'Sem resposta'}")

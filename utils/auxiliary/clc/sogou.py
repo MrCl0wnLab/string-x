@@ -47,7 +47,9 @@ class SogouDorker(BaseModule):
         Inicializa o módulo de dorking Sogou.
         """
         super().__init__()
-        
+        # Instância do cliente HTTP assíncrono
+        self.request = HTTPClient()
+        # Metadados do módulo
         self.meta = {
             'name': 'Sogou Dorking Tool',
             'author': 'MrCl0wn',
@@ -55,10 +57,7 @@ class SogouDorker(BaseModule):
             'description': 'Realiza buscas avançadas com dorks no Sogou',
             'type': 'collector'
         }
-        
-        # Instância do cliente HTTP assíncrono
-        self.http_client = HTTPClient()
-        
+        # Opções configuráveis do módulo
         self.options = {
             'data': str(),  # Dork para busca
             'delay': 2,     # Delay entre requisições (segundos)
@@ -67,6 +66,7 @@ class SogouDorker(BaseModule):
             'max_pages': 5,  # Número máximo de páginas para buscar
             'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:sogou" -pm',
             'proxy': str(),  # Proxies para requisições (opcional)
+            'debug': False,  # Modo de debug para mostrar informações detalhadas    
         }
         
         # Base URL do Sogou
@@ -204,7 +204,7 @@ class SogouDorker(BaseModule):
             # Construir URL da primeira página
             search_url = self.first_page_template.replace("{DORK}", encoded_dork)
             
-            response = await self.http_client.send_request([search_url], **kwargs)
+            response = await self.request.send_request([search_url], **kwargs)
             response = response[0]
             
             if response.status_code == 200:
@@ -235,7 +235,7 @@ class SogouDorker(BaseModule):
             # Construir URL da página usando sessiontime
             search_url = self.pagination_template.replace("{DORK}", encoded_dork).replace("{SESSIONTIME}", self.sessiontime).replace("{PAGE}", str(page))
             
-            response = await self.http_client.send_request([search_url], **kwargs)
+            response = await self.request.send_request([search_url], **kwargs)
             response = response[0]
             
             if response.status_code == 200:

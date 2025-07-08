@@ -41,7 +41,8 @@ class WhoisInfo(BaseModule):
         }
         self.options = {
             'data': str(),
-            'example': './strx -l domains.txt -st "echo {STRING}" -module "clc:whois" -pm'
+            'example': './strx -l domains.txt -st "echo {STRING}" -module "clc:whois" -pm',
+            'debug': False,  # Modo de debug para mostrar informações detalhadas    
         }
     
     def run(self):

@@ -29,7 +29,8 @@ class IPExtractor(BaseModule):
             'ipv4': True,
             'ipv6': True,
             'private': True,  # Incluir IPs privados
-            'example': './strx -l logs.txt -st "echo {STRING}" -module "ext:ip" -pm'
+            'example': './strx -l logs.txt -st "echo {STRING}" -module "ext:ip" -pm',
+            'debug': False  # Modo de debug para mostrar informações detalhadas 
         }
     
     def run(self):

@@ -38,7 +38,8 @@ class GeminiAI(BaseModule):
             'data': str(),  # O texto do prompt
             'temperature': 0.7,  # Controla aleatoriedade (0.0 a 1.0)
             'max_tokens': 800,  # Máximo de tokens na resposta
-            'example': './strx -l prompts.txt -st "echo {STRING}" -module "ai:gemini" -pm'
+            'example': './strx -l prompts.txt -st "echo {STRING}" -module "ai:gemini" -pm',
+            'debug': False  # Modo de debug para mostrar informações detalhadas
         }
         
         self.base_url = "https://generativelanguage.googleapis.com/v1beta/models/"

@@ -31,7 +31,8 @@ class CSVOutput(BaseModule):
             'file': 'output.csv',
             'columns': ['timestamp', 'data', 'type'],
             'delimiter': ',',
-            'example': './strx -l data.txt -st "echo {STRING}" -module "out:csv_output" -pm'
+            'example': './strx -l data.txt -st "echo {STRING}" -module "out:csv_output" -pm',
+            'debug': False  # Modo de debug para mostrar informações detalhadas 
         }
     
     def run(self):

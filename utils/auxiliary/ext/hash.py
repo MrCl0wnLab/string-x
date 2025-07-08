@@ -28,7 +28,8 @@ class HashExtractor(BaseModule):
         self.options = {
             'data': str(),
             'hash_types': ['md5', 'sha1', 'sha256', 'sha512', 'all'],
-            'example': './strx -l password_dump.txt -st "echo {STRING}" -module "ext:hash" -pm'
+            'example': './strx -l password_dump.txt -st "echo {STRING}" -module "ext:hash" -pm',
+            'debug': False  # Modo de debug para mostrar informações detalhadas 
         }
     
     def run(self):

@@ -39,7 +39,8 @@ class TelegramOutput(BaseModule):
             'bot_token': str(),
             'chat_id': str(),
             'data': str(),
-            'example': './strx -l results.txt -st "echo {STRING}" -module "out:telegram" -pm'
+            'example': './strx -l results.txt -st "echo {STRING}" -module "out:telegram" -pm',
+            'debug': False,  # Modo de debug para mostrar informações detalhadas
         }
     
     def run(self):

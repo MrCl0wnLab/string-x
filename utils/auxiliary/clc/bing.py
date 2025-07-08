@@ -35,7 +35,9 @@ class BingDorker(BaseModule):
         Inicializa o módulo de dorking Bing.
         """
         super().__init__()
-        
+        # Instância do cliente HTTP assíncrono
+        self.request = HTTPClient()
+        # Metadados do módulo
         self.meta = {
             'name': 'Bing Dorking Tool',
             'author': 'MrCl0wn',
@@ -43,13 +45,14 @@ class BingDorker(BaseModule):
             'description': 'Realiza buscas avançadas com dorks no Bing',
             'type': 'collector'
         }
-        
+        # Opções configuráveis do módulo
         self.options = {
             'data': str(),  # Dork para busca
             'delay': 2,     # Delay entre requisições (segundos)
             'timeout': 15,  # Timeout para requisições
             'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:bing" -pm',
             'proxy': str(),  # Proxies para requisições (opcional)
+            'debug': False,  # Modo de debug para mostrar informações detalhadas
         }
         
         self.search_url_templates = [
@@ -125,7 +128,7 @@ class BingDorker(BaseModule):
             'timeout': self.options.get('timeout', 30),  # Timeout de 10 segundos,
         }
 
-        request = HTTPClient()
+        
         
         try:
             # Usar os três templates de URL
@@ -134,7 +137,7 @@ class BingDorker(BaseModule):
                 url = template.format(DORK=encoded_dork)
                 try:
                     async def make_request():
-                        return await request.send_request([url], **kwargs)
+                        return await self.request .send_request([url], **kwargs)
                     response = asyncio.run(make_request())[0]
                     if response.status_code != 200:
                         continue

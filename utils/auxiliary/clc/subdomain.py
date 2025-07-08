@@ -32,7 +32,8 @@ class SubdomainEnum(BaseModule):
     
     def __init__(self):
         super().__init__()
-        
+        # Instância do cliente HTTP assíncrono
+        self.request = HTTPClient()
         self.meta = {
             'name': 'Subdomain Enumerator',
             'author': 'MrCl0wn',
@@ -40,16 +41,14 @@ class SubdomainEnum(BaseModule):
             'description': 'Enumera subdomínios usando CT logs e bruteforce',
             'type': 'collector'
         }
-        
-        # Instância do cliente HTTP assíncrono
-        self.http_client = HTTPClient()
-        
+        # Opções configuráveis do módulo
         self.options = {
             'data': str(),  # Domínio alvo
             'methods': ['crtsh', 'certspotter', 'hackertarget'],
             'timeout': 10,
             'example': './strx -l domains.txt -st "echo {STRING}" -module "clc:subdomain" -pm',
             'proxy': str(),  # Proxies para requisições (opcional)
+            'debug': False,  # Modo de debug para mostrar informações detalhadas    
         }
     
     def run(self):
@@ -105,7 +104,7 @@ class SubdomainEnum(BaseModule):
             
         # Executar requisição assíncrona
         async def make_request():
-            return await self.http_client.send_request([url], **kwargs)
+            return await self.request.send_request([url], **kwargs)
         
         response = asyncio.run(make_request())[0]
         
@@ -146,7 +145,7 @@ class SubdomainEnum(BaseModule):
             
         # Executar requisição assíncrona
         async def make_request():
-            return await self.http_client.send_request([url], **kwargs)
+            return await self.request.send_request([url], **kwargs)
         
         response = asyncio.run(make_request())[0]
         
@@ -184,7 +183,7 @@ class SubdomainEnum(BaseModule):
             
         # Executar requisição assíncrona
         async def make_request():
-            return await self.http_client.send_request([url], **kwargs)
+            return await self.request.send_request([url], **kwargs)
         
         response = asyncio.run(make_request())[0]
         

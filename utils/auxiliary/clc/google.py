@@ -19,7 +19,6 @@ e múltiplas estratégias de requisição.
 """
 from core.basemodule import BaseModule
 from core.user_agent_generator import UserAgentGenerator
-import httpx
 import re
 from urllib.parse import quote_plus, unquote, urlencode
 import time
@@ -47,7 +46,9 @@ class GoogleDorker(BaseModule):
         Inicializa o módulo de dorking Google.
         """
         super().__init__()
-        
+        # Instância do cliente HTTP assíncrono
+        self.request  = HTTPClient()
+        # Metadados do módulo
         self.meta = {
             'name': 'Google Dorking Tool',
             'author': 'MrCl0wn',
@@ -55,7 +56,7 @@ class GoogleDorker(BaseModule):
             'description': 'Realiza buscas avançadas com dorks no Google',
             'type': 'collector'
         }
-
+        # Opções configuráveis do módulo
         self.options = {
             'data': str(),                                                                  # Dork para busca
             'delay': 5,                                                                     # Delay entre requisições (segundos)
@@ -239,8 +240,7 @@ class GoogleDorker(BaseModule):
         """
         Executa a requisição com tratamento avançado de resposta.
         """
-
-        debug_mode = True
+        # Proxy para requisições
         proxy = self.options.get('proxy') if self.options.get('proxy') else None
         # Gerar cookies para simular um navegador real
         cookies = self._generate_cookies(config["host"])
@@ -260,11 +260,9 @@ class GoogleDorker(BaseModule):
             'cookies': cookies
         }
 
-        request = HTTPClient()
-
         try:
             async def make_request():
-                return await request.send_request([url], **kwargs)
+                return await self.request.send_request([url], **kwargs)
             response = asyncio.run(make_request())[0]
             # Faz a requisição
             return response.text

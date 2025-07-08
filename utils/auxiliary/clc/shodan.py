@@ -39,7 +39,9 @@ class ShodanCollector(BaseModule):
         Inicializa o módulo coletor Shodan.
         """
         super().__init__()
-        
+        # Instância do cliente HTTP assíncrono
+        self.request = HTTPClient()
+        # Metadados do módulo
         self.meta = {
             'name': 'Shodan Collector',
             'author': 'MrCl0wn',
@@ -47,17 +49,16 @@ class ShodanCollector(BaseModule):
             'description': 'Coleta informações via API Shodan',
             'type': 'collector'
         }
-        
-        # Instância do cliente HTTP assíncrono
-        self.http_client = HTTPClient()
-        
+        # Opções configuráveis do módulo
         self.options = {
             'data': str(),  # IP ou hostname
             'api_key': str(),  # API key do Shodan
             'query_type': 'host',  # host, search, count
             'facets': str(),  # Para query type 'search'
             'limit': 100,
-            'example': './strx -l ips.txt -st "echo {STRING}" -module "clc:shodan" -pm'
+            'example': './strx -l ips.txt -st "echo {STRING}" -module "clc:shodan" -pm',
+            'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'proxy': str(),  # Proxies para requisições (opcional)  
         }
     
     def run(self):
@@ -108,7 +109,7 @@ class ShodanCollector(BaseModule):
                 'timeout': 15,
             }
             
-            response = await self.http_client.send_request([url], **kwargs)
+            response = await self.request.send_request([url], **kwargs)
             response = response[0]  # Obtém o primeiro resultado da lista
             
             if response.status_code == 200:
@@ -164,7 +165,7 @@ class ShodanCollector(BaseModule):
                 'timeout': 20,
             }
             
-            response = await self.http_client.send_request([url], **kwargs)
+            response = await self.request.send_request([url], **kwargs)
             response = response[0]
             
             if response.status_code == 200:
@@ -212,7 +213,7 @@ class ShodanCollector(BaseModule):
                 'timeout': 15,
             }
             
-            response = await self.http_client.send_request([url], **kwargs)
+            response = await self.request.send_request([url], **kwargs)
             response = response[0]
             
             if response.status_code == 200:

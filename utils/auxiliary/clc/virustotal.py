@@ -40,7 +40,9 @@ class VirusTotalCollector(BaseModule):
         Inicializa o módulo coletor VirusTotal.
         """
         super().__init__()
-        
+        # Instância do cliente HTTP assíncrono
+        self.request = HTTPClient()
+        # Metadados do módulo
         self.meta = {
             'name': 'VirusTotal Collector',
             'author': 'MrCl0wn',
@@ -48,10 +50,7 @@ class VirusTotalCollector(BaseModule):
             'description': 'Coleta informações via API VirusTotal',
             'type': 'collector'
         }
-        
-        # Instância do cliente HTTP assíncrono
-        self.http_client = HTTPClient()
-        
+        # Opções configuráveis do módulo
         self.options = {
             'data': str(),  # URL, IP, domain ou hash
             'api_key': str(),  # API key do VirusTotal
@@ -146,7 +145,7 @@ class VirusTotalCollector(BaseModule):
                 'timeout': 15,
             }
             
-            response = await self.http_client.send_request([api_url], **kwargs)
+            response = await self.request.send_request([api_url], **kwargs)
             response = response[0]
             
             if response.status_code == 200:
@@ -200,7 +199,7 @@ class VirusTotalCollector(BaseModule):
                 'timeout': 15,
             }
             
-            response = await self.http_client.send_request([api_url], **kwargs)
+            response = await self.request.send_request([api_url], **kwargs)
             response = response[0]
             
             if response.status_code == 200:
@@ -251,7 +250,7 @@ class VirusTotalCollector(BaseModule):
                 'timeout': 15,
             }
             
-            response = await self.http_client.send_request([api_url], **kwargs)
+            response = await self.request.send_request([api_url], **kwargs)
             response = response[0]
             
             if response.status_code == 200:
@@ -314,7 +313,7 @@ class VirusTotalCollector(BaseModule):
                 'timeout': 15,
             }
             
-            response = await self.http_client.send_request([api_url], **kwargs)
+            response = await self.request.send_request([api_url], **kwargs)
             response = response[0]
             
             if response.status_code == 200:

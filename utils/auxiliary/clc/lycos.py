@@ -45,7 +45,9 @@ class LycosDorker(BaseModule):
         Inicializa o módulo de dorking Lycos.
         """
         super().__init__()
-        
+        # Instância do cliente HTTP assíncrono
+        self.request  = HTTPClient()
+        # Metadados do módulo
         self.meta = {
             'name': 'Lycos Dorking Tool',
             'author': 'MrCl0wn',
@@ -53,10 +55,7 @@ class LycosDorker(BaseModule):
             'description': 'Realiza buscas avançadas com dorks no Lycos',
             'type': 'collector'
         }
-        
-        # Instância do cliente HTTP assíncrono
-        self.http_client = HTTPClient()
-        
+        # Opções configuráveis do módulo
         self.options = {
             'data': str(),  # Dork para busca
             'delay': 2,     # Delay entre requisições (segundos)
@@ -65,6 +64,7 @@ class LycosDorker(BaseModule):
             'max_pages': 5,  # Número máximo de páginas para buscar (usando paginação automática)
             'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:lycos" -pm',
             'proxy': str(),   # Proxies para requisições
+            'debug': False,  # Modo de debug para mostrar informações detalhadas    
         }
         
         # Base URL do Lycos
@@ -111,7 +111,7 @@ class LycosDorker(BaseModule):
         """
         try:
             # Fazer requisição inicial para obter o keyvol
-            response = await self.http_client.send_request([self.base_url + self.search_path], 
+            response = await self.request.send_request([self.base_url + self.search_path], 
                                                          headers=headers, 
                                                          follow_redirects=True)
             
@@ -211,7 +211,7 @@ class LycosDorker(BaseModule):
             # Buscar páginas usando paginação automática
             while next_page_url and page_count < max_pages:
                 try:
-                    response = await self.http_client.send_request([next_page_url], **kwargs)
+                    response = await self.request.send_request([next_page_url], **kwargs)
                     
                     if not response or isinstance(response[0], Exception):
                         break

@@ -35,7 +35,9 @@ class GeoIPCollector(BaseModule):
         Inicializa o módulo de geolocalização IP.
         """
         super().__init__()
-        
+        # Instância do cliente HTTP assíncrono
+        self.request = HTTPClient()
+        # Metadados do módulo
         self.meta = {
             'name': 'GeoIP Collector',
             'author': 'MrCl0wn',
@@ -43,17 +45,17 @@ class GeoIPCollector(BaseModule):
             'description': 'Geolocalização de endereços IP',
             'type': 'collector'
         }
-        
+        # Opções configuráveis do módulo
         self.options = {
             'data': str(),  # IP address
             'api_provider': 'auto',  # auto, ipapi, ipinfo, freegeoip
             'include_isp': True,
             'timeout': 10,
-            'example': './strx -l ips.txt -st "echo {STRING}" -module "clc:geoip" -pm'
+            'example': './strx -l ips.txt -st "echo {STRING}" -module "clc:geoip" -pm',
+            'debug': False,  # Modo de debug para mostrar informações detalhadas    
         }
         
-        # Instância do cliente HTTP assíncrono
-        self.http_client = HTTPClient()
+        
     
     def run(self):
         """
@@ -134,7 +136,7 @@ class GeoIPCollector(BaseModule):
                 'timeout': self.options.get('timeout', 10),
             }
             
-            response = await self.http_client.send_request([url], **kwargs)
+            response = await self.request.send_request([url], **kwargs)
             response = response[0]  # Obtém o primeiro resultado da lista
             
             if response.status_code == 200:

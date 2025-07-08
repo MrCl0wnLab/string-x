@@ -43,7 +43,8 @@ class CrtshCollector(BaseModule):
         Inicializa o módulo de coleta crt.sh.
         """
         super().__init__()
-        
+        # Instância do cliente HTTP assíncrono
+        self.request = HTTPClient()
         # Metadados do módulo
         self.meta = {
             'name': 'Certificate Transparency Collector',
@@ -52,7 +53,6 @@ class CrtshCollector(BaseModule):
             'description': 'Coleta certificados SSL/TLS e subdomínios usando crt.sh',
             'type': 'collector'
         }
-        
         # Opções configuráveis do módulo
         self.options = {
             'data': str(),  # Domínio alvo
@@ -169,11 +169,11 @@ class CrtshCollector(BaseModule):
 
         self.log_debug(f"URL de consulta: {url}")
         self.log_debug(f"Parâmetros cliente: {kwargs}")
-        request = HTTPClient()
+        
         try:
             # Realiza a requisição
             async def make_request():
-                return await request.send_request([url], **kwargs)
+                return await self.request.send_request([url], **kwargs)
             
             self.log_debug("Enviando requisição...")     
             response = asyncio.run(make_request())[0]
