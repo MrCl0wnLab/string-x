@@ -24,18 +24,18 @@ class CSVOutput(BaseModule):
             'author': 'MrCl0wn',
             'version': '1.0',
             'description': 'Salva resultados em formato CSV',
-            'type': 'output'
-        ,
-            'example': './strx -l data.txt -st "echo {STRING}" -module "out:csv_output" -pm'
+            'type': 'output',
+            'example': './strx -l data.txt -st "echo {STRING}" -module "out:csv" -pm'
         }
         
         self.options = {
             'data': str(),
             'file': 'output.csv',
             'columns': ['timestamp', 'data', 'type'],
-            'delimiter': ',',            'debug': False,  # Modo de debug para mostrar informações detalhadas
-            'retry': 0,              # Número de tentativas de requisição
-            'retry_delay': 1,        # Atraso entre tentativas de requisição
+            'delimiter': ',',            
+            'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'retry': 0,      # Número de tentativas de requisição
+            'retry_delay': 1,# Atraso entre tentativas de requisição
         }
     
     def run(self):
@@ -49,7 +49,17 @@ class CSVOutput(BaseModule):
         if not data:
             return
         
-        file_path = self.options.get('file', 'output.csv')
+        filename = self.options.get('file', 'output.csv')
+        # Obter caminho absoluto do diretório output do projeto
+        project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+        output_dir = os.path.join(project_root, 'output')
+        
+        # Garantir que o diretório output existe
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # Construir caminho completo do arquivo
+        file_path = os.path.join(output_dir, filename)
+        
         columns = self.options.get('columns', ['timestamp', 'data', 'type'])
         delimiter = self.options.get('delimiter', ',')
         
@@ -78,7 +88,7 @@ class CSVOutput(BaseModule):
                 
                 writer.writerow(row_data)
             
-            self.set_result(f"Data saved to {file_path}")
+            #self.set_result(f"Data saved to {file_path}")
             
         except Exception as e:
             self.set_result(f"Error saving to CSV: {str(e)}")

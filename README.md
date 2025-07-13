@@ -463,7 +463,7 @@ cat dorks.txt | ./strx -st "echo {STRING}" -module "clc:yahoo" -proxy "http://us
 ./strx -l sensitive_dorks.txt -st "echo {STRING}" -module "clc:google" -proxy "https://127.0.0.1:9050" -pm -t 1 -sleep 5
 
 # Dorking com output estruturado + proxy com autenticação
-./strx -l sqli_dorks.txt -st "echo {STRING}" -module "clc:googlecse" -proxy "http://user:pass@10.0.0.1:8080" -pm -module "out:json_output" -pm
+./strx -l sqli_dorks.txt -st "echo {STRING}" -module "clc:googlecse" -proxy "http://user:pass@10.0.0.1:8080" -pm -module "out:json" -pm
 
 # Coleta distribuída através de lista de proxies
 cat proxy_list.txt | while read proxy; do
@@ -694,9 +694,10 @@ Módulos para saída e integração de resultados:
 | `mysql`       | Salva dados em banco MySQL                | `-module "out:mysql"` |
 | `telegram`    | Envia resultados via Telegram Bot         | `-module "out:telegram"` |
 | `slack`       | Envia resultados via Slack Webhook        | `-module "out:slack"` |
-| `json_output` | Salva resultados em JSON                  | `-module "out:json_output"` |
-| `csv_output`  | Salva resultados em CSV                   | `-module "out:csv_output"` |
-| `xml_output`  | Salva resultados em XML                   | `-module "out:xml_output"` |
+| `json`        | Salva resultados em JSON                  | `-module "out:json"` |
+| `csv`         | Salva resultados em CSV                   | `-module "out:csv"` |
+| `xml`         | Salva resultados em XML                   | `-module "out:xml"` |
+| `opensearch`  | Indexa resultados em Open Search          | `-module "out:opensearch"` |
 
 ```bash
 # Exemplo: Salvar em SQLite

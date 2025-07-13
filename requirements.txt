@@ -30,3 +30,6 @@ pydantic>=2.0.0
 
 # Uso de asyncio
 asyncio>=3.4.3
+
+# Opensearch client
+opensearch-py>=2.3.0

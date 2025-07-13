@@ -26,7 +26,7 @@ class XMLOutput(BaseModule):
             'description': 'Salva resultados em formato XML estruturado',
             'type': 'output'
         ,
-            'example': './strx -l data.txt -st "echo {STRING}" -module "out:xml_output" -pm'
+            'example': './strx -l data.txt -st "echo {STRING}" -module "out:xml" -pm'
         }
         
         self.options = {
