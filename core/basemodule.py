@@ -78,6 +78,16 @@ class BaseModule:
            return list(OutputFormatter._strip_formatting(r) for r in self._results)
         return list(self._result.values())[0]
 
+    def log_debug(self, message):
+        """
+        Registra uma mensagem de debug se o modo de debug estiver ativado.
+        
+        Args:
+            message (str): Mensagem de log
+        """
+        if self.options.get('debug'):
+            print(f"[ARCHIVE-DEBUG] {message}")
+            
     def _get_cls_name(self):
         """
         Retorna o nome da classe atual.
