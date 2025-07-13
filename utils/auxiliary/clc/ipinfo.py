@@ -19,16 +19,15 @@ incluindo informações de geolocalização precisas, detalhes da organização
 responsável e dados de roteamento de rede que são essenciais para
 investigações de segurança e OSINT.
 """
-from core.basemodule import BaseModule
-from core.user_agent_generator import UserAgentGenerator
+import os
 import json
 import socket
-import os
-import time
-from datetime import datetime, timedelta
 import asyncio
-from core.http_async import HTTPClient
+from datetime import datetime, timedelta
 
+from core.http_async import HTTPClient
+from core.basemodule import BaseModule
+from core.user_agent_generator import UserAgentGenerator
 
 class IPInfo(BaseModule):
     """
@@ -74,7 +73,9 @@ class IPInfo(BaseModule):
             'timeout': 10,          # Timeout para requisições
             'user-agent': 'STRX/1.0 (https://github.com/MrCl0wnLab/string-x)', # User-Agent para requisições
             'example': './strx -l ips.txt -st "echo {STRING}" -module "clc:ipinfo" -pm', # Exemplo de uso
-            'debug': False,        # Modo de debug para mostrar informações detalhadas      
+            'debug': False,         # Modo de debug para mostrar informações detalhadas   
+            'retry': 0,             # Número de tentativas de requisição
+            'retry_delay': 1,       # Atraso entre tentativas de requisição   
         }
     
     def _is_valid_ip(self, ip: str) -> bool:

@@ -6,14 +6,18 @@ Este módulo implementa funções para exibir os módulos e seus exemplos
 em formato de tabela usando a biblioteca Rich.
 """
 
+# Biblioteca padrão
 import os
 import sys
-import importlib.util
 import importlib
-from core.style_cli import StyleCli
+import importlib.util
 from rich.table import Table
 from rich.panel import Panel
 from rich.box import ROUNDED, SIMPLE, MINIMAL, DOUBLE
+
+# Módulos locais
+from core.style_cli import StyleCli
+
 
 CLI = StyleCli()
 

@@ -4,9 +4,10 @@ Módulo extrator de endereços IP.
 Este módulo implementa funcionalidade para extrair endereços IPv4 e IPv6
 de textos usando expressões regulares.
 """
-from core.basemodule import BaseModule
 import re
 import ipaddress
+
+from core.basemodule import BaseModule
 
 class IPExtractor(BaseModule):
     """
@@ -30,7 +31,9 @@ class IPExtractor(BaseModule):
             'ipv6': True,
             'private': True,  # Incluir IPs privados
             'example': './strx -l logs.txt -st "echo {STRING}" -module "ext:ip" -pm',
-            'debug': False  # Modo de debug para mostrar informações detalhadas 
+            'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'retry': 0,              # Número de tentativas de requisição
+            'retry_delay': 1,        # Atraso entre tentativas de requisição 
         }
     
     def run(self):

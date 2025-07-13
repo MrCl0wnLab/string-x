@@ -14,6 +14,6 @@
                             _)      \\[bright_white].___.,[/bright_white]|     .'
                             \____   )[bright_white]MMMMMM[/bright_white]|   .'
                                  `-'       `--'[/grey27][/yellow]
-                      [grey54]String-X: Tool for automating commands[/grey54]
+                      [grey54][DESCRIPTION]  [VERSION][/grey54]
 
                      

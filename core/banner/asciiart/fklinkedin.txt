@@ -23,4 +23,4 @@
                                \__ \ | |_  | |     >  <     
                                |___/  \__| |_|    /_/\_\ [/bold deep_sky_blue1]
                                
-                          [grey54]String-X: Tool for automating commands[/grey54][/deep_pink1]
+                          [grey54][DESCRIPTION]  [VERSION][/grey54][/deep_pink1]

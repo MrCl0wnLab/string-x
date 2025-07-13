@@ -5,6 +5,8 @@ Este módulo contém a classe BaseModule que serve como classe base para todos
 os módulos auxiliares do sistema String-X. Define a interface comum e estrutura
 básica que todos os módulos devem seguir.
 """
+# Módulos locais
+from core.output_formatter import OutputFormatter
 
 class BaseModule:
     """
@@ -26,6 +28,7 @@ class BaseModule:
         _get_cls_name(): Retorna o nome da classe
         run(**kwargs): Método abstrato que deve ser implementado pelas subclasses
     """
+    retry_operation = None
     def __init__(self):
         """
         Inicializa a classe BaseModule.
@@ -37,7 +40,11 @@ class BaseModule:
 
         # Cada módulo deverá definir suas opções (chave: dict com required, description, value)
         self.options = {
-            "data": None
+            "data": None,
+            "proxy": None,
+            "debug": None,
+            "retry":None,
+            'retry_delay': None,
         }
 
         # Meta-informações do módulo
@@ -45,7 +52,7 @@ class BaseModule:
             "name": None, 
             "description": None, 
             "author": None,
-            "version": 1.0,
+            "version": None,
             "type": None
         }
 
@@ -59,13 +66,16 @@ class BaseModule:
         if value:
             self._result.get(self._get_cls_name()).append(value)
 
-    def get_result(self):
+    def get_result(self, plain=False):
         """
         Retorna a lista de resultados armazenados no módulo.
         
         Returns:
             list: Lista contendo todos os resultados encontrados pelo módulo
         """
+        if plain:
+           # Retorna resultados sem formatação, ícones ou cores
+           return list(OutputFormatter._strip_formatting(r) for r in self._results)
         return list(self._result.values())[0]
 
     def _get_cls_name(self):
@@ -76,7 +86,8 @@ class BaseModule:
             str: Nome da classe que herda de BaseModule
         """
         return self.__class__.__name__
-        
+    
+       
     def run(self, **kwargs):
         """
         Método abstrato que define o comportamento do módulo.

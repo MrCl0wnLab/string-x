@@ -4,10 +4,11 @@ Módulo CON para sondagem HTTP.
 Este módulo implementa funcionalidade para sondagem HTTP/HTTPS
 com análise de headers, redirects e tecnologias.
 """
-from core.basemodule import BaseModule
+import re
 import httpx
 from urllib.parse import urlparse
-import re
+
+from core.basemodule import BaseModule
 
 class HTTPProbe(BaseModule):
     """
@@ -34,7 +35,9 @@ class HTTPProbe(BaseModule):
             'user_agent': 'Mozilla/5.0 (compatible; String-X Scanner)',
             'example': './strx -l urls.txt -st "echo {STRING}" -module "con:http_probe" -pm',
             'proxy': str(),  # Proxies para requisições (opcional)
-            'debug': False,  # Modo de debug para mostrar informações detalhadas    
+            'debug': False,  # Modo de debug para mostrar informações detalhadas 
+            'retry': 0,              # Número de tentativas de requisição
+            'retry_delay': 1,        # Atraso entre tentativas de requisição   
         }
     
     def run(self):

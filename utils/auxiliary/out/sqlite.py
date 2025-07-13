@@ -5,10 +5,11 @@ Este módulo implementa funcionalidade para salvar resultados processados
 em banco de dados SQLite, permitindo armazenamento estruturado de dados
 extraídos pelo String-X.
 """
-from core.basemodule import BaseModule
 import sqlite3
 from datetime import datetime
+
 from core.format import Format
+from core.basemodule import BaseModule
 
 class SqliteOutput(BaseModule):
     """
@@ -40,7 +41,9 @@ class SqliteOutput(BaseModule):
             'data': str(),
             'example': './strx -l domains.txt -st "echo {STRING}" -module "out:sqlite" -pm',
             'debug': False,  # Modo de debug para mostrar informações detalhadas
-            'timeout': 10  # Tempo limite para operações de banco de dados
+            'timeout': 10,  # Tempo limite para operações de banco de dados
+            'retry': 0,              # Número de tentativas de requisição
+            'retry_delay': 1,        # Atraso entre tentativas de requisição
         }
     
     def run(self):

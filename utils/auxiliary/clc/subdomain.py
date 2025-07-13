@@ -20,9 +20,9 @@ de subdomínios, incluindo:
 - Técnicas passivas que não geram tráfego direto para o alvo
 - Consolidação e deduplicação de resultados de múltiplas fontes
 """
-from core.basemodule import BaseModule
-import json
 import asyncio
+
+from core.basemodule import BaseModule
 from core.http_async import HTTPClient
 
 class SubdomainEnum(BaseModule):
@@ -48,7 +48,9 @@ class SubdomainEnum(BaseModule):
             'timeout': 10,
             'example': './strx -l domains.txt -st "echo {STRING}" -module "clc:subdomain" -pm',
             'proxy': str(),  # Proxies para requisições (opcional)
-            'debug': False,  # Modo de debug para mostrar informações detalhadas    
+            'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'retry': 0,              # Número de tentativas de requisição
+            'retry_delay': 1,        # Atraso entre tentativas de requisição    
         }
     
     def run(self):

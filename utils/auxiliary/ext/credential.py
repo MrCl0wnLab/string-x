@@ -4,8 +4,8 @@ Módulo extrator de credenciais.
 Este módulo implementa funcionalidade para extrair padrões de credenciais
 como senhas, tokens API, chaves SSH, etc.
 """
-from core.basemodule import BaseModule
 import re
+from core.basemodule import BaseModule
 
 class CredentialExtractor(BaseModule):
     """
@@ -27,7 +27,9 @@ class CredentialExtractor(BaseModule):
             'data': str(),
             'types': ['all'],  # aws, github, slack, password, ssh
             'example': './strx -l config_files.txt -st "echo {STRING}" -module "ext:credential" -pm',
-            'debug': False  # Modo de debug para mostrar informações detalhadas
+            'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'retry': 0,              # Número de tentativas de requisição
+            'retry_delay': 1,        # Atraso entre tentativas de requisição
         }
     
     def run(self):

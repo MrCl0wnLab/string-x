@@ -16,10 +16,11 @@ Este módulo utiliza múltiplas fontes de informação para obter dados
 de geolocalização com maior precisão e confiabilidade, alternando
 entre diferentes APIs quando necessário.
 """
-from core.basemodule import BaseModule
-import ipaddress
-import asyncio
 import json
+import asyncio
+import ipaddress
+
+from core.basemodule import BaseModule
 from core.http_async import HTTPClient
 
 class GeoIPCollector(BaseModule):
@@ -52,7 +53,9 @@ class GeoIPCollector(BaseModule):
             'include_isp': True,
             'timeout': 10,
             'example': './strx -l ips.txt -st "echo {STRING}" -module "clc:geoip" -pm',
-            'debug': False,  # Modo de debug para mostrar informações detalhadas    
+            'debug': False,  # Modo de debug para mostrar informações detalhadas 
+            'retry': 0,              # Número de tentativas de requisição
+            'retry_delay': 1,        # Atraso entre tentativas de requisição   
         }
         
         

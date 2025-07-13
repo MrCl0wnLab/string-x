@@ -16,19 +16,19 @@ O uso de motores de busca alternativos como o Ezilon permite uma cobertura
 mais abrangente durante a coleta de informações e pode revelar conteúdos
 que não foram indexados ou são difíceis de encontrar em outros buscadores.
 """
-from core.basemodule import BaseModule
-from core.user_agent_generator import UserAgentGenerator
 import re
-from urllib.parse import quote_plus, unquote
 import time
 import random
+import backoff
+import asyncio
 from bs4 import BeautifulSoup
 from core.format import Format
-from urllib.parse import urljoin, urlparse
-import backoff
 from requests.exceptions import RequestException
-import asyncio
+from urllib.parse import urljoin, urlparse, quote_plus, unquote
+
 from core.http_async import HTTPClient
+from core.basemodule import BaseModule
+from core.user_agent_generator import UserAgentGenerator
 
 class EzilonDorker(BaseModule):
     """
@@ -63,7 +63,9 @@ class EzilonDorker(BaseModule):
             'max_pages': 5,  # Número máximo de páginas para buscar
             'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:ezilon" -pm',
             'proxy': str(),  # Proxies para requisições (opcional)
-            'debug': False,  # Modo de debug para mostrar informações detalhadas    
+            'debug': False,  # Modo de debug para mostrar informações detalhadas  
+            'retry': 0,              # Número de tentativas de requisição
+            'retry_delay': 1,        # Atraso entre tentativas de requisição  
         }
         
         # Base URL do Ezilon

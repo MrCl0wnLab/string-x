@@ -5,9 +5,10 @@ Este módulo implementa funcionalidade para salvar resultados processados
 em banco de dados MySQL, permitindo armazenamento estruturado e consultas
 avançadas dos dados extraídos pelo String-X.
 """
-from core.basemodule import BaseModule
 from datetime import datetime
+
 from core.format import Format
+from core.basemodule import BaseModule
 
 class MySqlOutput(BaseModule):
     """
@@ -43,6 +44,8 @@ class MySqlOutput(BaseModule):
             'data': str(),
             'example': './strx -l data.txt -st "echo {STRING}" -module "out:mysql" -pm',
             'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'retry': 0,              # Número de tentativas de requisição
+            'retry_delay': 1,        # Atraso entre tentativas de requisição
         }
     
     def run(self):

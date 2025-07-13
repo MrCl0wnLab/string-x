@@ -5,8 +5,8 @@ Este módulo implementa funcionalidade para extrair domínios válidos de textos
 usando expressões regulares com validação de TLDs. Faz parte do sistema de
 módulos auxiliares do String-X.
 """
-from core.basemodule import BaseModule
 import re
+from core.basemodule import BaseModule
 
 class AuxRegexDomain(BaseModule):
     """
@@ -60,7 +60,9 @@ class AuxRegexDomain(BaseModule):
             "data": str(),
             "regex": rf'(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-]{{0,61}}[a-zA-Z0-9])?\.)+(?:{tld_pattern})\b',
             "example": './strx -l documents.txt -st "{STRING}" -module "ext:domain" -pm -f ".com"',
-            'debug': False  # Modo de debug para mostrar informações detalhadas
+            'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'retry': 0,              # Número de tentativas de requisição
+            'retry_delay': 1,        # Atraso entre tentativas de requisição
         }
         
     def run(self):

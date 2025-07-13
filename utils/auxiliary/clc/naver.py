@@ -17,19 +17,19 @@ A utilização de motores de busca regionais como Naver é especialmente importa
 para investigações que envolvam alvos ou operações na Ásia Oriental, permitindo
 acessar dados que podem estar ausentes ou menos visíveis em motores de busca ocidentais.
 """
+
+import re
+import random
+import backoff
+import asyncio
+from bs4 import BeautifulSoup
+from requests.exceptions import RequestException
+from urllib.parse import quote_plus, unquote,  urljoin, urlparse
+
+from core.format import Format
+from core.http_async import HTTPClient
 from core.basemodule import BaseModule
 from core.user_agent_generator import UserAgentGenerator
-import re
-from urllib.parse import quote_plus, unquote
-import time
-import random
-from bs4 import BeautifulSoup
-from core.format import Format
-from urllib.parse import urljoin, urlparse
-import backoff
-from requests.exceptions import RequestException
-import asyncio
-from core.http_async import HTTPClient
 
 class NaverDorker(BaseModule):
     """
@@ -64,7 +64,9 @@ class NaverDorker(BaseModule):
             'max_pages': 5,  # Número máximo de páginas para buscar
             'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:naver" -pm',
             'proxy': str(),  # Proxies para requisições (opcional)
-            'debug': False,  # Modo de debug para mostrar informações detalhadas    
+            'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'retry': 0,              # Número de tentativas de requisição
+            'retry_delay': 1,        # Atraso entre tentativas de requisição   
         }
         
         # Base URL do Naver

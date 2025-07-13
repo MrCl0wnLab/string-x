@@ -6,6 +6,7 @@ banners ASCII armazenados em arquivos, incluindo seleção aleatória de banners
 """
 import os
 import random
+from config import setting
 from core.filelocal import FileLocal
 from core.style_cli import StyleCli
 
@@ -80,6 +81,11 @@ class AsciiBanner:
                 file_name = str(banner_files[0])
                 txt_line, data_return = self._file.open_file(file_name, 'r')
                 if txt_line:
+                    txt_line = ''.join(txt_line).replace(
+                            '[DESCRIPTION]',setting.__description__ 
+                        ).replace(
+                            '[VERSION]', setting.__version__
+                        )
                     return ''.join(txt_line)
             except (IndexError, FileNotFoundError):
                 # Silenciar exceção e retornar string vazia

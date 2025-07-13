@@ -4,11 +4,12 @@ Módulo de saída CSV.
 Este módulo implementa funcionalidade para salvar resultados em formato CSV
 para análise em planilhas.
 """
-from core.basemodule import BaseModule
-import csv
 import os
+import csv
 from datetime import datetime
+
 from core.format import Format
+from core.basemodule import BaseModule
 
 class CSVOutput(BaseModule):
     """
@@ -32,7 +33,9 @@ class CSVOutput(BaseModule):
             'columns': ['timestamp', 'data', 'type'],
             'delimiter': ',',
             'example': './strx -l data.txt -st "echo {STRING}" -module "out:csv_output" -pm',
-            'debug': False  # Modo de debug para mostrar informações detalhadas 
+            'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'retry': 0,              # Número de tentativas de requisição
+            'retry_delay': 1,        # Atraso entre tentativas de requisição
         }
     
     def run(self):

@@ -29,4 +29,4 @@
                         [deep_sky_blue1]          ░                    ░         ░    ░  [/deep_sky_blue1]
                         [deep_sky_blue1]          ░                                      [/deep_sky_blue1]
                                 
-                                [grey54]String-X: Tool for automating commands[/grey54]
+                                [grey54][DESCRIPTION]  [VERSION][/grey54]

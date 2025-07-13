@@ -1,10 +1,14 @@
 """
 Sistema de upgrade do String-X usando Git.
 """
+
+# Biblioteca padrão
 import os
 import sys
 import subprocess
 from pathlib import Path
+
+# Módulos locais
 from core.style_cli import StyleCli
 
 class UpgradeManager:

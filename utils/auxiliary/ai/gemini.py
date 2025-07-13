@@ -4,11 +4,10 @@ Módulo Google Gemini AI para String-X.
 Este módulo fornece integração com a API Gemini AI do Google para processamento
 de linguagem natural, geração de texto e outras capacidades de IA.
 """
-
-from core.basemodule import BaseModule
 import httpx
 import json
 
+from core.basemodule import BaseModule
 
 class GeminiAI(BaseModule):
     """

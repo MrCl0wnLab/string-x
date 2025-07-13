@@ -5,4 +5,4 @@
              (__((__((___()()_____________________________________//  | [bold bright_yellow]STX[/bold bright_yellow] |
             (__((__((___()()()------------------------------------'   |_____|[/red]
                         
-                             [grey54]String-X: Tool for automating commands[/grey54]
+                             [grey54][DESCRIPTION]  [VERSION][/grey54]

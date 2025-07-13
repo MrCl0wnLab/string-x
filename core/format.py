@@ -6,10 +6,10 @@ para formatação, codificação, decodificação e geração de hashes de strin
 É utilizado para processar e transformar dados durante a execução de comandos.
 """
 from random import Random
-import urllib.parse
-import re
 import base64
 import hashlib
+import re
+import urllib.parse
 import yaml
 
 

@@ -46,7 +46,9 @@ class EmailVerifier(BaseModule):
             'check_smtp': False,  # Pode ser detectado como spam
             'timeout': 10,
             'example': './strx -l emails.txt -st "echo {STRING}" -module "clc:emailverify" -pm',
-            'debug': False  # Modo de debug para mostrar informações detalhadas 
+            'debug': False,  # Modo de debug para mostrar informações detalhadas 
+            'retry': 0,              # Número de tentativas de requisição
+            'retry_delay': 1,        # Atraso entre tentativas de requisição
         }
     
     def run(self):

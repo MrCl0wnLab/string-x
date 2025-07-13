@@ -21,17 +21,16 @@ import re
 import json
 import time
 import random
+import asyncio
 import backoff
 from bs4 import BeautifulSoup
-from urllib.parse import urljoin, urlparse
-from urllib.parse import quote_plus, unquote
 from requests.exceptions import RequestException
+from urllib.parse import quote_plus, unquote, urljoin, urlparse
+
+from core.format import Format
+from core.http_async import HTTPClient
 from core.basemodule import BaseModule
 from core.user_agent_generator import UserAgentGenerator
-from core.format import Format
-
-import asyncio
-from core.http_async import HTTPClient
 
 class DuckDuckGoDorker(BaseModule):
     """
@@ -65,7 +64,9 @@ class DuckDuckGoDorker(BaseModule):
             'max_results': 30,  # Número máximo de resultados
             'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:duckduckgo" -pm',
             'proxy': str(),  # Proxies para requisições (opcional)
-            'debug': False,  # Modo de debug para mostrar informações detalhadas    
+            'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'retry': 0,              # Número de tentativas de requisição
+            'retry_delay': 1,        # Atraso entre tentativas de requisição    
         }
         
         # URLs de busca do DuckDuckGo com diferentes estratégias

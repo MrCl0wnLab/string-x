@@ -5,10 +5,11 @@ Este módulo implementa funcionalidade para enviar resultados processados
 via Slack Webhook API, permitindo notificações e compartilhamento de dados
 extraídos pelo String-X em canais Slack.
 """
-from core.basemodule import BaseModule
 import json
 import urllib.request
+
 from core.format import Format
+from core.basemodule import BaseModule
 
 class SlackOutput(BaseModule):
     """
@@ -40,7 +41,9 @@ class SlackOutput(BaseModule):
             'data': str(),
             'example': './strx -l alerts.txt -st "echo {STRING}" -module "out:slack" -pm',
             'debug': False,  # Modo de debug para mostrar informações detalhadas
-            'timeout': 10  # Tempo limite para requisição HTTP
+            'timeout': 10,  # Tempo limite para requisição HTTP
+            'retry': 0,              # Número de tentativas de requisição
+            'retry_delay': 1,        # Atraso entre tentativas de requisição
         }
     
     def run(self):

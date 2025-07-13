@@ -1,6 +1,20 @@
 import os
 import sys
 
+__author__ = "Cleiton Pinheiro aka MrCl0wn"
+__maintainer__ = "Cleiton Pinheiro aka MrCl0wn"
+__credits__ = ["Cleiton Pinheiro"]
+__description__ = "String-X: Tool for automating commands"
+__url__ = "https://github.com/MrCl0wnLab/string-x"
+__license__ = "MIT"
+__version__ = "0.1"
+__email__ = "mrcl0wnlab[@]gmail.com"
+__twitter__ = "https://twitter.com/MrCl0wnLab"
+__git__ = [
+    "https://github.com/MrCl0wnLab",
+    "https://github.com/osintbrazuca"
+]
+
 # Obter diretório do projeto
 SCRIPT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 

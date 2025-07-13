@@ -154,3 +154,48 @@ class OutputFormatter:
         formatter = cls.formats[format_name]
         return formatter.__func__(data, module=module, function=function, **kwargs)
     
+    @staticmethod
+    def format_output(data, output_format="txt", include_rich=False):
+        """
+        Formata dados para o formato de saída especificado.
+        
+        Args:
+            data: Dados a serem formatados
+            output_format: Formato desejado (txt, json, csv)
+            include_rich: Se deve incluir formatação Rich/ANSI
+            
+        Returns:
+            str: Dados formatados
+        """
+        if not include_rich:
+            # Remover formatação Rich/ANSI dos dados
+            if isinstance(data, list):
+                data = [OutputFormatter._strip_formatting(item) if isinstance(item, str) else item for item in data]
+            elif isinstance(data, str):
+                data = OutputFormatter._strip_formatting(data)
+        
+        if output_format == "json":
+            return json.dumps(data, indent=2, ensure_ascii=False)
+        elif output_format == "csv":
+            output = io.StringIO()
+            if isinstance(data, list) and data and isinstance(data[0], dict):
+                writer = csv.DictWriter(output, fieldnames=data[0].keys())
+                writer.writeheader()
+                writer.writerows(data)
+            elif isinstance(data, list):
+                writer = csv.writer(output)
+                for item in data:
+                    writer.writerow([item])
+            return output.getvalue()
+        else:  # txt
+            if isinstance(data, list):
+                return "\n".join(str(item) for item in data)
+            return str(data)
+
+    @staticmethod
+    def _strip_formatting(text):
+        """Remove códigos de formatação Rich/ANSI."""
+        import re
+        ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+        return ansi_escape.sub('', text)
+    

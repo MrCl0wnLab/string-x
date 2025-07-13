@@ -17,11 +17,11 @@ Este módulo suporta diferentes métodos de escaneamento, incluindo
 ping sweeps para descoberta de hosts, port scans para identificação
 de serviços disponíveis e fingerprinting básico de serviços.
 """
+import time
 import ipaddress
 import threading
-import time
-from core.basemodule import BaseModule
 
+from core.basemodule import BaseModule
 
 class NetworkScanner(BaseModule):
     """
@@ -53,7 +53,9 @@ class NetworkScanner(BaseModule):
             'timeout': 3,
             'service_detection': False,
             'example': './strx -l networks.txt -st "echo {STRING}" -module "clc:netscan" -pm',
-            'debug': False  # Modo de debug para mostrar informações detalhadas 
+            'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'retry': 0,              # Número de tentativas de requisição
+            'retry_delay': 1,        # Atraso entre tentativas de requisição
         }
         
         self.results = []

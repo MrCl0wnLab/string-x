@@ -4,11 +4,12 @@ Módulo de saída JSON.
 Este módulo implementa funcionalidade para salvar resultados em formato JSON
 estruturado, útil para integração com outras ferramentas.
 """
-from core.basemodule import BaseModule
-import json
 import os
+import json
 from datetime import datetime
+
 from core.format import Format
+from core.basemodule import BaseModule
 
 class JSONOutput(BaseModule):
     """
@@ -32,7 +33,9 @@ class JSONOutput(BaseModule):
             'append': True,
             'pretty': True,
             'example': './strx -l data.txt -st "echo {STRING}" -module "out:json_output" -pm',
-            'debug': False  # Modo de debug para mostrar informações detalhadas 
+            'debug': False,  # Modo de debug para mostrar informações detalhadas 
+            'retry': 0,              # Número de tentativas de requisição
+            'retry_delay': 1,        # Atraso entre tentativas de requisição
         }
     
     def run(self):

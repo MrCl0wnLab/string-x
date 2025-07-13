@@ -8,4 +8,4 @@
                         [bold bright_yellow]╚════██║       ██║       ██╔══██╗  [/bold bright_yellow][bold bright_green]   ██╔██╗[/bold bright_green]
                         [bold bright_yellow]███████║       ██║       ██║  ██║  [/bold bright_yellow][bold bright_green]  ██╔╝ ██╗[/bold bright_green]
                         [bold bright_yellow]╚══════╝       ╚═╝       ╚═╝  ╚═╝  [/bold bright_yellow][bold bright_green]  ╚═╝  ╚═╝[/bold bright_green]
-                          [grey54]String-X: Tool for automating commands[/grey54]
+                          [grey54][DESCRIPTION]  [VERSION][/grey54]

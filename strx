@@ -23,6 +23,7 @@ License: MIT
 Version: 0.1
 """
 
+# Biblioteca padrão
 import os
 import sys
 import signal
@@ -33,6 +34,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 os.chdir(SCRIPT_DIR)
 sys.path.insert(0, SCRIPT_DIR)
 
+# Módulos locais
 from config import setting
 from core.command import Command
 from core.filelocal import FileLocal
@@ -41,18 +43,6 @@ from core.style_cli import StyleCli, RichArgumentParser, RawDescriptionHelpForma
 from core.help_modules import *
 from core.upgrade_manager import UpgradeManager
 
-
-__author__ = "Cleiton Pinheiro aka MrCl0wn"
-__maintainer__ = "Cleiton Pinheiro aka MrCl0wn"
-__credits__ = ["Cleiton Pinheiro"]
-__license__ = "MIT"
-__version__ = "0.1"
-__email__ = "mrcl0wnlab[@]gmail.com"
-__twitter__ = "https://twitter.com/MrCl0wnLab"
-__git__ = [
-    "https://github.com/MrCl0wnLab",
-    "https://github.com/osintbrazuca"
-]
 
 
 def quit_process(signal, frame) -> None:
@@ -127,8 +117,12 @@ def open_file(filename: str) -> list[str]:
             txt_line, _ = FILE.open_file(filename, 'r')
             if txt_line:
                 return txt_line
-        except Exception:
-            pass
+        except FileNotFoundError:
+            CLI.console.log(f"[!] Arquivo não encontrado: {filename}")
+        except PermissionError:
+            CLI.console.log(f"[!] Permissão negada ao ler: {filename}")
+        except UnicodeDecodeError:
+            CLI.console.log(f"[!] Erro de decodificação no arquivo: {filename}")
 
 
 def main(target_str_list: list, template_str: str) -> None:

@@ -5,9 +5,12 @@ Este módulo contém a classe ThreadProcess responsável por gerenciar a execuç
 de tarefas em paralelo usando threads, permitindo melhor performance no
 processamento de listas de dados.
 """
+# Biblioteca padrão
 import time
 import threading
 from concurrent.futures import ThreadPoolExecutor
+
+# Módulos locais
 from core.style_cli import StyleCli
 
 

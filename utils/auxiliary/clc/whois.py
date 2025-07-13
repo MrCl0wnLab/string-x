@@ -20,8 +20,9 @@ Estas informações são valiosas para:
 - Correlacionar domínios pertencentes à mesma entidade
 - Identificar informações de contato para investigações adicionais
 """
-from core.basemodule import BaseModule
 import whois
+
+from core.basemodule import BaseModule
 
 class WhoisInfo(BaseModule):
     """
@@ -42,7 +43,9 @@ class WhoisInfo(BaseModule):
         self.options = {
             'data': str(),
             'example': './strx -l domains.txt -st "echo {STRING}" -module "clc:whois" -pm',
-            'debug': False,  # Modo de debug para mostrar informações detalhadas    
+            'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'retry': 0,              # Número de tentativas de requisição
+            'retry_delay': 1,        # Atraso entre tentativas de requisição    
         }
     
     def run(self):

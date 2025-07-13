@@ -17,20 +17,20 @@ Este módulo implementa diversas técnicas anti-detecção para evitar bloqueios
 e captchas durante as pesquisas, como rotação de user agents, delays aleatórios
 e múltiplas estratégias de requisição.
 """
-from core.basemodule import BaseModule
-from core.user_agent_generator import UserAgentGenerator
 import re
-from urllib.parse import quote_plus, unquote, urlencode
 import time
 import random
+import asyncio
 from bs4 import BeautifulSoup
 from core.format import Format
-from typing import List, Dict, Optional, Any, Tuple
-import backoff
 from requests.exceptions import RequestException
+from typing import List, Dict, Optional, Any, Tuple
+from urllib.parse import quote_plus, unquote, urlencode
 
-import asyncio
 from core.http_async import HTTPClient
+from core.basemodule import BaseModule
+from core.retry import retry_operation
+from core.user_agent_generator import UserAgentGenerator
 
 class GoogleDorker(BaseModule):
     """
@@ -63,7 +63,9 @@ class GoogleDorker(BaseModule):
             'timeout': 30,                                                                  # Timeout para requisições                                                     # Número máximo de resultados
             'debug': False,                                                                 # Modo debug (salva respostas para análise)
             'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:google" -pm',  # Exemplo de uso do módulo
-            'proxy': str(),                                                                # Proxies para requisições
+            'proxy': str(),
+            'retry': 4,             # Número de tentativas de requisição
+            'retry_delay': 1,       # Atraso entre tentativas de requisição                                                                # Proxies para requisições
         }
 
         self.pagination = []  # Contador de páginas para navegação
@@ -227,12 +229,7 @@ class GoogleDorker(BaseModule):
 
         return cookies
     
-    @backoff.on_exception(
-        backoff.expo,
-        RequestException,
-        max_tries=3,
-        max_time=30
-    ) 
+    @retry_operation
     def _make_request(self, 
                      url: str, 
                      config: Dict[str, str],
@@ -251,10 +248,7 @@ class GoogleDorker(BaseModule):
                 'Accept':  "*/*",
                 'Referer': f'https://{config["host"]}/',
                 },
-            'proxies': {
-                'http://': proxy,
-                'https://': proxy
-                },
+            'proxy': proxy,
             'timeout': self.options.get('timeout', 30),  # Timeout de 10 segundos,
             'follow_redirects': True,
             'cookies': cookies
@@ -264,12 +258,14 @@ class GoogleDorker(BaseModule):
             async def make_request():
                 return await self.request.send_request([url], **kwargs)
             response = asyncio.run(make_request())[0]
+            print(response)
             # Faz a requisição
             return response.text
-        except RequestException as e:
+        except Exception as e:
+            #print(f"Erro ao fazer requisição para {config['host']}: {str(e)}")
             if debug_mode:
                 self.set_result(f"⚠️ Erro na requisição para {config['host']}: {str(e)}")
-            return None
+            raise ValueError(e)
         
     def _is_valid_url(self, url: str) -> bool:
         """

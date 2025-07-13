@@ -43,7 +43,9 @@ class Phone(BaseModule):
             'data': str(),
             'regex': r'(?:\+55\s?)?(?:\([1-9]{2}\)\s?|[1-9]{2}\s?)?(?:9\s?)?[0-9]{4}-?[0-9]{4}',
             'example': './strx -l contacts.txt -st "echo {STRING}" -module "ext:phone" -pm',
-            'debug': False  # Modo de debug para mostrar informações detalhadas 
+            'debug': False,  # Modo de debug para mostrar informações detalhadas 
+            'retry': 0,              # Número de tentativas de requisição
+            'retry_delay': 1,        # Atraso entre tentativas de requisição
         }
     
     def run(self):

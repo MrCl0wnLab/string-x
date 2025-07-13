@@ -4,6 +4,8 @@ Módulo responsável pela execução de comandos e manipulação de templates.
 Este módulo contém a classe Command que é responsável por processar templates de comandos,
 executar os comandos no sistema operacional e gerenciar a saída dos resultados.
 """
+
+# Biblioteca padrão
 import re
 import os
 import time
@@ -11,6 +13,8 @@ import shlex
 import argparse
 import subprocess
 import logging.config
+
+# Módulos locais
 from config import setting
 from core.format import Format
 from core.func_format import FuncFormat

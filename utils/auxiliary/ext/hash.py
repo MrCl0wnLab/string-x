@@ -4,8 +4,8 @@ Módulo extrator de hashes.
 Este módulo implementa funcionalidade para extrair diferentes tipos de hashes
 de textos usando expressões regulares.
 """
-from core.basemodule import BaseModule
 import re
+from core.basemodule import BaseModule
 
 class HashExtractor(BaseModule):
     """
@@ -29,7 +29,9 @@ class HashExtractor(BaseModule):
             'data': str(),
             'hash_types': ['md5', 'sha1', 'sha256', 'sha512', 'all'],
             'example': './strx -l password_dump.txt -st "echo {STRING}" -module "ext:hash" -pm',
-            'debug': False  # Modo de debug para mostrar informações detalhadas 
+            'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'retry': 0,              # Número de tentativas de requisição
+            'retry_delay': 1,        # Atraso entre tentativas de requisição
         }
     
     def run(self):

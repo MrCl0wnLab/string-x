@@ -13,18 +13,18 @@ esses logs, o que é útil para:
 - Identificação de certificados potencialmente maliciosos
 - Monitoramento de emissão de certificados para um domínio
 """
-from core.basemodule import BaseModule
-from core.user_agent_generator import UserAgentGenerator
-import httpx
-import json
 import re
-import urllib.parse
-import backoff
-from requests.exceptions import RequestException
-import warnings
-
+import json
 import asyncio
+import warnings
+import traceback
+import urllib.parse
+from requests.exceptions import RequestException
+
 from core.http_async import HTTPClient
+from core.basemodule import BaseModule
+from core.retry import retry_operation
+from core.user_agent_generator import UserAgentGenerator
 
 # Suprimir avisos relacionados a verificação de certificados
 warnings.filterwarnings("ignore", category=Warning)
@@ -64,6 +64,8 @@ class CrtshCollector(BaseModule):
             'proxy': str(),  # Proxies para requisições
             'debug': False,  # Modo de debug para mostrar informações detalhadas
             'example': './strx -l domains.txt -st "echo {STRING}" -module "clc:crtsh" -pm',
+            'retry': 0,             # Número de tentativas de requisição
+            'retry_delay': 1,       # Atraso entre tentativas de requisição 
         }
         
     def log_debug(self, message):
@@ -120,20 +122,12 @@ class CrtshCollector(BaseModule):
                 self.set_result(result_str)
                 
         except Exception as e:
-            error_msg = f"Erro na coleta de dados do crt.sh: {str(e)}"
-            self.log_error(error_msg)
             self.log_debug(f"Exceção: {type(e).__name__}: {str(e)}")
-            import traceback
             self.log_debug(traceback.format_exc())
             self.set_result("")
             return
             
-    @backoff.on_exception(
-        backoff.expo,
-        (httpx.HTTPError, httpx.TimeoutException, RequestException),
-        max_tries=3,
-        max_time=30
-    )
+    @retry_operation
     def _query_crtsh(self, domain: str) -> list:
         """
         Realiza consulta ao crt.sh e retorna os resultados.
@@ -196,12 +190,9 @@ class CrtshCollector(BaseModule):
                 return []
                 
         except Exception as e:
-            error_msg = f"Erro ao consultar crt.sh: {e}"
-            print(error_msg)
             self.log_debug(f"Exceção detalhada: {type(e).__name__}: {str(e)}")
-            import traceback
             self.log_debug(traceback.format_exc())
-            return []
+            raise ValueError(e)
     
     def _extract_subdomains(self, crt_data: list, domain: str) -> list:
         """

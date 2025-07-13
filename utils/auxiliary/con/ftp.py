@@ -4,9 +4,10 @@ Módulo CON para conexões FTP.
 Este módulo implementa funcionalidade para estabelecer conexões FTP
 e listar diretórios ou baixar arquivos.
 """
-from core.basemodule import BaseModule
 import ftplib
 import socket
+
+from core.basemodule import BaseModule
 
 class FTPConnector(BaseModule):
     """
@@ -33,6 +34,8 @@ class FTPConnector(BaseModule):
             'list_files': True,
             'example': './strx -l ftp_servers.txt -st "echo {STRING}" -module "con:ftp" -pm',
             'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'retry': 0,              # Número de tentativas de requisição
+            'retry_delay': 1,        # Atraso entre tentativas de requisição
         }
     
     def run(self):

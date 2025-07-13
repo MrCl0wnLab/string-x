@@ -20,17 +20,17 @@ Este módulo utiliza múltiplas chaves CSE configuradas para:
 - Garantir redundância caso uma das chaves seja limitada
 - Oferecer resultados mais abrangentes através de diferentes configurações de CSE
 """
+import re
+import random
+import asyncio
+import backoff
+import urllib.parse
+from requests.exceptions import RequestException
+
 from config import setting
+from core.http_async import HTTPClient
 from core.basemodule import BaseModule
 from core.user_agent_generator import UserAgentGenerator
-import random
-import re
-import time
-import urllib.parse
-import backoff
-from requests.exceptions import RequestException
-import asyncio
-from core.http_async import HTTPClient
 
 class GoogleCSEDorker(BaseModule):
     """
@@ -64,6 +64,8 @@ class GoogleCSEDorker(BaseModule):
             'max_pages': 15,  # Número máximo de resultados por CSE
             'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:googlecse" -pm',
             'proxy': str(),  # Proxies para requisições
+            'retry': 0,              # Número de tentativas de requisição
+            'retry_delay': 1,        # Atraso entre tentativas de requisição
         }
         
         # Lista de CSE IDs do Google - cada ID representa um mecanismo de busca customizado

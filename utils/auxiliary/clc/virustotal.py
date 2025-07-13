@@ -18,12 +18,11 @@ Este módulo permite integrar os recursos do VirusTotal ao fluxo de trabalho
 do String-X, auxiliando na identificação de recursos maliciosos e avaliação
 de risco durante investigações OSINT.
 """
-from core.basemodule import BaseModule
-import json
-import urllib.parse
-import hashlib
 import re
+import json
 import asyncio
+
+from core.basemodule import BaseModule
 from core.http_async import HTTPClient
 
 class VirusTotalCollector(BaseModule):
@@ -56,7 +55,9 @@ class VirusTotalCollector(BaseModule):
             'api_key': str(),  # API key do VirusTotal
             'resource_type': 'auto',  # auto, url, ip, domain, file
             'include_details': True,
-            'example': './strx -l suspicious_files.txt -st "echo {STRING}" -module "clc:virustotal" -pm'
+            'example': './strx -l suspicious_files.txt -st "echo {STRING}" -module "clc:virustotal" -pm',
+            'retry': 0,              # Número de tentativas de requisição
+            'retry_delay': 1,        # Atraso entre tentativas de requisição
         }
     
     def run(self):
@@ -102,8 +103,6 @@ class VirusTotalCollector(BaseModule):
     
     def _detect_resource_type(self, data: str) -> str:
         """Detecta automaticamente o tipo de recurso."""
-        import re
-        
         # Hash (MD5, SHA1, SHA256)
         if re.match(r'^[a-fA-F0-9]{32}$', data):
             return 'file'  # MD5

@@ -19,19 +19,19 @@ A utilização do Sogou é especialmente importante para investigações que
 envolvem o mercado chinês ou operações com conexões à China, fornecendo
 uma perspectiva local que complementa as informações de buscadores ocidentais.
 """
-from core.basemodule import BaseModule
-from core.user_agent_generator import UserAgentGenerator
 import re
-from urllib.parse import quote_plus, unquote, urlparse, parse_qs
 import time
 import random
-from bs4 import BeautifulSoup
-from core.format import Format
-from urllib.parse import urljoin
-import backoff
-from requests.exceptions import RequestException
 import asyncio
+import backoff
+from bs4 import BeautifulSoup
+from requests.exceptions import RequestException
+from urllib.parse import urljoin, quote_plus, unquote, urlparse, parse_qs
+
+from core.format import Format
 from core.http_async import HTTPClient
+from core.basemodule import BaseModule
+from core.user_agent_generator import UserAgentGenerator
 
 class SogouDorker(BaseModule):
     """
@@ -66,7 +66,9 @@ class SogouDorker(BaseModule):
             'max_pages': 5,  # Número máximo de páginas para buscar
             'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:sogou" -pm',
             'proxy': str(),  # Proxies para requisições (opcional)
-            'debug': False,  # Modo de debug para mostrar informações detalhadas    
+            'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'retry': 0,              # Número de tentativas de requisição
+            'retry_delay': 1,        # Atraso entre tentativas de requisição   
         }
         
         # Base URL do Sogou

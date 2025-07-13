@@ -4,9 +4,10 @@ Módulo CON para conexões SSH.
 Este módulo implementa funcionalidade para estabelecer conexões SSH
 e executar comandos remotos.
 """
-from core.basemodule import BaseModule
-import subprocess
 import os
+import subprocess
+
+from core.basemodule import BaseModule
 
 class SSHConnector(BaseModule):
     """
@@ -32,7 +33,9 @@ class SSHConnector(BaseModule):
             'command': 'whoami',
             'timeout': 10,
             'example': './strx -l servers.txt -st "echo {STRING}" -module "con:ssh" -pm',
-            'debug': False,  # Modo de debug para mostrar informações detalhadas    
+            'debug': False,  # Modo de debug para mostrar informações detalhadas  
+            'retry': 0,              # Número de tentativas de requisição
+            'retry_delay': 1,        # Atraso entre tentativas de requisição  
         }
     
     def run(self):

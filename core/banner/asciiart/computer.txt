@@ -6,7 +6,7 @@
                      !.........||||   ,01          . .  ||||
     ,01              !.........||||                     ||||
                      !.........||||     [bold bright_green]C O M M A N D[/bold bright_green]   ||||    
-                     !.........||||    ,  ........      ||||    [grey54]String-X: Tool for automating commands[/grey54]
+                     !.........||||    ,  ........      ||||    [grey54][DESCRIPTION]  [VERSION][/grey54]
                      !.........|||| 01    [bold bright_green]S T R X[/bold bright_green]       ||||
                      !.........||||´                    ||||                                                 ,[bold bright_green]01[/bold bright_green] 
                      `.........||||     .01          . ,||||

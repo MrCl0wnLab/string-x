@@ -5,12 +5,15 @@ Este módulo contém a classe AutoModulo que é utilizada para importar automati
 módulos e instanciar suas classes. Utiliza importação dinâmica baseada no tipo e nome
 do módulo para carregar e executar funcionalidades específicas.
 """
+# Biblioteca padrão
 import copy
-import importlib
 import inspect
-from core.style_cli import StyleCli
 import functools
+import importlib
 from typing import Dict, Optional
+
+# Módulos locais
+from core.style_cli import StyleCli
 
 class AutoModulo:
     """

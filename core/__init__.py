@@ -2,16 +2,21 @@
 Pacote core.
 
 Este pacote contém os módulos centrais do String-X, incluindo:
-- command: Processamento e execução de comandos
-- format: Formatação e manipulação de dados  
 - auto_module: Carregamento dinâmico de módulos
-- thread_process: Processamento paralelo com threads
-- style_cli: Interface estilizada para CLI
-- basemodule: Classe base para módulos auxiliares
-- filelocal: Manipulação de arquivos locais
-- randomvalue: Geração de valores aleatórios
-- user_agent_generator: Geração de User-Agents específicos por plataforma
-- request: Requisições HTTP
-- func_format: Processamento de funções em templates
 - banner: Exibição de banners ASCII
+- basemodule: Classe base para módulos auxiliares
+- command: Processamento e execução de comandos
+- filelocal: Manipulação de arquivos locais
+- format: Formatação e manipulação de dados
+- func_format: Processamento de funções em templates
+- help_modules: Utilitários para exibição de ajuda e informações
+- http_async: Requisições HTTP assíncronas
+- logger: Sistema centralizado de logging
+- output_formatter: Formatador de saída centralizado
+- randomvalue: Geração de valores aleatórios
+- retry: Mecanismo de repetição para operações com falha
+- style_cli: Interface estilizada para CLI
+- thread_process: Processamento paralelo com threads
+- upgrade_manager: Gerenciador de atualizações
+- user_agent_generator: Geração de User-Agents específicos por plataforma
 """

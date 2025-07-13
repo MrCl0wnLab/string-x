@@ -5,11 +5,12 @@ Este módulo implementa funcionalidade para enviar resultados processados
 via Telegram Bot API, permitindo notificações e compartilhamento de dados
 extraídos pelo String-X.
 """
-from core.basemodule import BaseModule
 import json
-import urllib.request
 import urllib.parse
+import urllib.request
+
 from core.format import Format
+from core.basemodule import BaseModule
 
 class TelegramOutput(BaseModule):
     """
@@ -41,6 +42,8 @@ class TelegramOutput(BaseModule):
             'data': str(),
             'example': './strx -l results.txt -st "echo {STRING}" -module "out:telegram" -pm',
             'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'retry': 0,              # Número de tentativas de requisição
+            'retry_delay': 1,        # Atraso entre tentativas de requisição
         }
     
     def run(self):

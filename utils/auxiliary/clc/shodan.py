@@ -18,12 +18,13 @@ indexando serviços e dispositivos conectados, fornecendo informações valiosas
 Este módulo implementa acesso à API do Shodan para integrar seus recursos
 de descoberta de dispositivos e reconhecimento com o fluxo de trabalho do String-X.
 """
-from core.basemodule import BaseModule
 import json
-import urllib.parse
-import ipaddress
 import asyncio
+import ipaddress
+import urllib.parse
+
 from core.http_async import HTTPClient
+from core.basemodule import BaseModule
 
 class ShodanCollector(BaseModule):
     """
@@ -58,7 +59,9 @@ class ShodanCollector(BaseModule):
             'limit': 100,
             'example': './strx -l ips.txt -st "echo {STRING}" -module "clc:shodan" -pm',
             'debug': False,  # Modo de debug para mostrar informações detalhadas
-            'proxy': str(),  # Proxies para requisições (opcional)  
+            'proxy': str(),  # Proxies para requisições (opcional)
+            'retry': 0,              # Número de tentativas de requisição
+            'retry_delay': 1,        # Atraso entre tentativas de requisição  
         }
     
     def run(self):

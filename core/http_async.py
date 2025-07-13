@@ -1,10 +1,11 @@
-# core/http_client.py
+# Biblioteca padrão
 import httpx
-from typing import Optional, Dict, Any
 import asyncio
+from typing import Optional, Dict, Any
+
+# Módulos locais
 from core.format import Format
 from core.style_cli import StyleCli
-
 
 class HTTPClient:
     # Parâmetros válidos para configurar o cliente httpx

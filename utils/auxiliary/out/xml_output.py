@@ -4,11 +4,12 @@ Módulo de saída XML.
 Este módulo implementa funcionalidade para salvar resultados em formato XML
 estruturado para integração com sistemas que necessitam deste formato.
 """
-from core.basemodule import BaseModule
-import xml.etree.ElementTree as ET
-from datetime import datetime
 import os
+from datetime import datetime
+import xml.etree.ElementTree as ET
+
 from core.format import Format
+from core.basemodule import BaseModule
 
 class XMLOutput(BaseModule):
     """
@@ -33,6 +34,8 @@ class XMLOutput(BaseModule):
             'item_element': 'result',
             'example': './strx -l data.txt -st "echo {STRING}" -module "out:xml_output" -pm',
             'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'retry': 0,              # Número de tentativas de requisição
+            'retry_delay': 1,        # Atraso entre tentativas de requisição
         }
     
     def run(self):

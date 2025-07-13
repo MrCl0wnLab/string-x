@@ -11,15 +11,15 @@ O Internet Archive mantém snapshots históricos de páginas web, o que é útil
 - Recuperação de informações de versões anteriores de páginas
 - Descoberta de subdomínios e paths que podem não estar mais ativos
 """
-from core.basemodule import BaseModule
-from core.user_agent_generator import UserAgentGenerator
-import urllib.parse
 import re
-import backoff
-from requests.exceptions import RequestException
-import warnings
 import asyncio
+import warnings
+from requests.exceptions import RequestException
+
 from core.http_async import HTTPClient
+from core.basemodule import BaseModule
+from core.retry import retry_operation
+from core.user_agent_generator import UserAgentGenerator
 
 # Suprimir avisos relacionados a verificação de certificados
 warnings.filterwarnings("ignore", category=Warning)
@@ -32,7 +32,6 @@ class archive(BaseModule):
     para um domínio específico, facilitando a descoberta de conteúdo histórico
     e mapeamento de sites.
     """
-    
     def __init__(self):
         """
         Inicializa o módulo de coleta do Wayback Machine.
@@ -56,7 +55,12 @@ class archive(BaseModule):
             'proxy': str(),          # Proxies para requisições
             'debug': False,          # Modo de debug para mostrar informações detalhadas
             'example': './strx -l domains.txt -st "echo {STRING}" -module "clc:archive" -pm',
+            'retry': 0,              # Número de tentativas de requisição
+            'retry_delay': 1,        # Atraso entre tentativas de requisição
         }
+
+
+   
     
     def log_debug(self, message):
         """
@@ -117,12 +121,6 @@ class archive(BaseModule):
         """
         print(f"[ARCHIVE-ERROR] {message}")
 
-    @backoff.on_exception(
-        backoff.expo,
-        RequestException,
-        max_tries=3,
-        max_time=30
-    )
     def _query_archive(self, domain: str) -> list:
         """
         Wrapper síncrono para realizar consulta ao Wayback Machine e retornar as URLs arquivadas.
@@ -134,7 +132,9 @@ class archive(BaseModule):
             list: Lista de URLs arquivadas para o domínio
         """
         return asyncio.run(self._query_archive_async(domain))
-        
+    
+    
+    @retry_operation
     async def _query_archive_async(self, domain: str) -> list:
         """
         Versão assíncrona para realizar consulta ao Wayback Machine e retornar as URLs arquivadas.
@@ -158,15 +158,10 @@ class archive(BaseModule):
         # Configurar parâmetros para o HTTPClient
         kwargs = {
             'headers': headers,
+            'proxy': self.options.get('proxy') if self.options.get('proxy') else None,
             'timeout': self.options.get('timeout', 30),
             'follow_redirects': True,
         }
-        
-        if self.options.get('proxy'):
-            kwargs['proxies'] = {
-                'http://': self.options.get('proxy'),
-                'https://': self.options.get('proxy')
-            }
         
         self.log_debug(f"URL de consulta: {url}")
         
@@ -195,4 +190,5 @@ class archive(BaseModule):
                 
         except Exception as e:
             self.log_debug(f"Erro na requisição: {type(e).__name__}: {str(e)}")
-            return []
+            raise ValueError(e)
+            

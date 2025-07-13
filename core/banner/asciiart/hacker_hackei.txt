@@ -13,4 +13,4 @@
                 [bright_yellow]       ▄█    ███     ███       ███    ███  ▄███     ███▄[/bright_yellow]
                 [bright_yellow]     ▄████████▀     ▄████▀     ███    ███ ████       ███▄[/bright_yellow]
 
-                           [grey54]String-X: Tool for automating commands[/grey54][/turquoise2]
+                           [grey54][DESCRIPTION]  [VERSION][/grey54][/turquoise2]

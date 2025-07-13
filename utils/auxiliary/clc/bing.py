@@ -5,21 +5,19 @@ Este módulo implementa funcionalidade para realizar buscas avançadas (dorking)
 no motor de busca Bing, permitindo a extração de resultados usando diferentes
 tipos de dorks de busca.
 """
-from core.basemodule import BaseModule
-from core.user_agent_generator import UserAgentGenerator
-import httpx
 import re
-from urllib.parse import quote_plus
 import time
 import random
-from bs4 import BeautifulSoup
-from core.format import Format
-from urllib.parse import urljoin, urlparse
-import backoff
-from requests.exceptions import RequestException
-
 import asyncio
+from bs4 import BeautifulSoup
+from requests.exceptions import RequestException
+from urllib.parse import urljoin, urlparse, quote_plus
+
+from core.format import Format
 from core.http_async import HTTPClient
+from core.basemodule import BaseModule
+from core.retry import retry_operation
+from core.user_agent_generator import UserAgentGenerator
 
 class BingDorker(BaseModule):
     """
@@ -47,12 +45,14 @@ class BingDorker(BaseModule):
         }
         # Opções configuráveis do módulo
         self.options = {
-            'data': str(),  # Dork para busca
-            'delay': 2,     # Delay entre requisições (segundos)
-            'timeout': 15,  # Timeout para requisições
+            'data': str(),          # Dork para busca
+            'delay': 2,             # Delay entre requisições (segundos)
+            'timeout': 15,          # Timeout para requisições
             'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:bing" -pm',
-            'proxy': str(),  # Proxies para requisições (opcional)
-            'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'proxy': str(),         # Proxies para requisições (opcional)
+            'debug': False,         # Modo de debug para mostrar informações detalhadas
+            'retry': 0,             # Número de tentativas de requisição
+            'retry_delay': 1,       # Atraso entre tentativas de requisição
         }
         
         self.search_url_templates = [
@@ -90,12 +90,8 @@ class BingDorker(BaseModule):
         except Exception as e:
             self.set_result(f"✗ Erro na busca: {str(e)}")
     
-    @backoff.on_exception(
-        backoff.expo,
-        RequestException,
-        max_tries=3,
-        max_time=30
-    )
+
+    @retry_operation
     def _search_bing(self, dork: str) -> list:
         """
         Realiza busca no Bing usando diferentes URLs e extrai resultados.
@@ -109,7 +105,6 @@ class BingDorker(BaseModule):
    
         # Lista para armazenar resultados
         results = []
-        proxy = self.options.get('proxy') if self.options.get('proxy') else None
         # Codificar a query
         encoded_dork = quote_plus(dork)
         
@@ -121,10 +116,7 @@ class BingDorker(BaseModule):
                 'Referer': 'https://www.bing.com/',
                 'DNT': '1'
                 },
-            'proxies': {
-                'http://': proxy,
-                'https://': proxy
-                },
+            'proxy': self.options.get('proxy') if self.options.get('proxy') else None,
             'timeout': self.options.get('timeout', 30),  # Timeout de 10 segundos,
         }
 
@@ -160,7 +152,7 @@ class BingDorker(BaseModule):
                 
         except RequestException as e:
             self.set_result(f"✗ Erro ao conectar ao Bing: {str(e)}")
-            return []
+            raise ValueError(e)
         
     def _is_valid_url(self,url):
         """Verifica se uma URL é válida"""

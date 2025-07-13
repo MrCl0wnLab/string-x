@@ -4,12 +4,15 @@ Módulo responsável pela manipulação de arquivos locais.
 Este módulo contém classes para operações de arquivo, incluindo leitura, escrita,
 manipulação de CSV e navegação em diretórios, além de configurações INI.
 """
+
+# Biblioteca padrão
 import os
 import csv
 import pathlib
 import configparser
-from core.style_cli import StyleCli
 
+# Módulos locais
+from core.style_cli import StyleCli
 
 class FileLocal:
     """

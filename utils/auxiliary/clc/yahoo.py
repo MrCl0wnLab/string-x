@@ -18,21 +18,19 @@ A diversificação de fontes de busca é fundamental para investigações OSINT
 abrangentes, e o Yahoo pode revelar informações que não seriam encontradas
 utilizando apenas um motor de busca principal como o Google.
 """
-from core.basemodule import BaseModule
-from core.user_agent_generator import UserAgentGenerator
 import re
-from urllib.parse import quote_plus
 import time
 import random
-from bs4 import BeautifulSoup
-from core.format import Format
-from urllib.parse import urljoin, urlparse, unquote
 import asyncio
-from core.http_async import HTTPClient
 import backoff
+from bs4 import BeautifulSoup
 from requests.exceptions import RequestException
-import asyncio
+from urllib.parse import urljoin, urlparse, unquote, quote_plus
+
+from core.format import Format
 from core.http_async import HTTPClient
+from core.basemodule import BaseModule
+from core.user_agent_generator import UserAgentGenerator
 
 class YahooDorker(BaseModule):
     """
@@ -65,7 +63,9 @@ class YahooDorker(BaseModule):
             'timeout': 15,  # Timeout para requisições
             'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:yahoo" -pm',
             'proxy': str(),  # Proxies para requisições (opcional)
-            'debug': False,  # Modo de debug para mostrar informações detalhadas    
+            'debug': False,  # Modo de debug para mostrar informações detalhadas 
+            'retry': 0,              # Número de tentativas de requisição
+            'retry_delay': 1,        # Atraso entre tentativas de requisição   
         }
         
         self.search_url_templates = [
