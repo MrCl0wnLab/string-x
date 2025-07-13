@@ -23,7 +23,8 @@ import urllib.parse
 from typing import List, Dict, Any, Optional
 
 # Bibliotecas de terceiros
-from requests.exceptions import RequestException, Timeout, ConnectionError
+from requests.exceptions import RequestException
+from httpx import ConnectError, ReadTimeout, ConnectTimeout, TimeoutException
 
 # Módulos locais
 from core.http_async import HTTPClient
@@ -99,6 +100,9 @@ class CrtshCollector(BaseModule):
         
         # Realiza consulta ao crt.sh
         try:
+            # Mensagem de debug para o usuário
+            self.set_result(f"🔍 Consultando certificados para: {domain}")
+            
             self.log_debug("Iniciando consulta ao serviço crt.sh")
             
             # Verificar configurações
@@ -154,10 +158,10 @@ class CrtshCollector(BaseModule):
         except RequestException as e:
             self.log_debug(f"Erro de requisição HTTP: {str(e)}")
             self.set_result(f"Erro de comunicação com crt.sh: {str(e)}")
-        except ConnectionError as e:
+        except ConnectError as e:
             self.log_debug(f"Erro de conexão: {str(e)}")
             self.set_result(f"Falha ao conectar com crt.sh: {str(e)}")
-        except Timeout as e:
+        except (ReadTimeout, ConnectTimeout, TimeoutException) as e:
             self.log_debug(f"Timeout na requisição: {str(e)}")
             self.set_result(f"Timeout na consulta ao crt.sh: {str(e)}")
         except Exception as e:
@@ -197,17 +201,13 @@ class CrtshCollector(BaseModule):
         url = f"https://crt.sh/?q={encoded_domain}&output=json"
         self.log_debug(f"URL de consulta: {url}")
         
-        proxy = self.options.get('proxy') if self.options.get('proxy') else None
 
         kwargs = {
             'headers' : {
                 'User-Agent': UserAgentGenerator.get_desktop_user_agent(),
                 'Accept': 'application/json',
                 },
-            'proxies': {
-                'http://': proxy,
-                'https://': proxy
-                } if proxy else None,
+            'proxy': self.options.get('proxy') if self.options.get('proxy') else None,
             'timeout': self.options.get('timeout', 30),
             'follow_redirects': True,
         }
@@ -245,7 +245,7 @@ class CrtshCollector(BaseModule):
                 self.log_debug(f"Primeiros 200 caracteres da resposta: {response.text[:200]}...")
                 raise RequestException(error_msg)
                 
-        except (ConnectionError, Timeout) as e:
+        except (ConnectError, ReadTimeout, ConnectTimeout, TimeoutException) as e:
             self.log_debug(f"Erro de conexão ou timeout: {str(e)}")
             raise
         except Exception as e:

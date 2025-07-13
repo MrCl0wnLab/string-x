@@ -16,6 +16,7 @@ import asyncio
 import warnings
 import traceback
 from requests.exceptions import RequestException
+from httpx import ConnectError, ReadTimeout, ConnectTimeout, TimeoutException
 
 from core.http_async import HTTPClient
 from core.basemodule import BaseModule

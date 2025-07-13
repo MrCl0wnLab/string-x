@@ -26,6 +26,7 @@ import asyncio
 import backoff
 import urllib.parse
 from requests.exceptions import RequestException
+from httpx import ConnectError, ReadTimeout, ConnectTimeout, TimeoutException
 
 from config import setting
 from core.http_async import HTTPClient

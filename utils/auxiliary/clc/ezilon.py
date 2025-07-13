@@ -23,6 +23,7 @@ import asyncio
 from bs4 import BeautifulSoup
 from core.format import Format
 from requests.exceptions import RequestException
+from httpx import ConnectError, ReadTimeout, ConnectTimeout, TimeoutException
 from urllib.parse import urljoin, urlparse, quote_plus, unquote
 
 from core.http_async import HTTPClient

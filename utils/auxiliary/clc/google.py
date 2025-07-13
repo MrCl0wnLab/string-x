@@ -28,6 +28,7 @@ from urllib.parse import quote_plus, unquote, urlencode
 # Bibliotecas de terceiros
 from bs4 import BeautifulSoup
 from requests.exceptions import RequestException
+from httpx import ConnectError, ReadTimeout, ConnectTimeout, TimeoutException
 
 # Módulos locais
 from core.format import Format
@@ -77,7 +78,7 @@ class GoogleDorker(BaseModule):
             'debug': False,                                                                 # Modo debug (salva respostas para análise)
             'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:google" -pm',  # Exemplo de uso do módulo
             'proxy': str(),
-            'retry': 4,             # Número de tentativas de requisição
+            'retry': None,             # Número de tentativas de requisição
             'retry_delay': 1,       # Atraso entre tentativas de requisição
         }
 

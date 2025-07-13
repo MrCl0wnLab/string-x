@@ -25,6 +25,7 @@ import random
 import asyncio
 from bs4 import BeautifulSoup
 from requests.exceptions import RequestException
+from httpx import ConnectError, ReadTimeout, ConnectTimeout, TimeoutException
 from urllib.parse import urljoin, quote_plus, unquote, urlparse, parse_qs
 
 from core.format import Format

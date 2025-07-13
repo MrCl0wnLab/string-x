@@ -15,7 +15,14 @@ def retry_operation(func):
         last_error = None
         while attempts < max_attempts:
             try:
-                return await func(*args, **kwargs)
+                result = await func(*args, **kwargs)
+                if result is not None:
+                    return result
+                if set_result:
+                    set_result(f"⚠️ Função retornou None. Tentativa {attempts+1}/{max_attempts}")
+                attempts += 1
+                if attempts < max_attempts:
+                    await asyncio.sleep(delay)
             except Exception as e:
                 last_error = e
                 attempts += 1
@@ -23,9 +30,13 @@ def retry_operation(func):
                     set_result(f"⚠️ Tentativa {attempts}/{max_attempts} falhou. Tentando novamente em {delay}s...")
                 if attempts < max_attempts:
                     await asyncio.sleep(delay)
-        if debug_mode and set_result:
+        if set_result:
             set_result(f"⚠️ Todas as {max_attempts} tentativas falharam: {str(last_error)}")
-        raise last_error
+        # Don't raise exceptions that would be unhandled and cause the tool to exit
+        if last_error:
+            return None
+        else:
+            return None
 
     @functools.wraps(func)
     def sync_wrapper(*args, **kwargs):
@@ -34,7 +45,14 @@ def retry_operation(func):
         last_error = None
         while attempts < max_attempts:
             try:
-                return func(*args, **kwargs)
+                result = func(*args, **kwargs)
+                if result is not None:
+                    return result
+                if set_result:
+                    set_result(f"⚠️ Função retornou None. Tentativa {attempts+1}/{max_attempts}")
+                attempts += 1
+                if attempts < max_attempts:
+                    time.sleep(delay)
             except Exception as e:
                 last_error = e
                 attempts += 1
@@ -42,9 +60,13 @@ def retry_operation(func):
                     set_result(f"⚠️ Tentativa {attempts}/{max_attempts} falhou. Tentando novamente em {delay}s...")
                 if attempts < max_attempts:
                     time.sleep(delay)
-        if debug_mode and set_result:
+        if set_result:
             set_result(f"⚠️ Todas as {max_attempts} tentativas falharam: {str(last_error)}")
-        raise last_error
+        # Don't raise exceptions that would be unhandled and cause the tool to exit
+        if last_error:
+            return None
+        else:
+            return None
 
     def _get_retry_params(args, kwargs):
         # Defaults
