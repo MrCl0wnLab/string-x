@@ -1,14 +1,15 @@
 <center>
 
 <h1 align="center">
-  <br>
-  🔧 String-X (STRX)
+  <a href="#/"><img src="./asset/logo.png"></a>
 </h1>
 
 <h4 align="center">字符串操作自动化工具</h4>
 
 <p align="center">
-模块化自动化工具，旨在通过Linux命令行中的动态字符串操作协助分析师进行OSINT、渗透测试和数据分析。基于模板的系统，具有并行处理和可扩展模块。
+String-X (strx) 是一个专为信息安全专业人员和黑客爱好者开发的模块化自动化工具。专注于Linux环境中的动态字符串操作。
+
+采用模块化架构，为OSINT、渗透测试和数据分析提供高级功能，包括并行处理、专业化提取模块、收集功能和外部API集成。基于灵活模板的系统，集成超过25个功能。
 </p>
 
 <p align="center">
@@ -43,18 +44,24 @@
 
 ## ✨ 特性
 
-- 🚀 **并行处理**：可配置的线程系统，实现高性能
-- 🔧 **模块化架构**：通过EXT、CLC、OUT和CON模块可扩展
-- 🔄 **动态模板**：使用`{STRING}`占位符的字符串替换系统
-- 🛠️ **集成函数**：哈希、编码、请求和随机值生成函数
-- 📁 **多种输入源**：支持文件、stdin和管道
-- 🎯 **高级过滤**：选择性处理的过滤系统
-- 💾 **灵活输出**：自动时间戳保存到文件
+- 🚀 **并行处理**：可配置的多线程系统，实现高性能执行
+- 🧩 **模块化架构**：可扩展结构，包含专业化模块(EXT、CLC、OUT、CON、AI)
+- 🔄 **动态模板**：使用`{STRING}`占位符的替换系统，实现灵活操作
+- 🛠️ **25+集成函数**：哈希、编码、请求、验证和随机值生成
+- 📁 **多种数据源**：支持文件、stdin和管道链
+- 🎯 **智能过滤**：用于选择性字符串处理的过滤系统
+- 💾 **灵活输出**：TXT、CSV和JSON格式，自动时间戳
+- 🔌 **外部集成**：API、数据库和通知服务
+- 🔍 **高级提取**：复杂正则表达式模式和专业化处理
+- 🔒 **OSINT和渗透测试**：优化的侦察和安全分析资源
+- 🌐 **多引擎探查**：集成Google、Bing、Yahoo、DuckDuckGo等
+- 🧠 **AI集成**：Google Gemini处理模块
+- 🐋 **Docker支持**：隔离环境的容器化执行
 
 ## 📦 安装
 
 ### 系统要求
-- Python 3.8+
+- Python 3.12+
 - Linux/MacOS
 - `requirements.txt`中列出的库
 
@@ -67,22 +74,125 @@ cd string-x
 # 安装依赖
 pip install -r requirements.txt
 
-# 设置执行权限
+# 设置可执行权限
 chmod +x strx
 
-# 测试安装
+# 测试安装并查看帮助
 ./strx --help
+
+# 列出模块类型
+./strx -types
+
+# 列出模块和使用示例
+./strx -examples
+
+# 列出函数
+./strx -funcs
+
 ```
 
-### 通过Pip安装（即将推出）
+### 创建符号链接(可选) 
 ```bash
-pip install string-x
+# 检查当前链接
+ls -la /usr/local/bin/strx
+
+# 如有必要，重新创建链接
+sudo rm /usr/local/bin/strx
+sudo ln -sf $HOME/Documentos/string-x/strx /usr/local/bin/strx
 ```
+
+## ⏫ 基于Git的升级系统
+使用git命令下载新版本
+```bash
+# 更新String-X
+./strx -upgrade
+```
+
+## 🐋 DOCKER
+String-X提供Docker镜像，允许在隔离环境中运行，无需本地安装依赖。
+
+### 构建镜像
+
+```bash
+# 构建Docker镜像
+docker build -t string-x .
+```
+
+### Docker基本使用
+
+```bash
+# 使用默认命令运行（显示示例）
+docker run --rm string-x
+
+# 查看帮助
+docker run --rm string-x -h
+
+# 列出可用函数
+docker run --rm string-x -funcs
+
+# 列出模块类型
+docker run --rm string-x -types
+```
+
+### 处理本地文件
+
+为了处理主机文件，将目录挂载为卷：
+
+```bash
+# 挂载当前目录并处理文件
+docker run --rm -v $(pwd):/dados string-x -l /dados/urls.txt -st "curl -I {STRING}"
+
+# 使用多线程处理
+docker run --rm -v $(pwd):/dados string-x -l /dados/hosts.txt -st "nmap -p 80,443 {STRING}" -t 20
+
+# 将结果保存到主机
+docker run --rm -v $(pwd):/dados string-x -l /dados/domains.txt -st "dig +short {STRING}" -o /dados/results.txt
+```
+
+### 使用模块
+
+```bash
+# 从文件提取邮箱
+docker run --rm -v $(pwd):/dados string-x -l /dados/dump.txt -st "echo {STRING}" -module "ext:email" -pm
+
+# Google探查
+docker run --rm -v $(pwd):/dados string-x -l /dados/dorks.txt -st "echo {STRING}" -module "clc:google" -pm
+
+# 收集DNS信息
+docker run --rm -v $(pwd):/dados string-x -l /dados/domains.txt -st "echo {STRING}" -module "clc:dns" -pm
+```
+
+### 通过管道处理
+
+```bash
+# 从主机命令的管道
+echo "github.com" | docker run --rm -i string-x -st "whois {STRING}"
+
+# 与主机工具结合
+cat urls.txt | docker run --rm -i string-x -st "curl -skL {STRING}" -p "grep '<title>'"
+
+# 复杂管道
+cat domains.txt | docker run --rm -i string-x -st "echo {STRING}" -module "clc:crtsh" -pm | sort -u
+```
+
+### 高级配置
+
+```bash
+# 在容器内使用代理
+docker run --rm -v $(pwd):/dados string-x -l /dados/dorks.txt -st "echo {STRING}" -module "clc:bing" -proxy "http://172.17.0.1:8080" -pm
+
+# 定义输出格式
+docker run --rm -v $(pwd):/dados string-x -l /dados/targets.txt -st "echo {STRING}" -format json -o /dados/output.json
+
+# 设置线程间延迟执行
+docker run --rm -v $(pwd):/dados string-x -l /dados/apis.txt -st "curl {STRING}" -t 10 -sleep 2
+```
+
 
 ## 🧠 基本概念
 
-### 模板系统 {STRING}
-该工具使用`{STRING}`占位符作为动态值替换的关键字。该系统允许单独处理每个输入行，将`{STRING}`替换为当前值。
+### {STRING} 模板系统
+工具使用`{STRING}`占位符作为动态值替换的关键字。此系统允许单独处理每个输入行，将`{STRING}`替换为当前值。
 
 ```bash
 # 输入文件
@@ -90,7 +200,7 @@ host-01.com.br
 host-02.com.br
 host-03.com.br
 
-# 带模板的命令
+# 使用模板的命令
 ./strx -l hosts.txt -st "host '{STRING}'"
 
 # 生成的结果
@@ -100,11 +210,11 @@ host 'host-03.com.br'
 ```
 
 ### 处理流程
-1. **输入**：通过文件(`-l`)或stdin(管道)的数据
-2. **模板**：使用`{STRING}`应用模板
-3. **处理**：命令/模块执行
+1. **输入**：通过文件(`-l`)或stdin(管道)获取数据
+2. **模板**：应用带有`{STRING}`的模板
+3. **处理**：执行命令/模块
 4. **管道**：可选的额外处理(`-p`)
-5. **输出**：最终结果（屏幕或文件）
+5. **输出**：最终结果(屏幕或文件)
 
 <center>
 
@@ -114,35 +224,35 @@ host 'host-03.com.br'
 
 ## 🏗️ 模块化架构
 
-String-X使用可扩展的模块化架构，具有四种主要模块类型：
+String-X使用可扩展的模块化架构，包含四种主要模块类型：
 
 ### 模块类型
 
 | 类型 | 代码 | 描述 | 位置 |
-|------|------|------|------|
-| **提取器** | `ext` | 特定数据提取（email、URL、domain、phone） | `utils/auxiliary/ext/` |
-| **收集器** | `clc` | 信息收集和聚合（DNS、whois） | `utils/auxiliary/clc/` |
-| **输出** | `out` | 结果格式化和发送（DB、API、files） | `utils/auxiliary/out/` |
-| **连接** | `con` | 专用连接（SSH、FTP等） | `utils/auxiliary/con/` |
+|------|--------|-----------|-------------|
+| **Extractor** | `ext` | 特定数据提取(email、URL、domain、phone) | `utils/auxiliary/ext/` |
+| **Collector** | `clc` | 信息收集和聚合(DNS、whois) | `utils/auxiliary/clc/` |
+| **Output** | `out` | 结果格式化和发送(DB、API、files) | `utils/auxiliary/out/` |
+| **Connection** | `con` | 专业化连接(SSH、FTP等) | `utils/auxiliary/con/` |
 
 ### 目录结构
-```
+```bash
 string-x/
-├── strx                    # 主执行文件
-├── config/                 # 全局配置
-├── core/                   # 应用核心
-│   ├── command.py         # 命令处理
-│   ├── auto_module.py     # 动态模块加载
-│   ├── thread_process.py  # 线程系统
-│   ├── format.py          # 格式化和编码
-│   └── style_cli.py       # 样式化CLI界面
-└── utils/
-    ├── auxiliary/         # 辅助模块
-    │   ├── ext/          # 提取器模块
-    │   ├── clc/          # 收集器模块
-    │   ├── out/          # 输出模块
-    │   └── con/          # 连接模块
-    └── helper/           # 辅助函数
+      .
+      ├── asset             # 文档和CLI界面使用的图片、横幅和标志
+      ├── config            # 项目的全局配置文件(settings、变量)
+      ├── core              # 应用核心、主引擎和中央逻辑
+      │   └── banner        # ASCII艺术横幅子模块
+      │       └── asciiart  # 终端显示的ASCII艺术文件
+      ├── output            # 工具生成的输出文件和日志的默认目录
+      └── utils             # 扩展和集成的实用工具和辅助模块
+          ├── auxiliary     # 按功能组织的辅助模块
+          │   ├── ai        # 人工智能模块(例：Gemini提示)
+          │   ├── clc       # 收集器模块(搜索、DNS、whois、外部API)
+          │   ├── con       # 连接模块(SSH、FTP、HTTP探测)
+          │   ├── ext       # 提取器模块(正则表达式：email、域名、IP、哈希等)
+          │   └── out       # 输出/集成模块(JSON、CSV、数据库、API)
+          └── helper        # 整个项目使用的实用函数和辅助工具
 ```
 
 ## 🚀 工具使用
@@ -156,29 +266,35 @@ string-x/
 
 | 参数 | 描述 | 示例 |
 |-----------|-----------|---------|
-| `-h, --help`         |  显示项目帮助 | `-h` |
-| `-types`             |  列出模块类型 | `-types` |
-| `-examples`          |  列出模块和使用示例 | `-examples` |
-| `-functions, -funcs` |  列出函数 | `-funcs` |
-| `-l, --list` | 包含要处理字符串的文件 | `-l hosts.txt` |
+| `-h, --help`         | 显示项目帮助 | `-h` |
+| `-types`             | 列出模块类型 | `-types` |
+| `-examples`          | 列出模块和使用示例 | `-examples` |
+| `-functions, -funcs` | 列出函数 | `-funcs` |
+| `-l, --list` | 包含处理字符串的文件 | `-l hosts.txt` |
 | `-st, --str` | 带有`{STRING}`的命令模板 | `-st "curl {STRING}"` |
 | `-o, --out` | 结果输出文件 | `-o results.txt` |
-| `-p, --pipe` | 通过管道的附加命令 | `-p "grep 200"` |
-| `-v, --verbose` | 详细模式 | `-v` |
+| `-p, --pipe` | 通过管道的额外命令 | `-p "grep 200"` |
+| `-v, --verbose` | 详细模式，显示详情 | `-v` |
+| `-debug` | 启用模块调试 | `-debug` |
 | `-t, --thread` | 并行线程数 | `-t 50` |
 | `-f, --filter` | 字符串选择过滤器 | `-f ".gov.br"` |
-| `-module` | 特定模块选择 | `-module "ext:email"` |
+| `-module` | 选择特定模块 | `-module "ext:email"` |
 | `-pm` | 仅显示模块结果 | `-pm` |
 | `-pf` | 仅显示函数结果 | `-pf` |
 | `-of` | 将函数结果保存到文件 | `-of` |
-| `-sleep` | 线程之间的延迟(秒) | `-sleep 2` |
+| `-sleep` | 线程间延迟(秒) | `-sleep 2` |
+| `-proxy` | 为请求设置代理 | `-proxy "http://127.0.0.1:8080"` |
+| `-format` | 输出格式(txt、csv、json) | `-format json` |
+| `-upgrade` | 通过Git更新String-X | `-upgrade` |
+| `-r, --retry` | 重试次数 | `-r 3` |
 
-### 应用程序界面
+### 应用界面
 
 ```bash
-usage: strx [-h] [-types] [-examples] [-functions] [-list file] [-str cmd] [-out file] 
-            [-pipe cmd] [-verbose] [-thread <10>] [-pf] [-of] [-filter value] [-sleep <5>]
-            [-module <type:module>] [-pm]
+usage: strx [-h] [-types] [-examples] [-functions] [-list file] [-str cmd] 
+            [-out file] [-pipe cmd] [-verbose] [-debug] [-thread <10>] [-pf] [-of] 
+            [-filter value] [-sleep <5>] [-module <type:module>] [-pm] [-proxy PROXY]
+            [-format <format>] [-upgrade] [-retry <0>]
 
  
                                              _
@@ -211,25 +327,32 @@ usage: strx [-h] [-types] [-examples] [-functions] [-list file] [-str cmd] [-out
                                   ░                    ░         ░    ░  
                                   ░                                      
                                 
-                                String-X: Tool for automating commands
+                              String-X: Tool for automating commands  1.0
 
 options:
              -h, --help             show this help message and exit
-             -types                 Lista tipos de módulos
-             -examples              Lista módulos e exemplos de uso
-             -functions, -funcs     Lista funções
-             -list, -l file         Arquivo com strings para execução
-             -str, -st cmd          String template de comando
-             -out, -o file          Arquivo output de valores da execução shell
-             -pipe, -p cmd          Comando que será executado depois de um pipe |
-             -verbose, -v           Modo verboso
-             -thread, -t <10>       Quantidade de threads
-             -pf                    Mostrar resultados da execução de função, ignora shell
-             -of                    Habilitar output de valores da execução de função
-             -filter, -f value      Valor para filtrar strings para execução
-             -sleep <5>             Segundos de delay entre threads
-             -module <type:module>  Selectionar o tipo e module
-             -pm                    Mostrar somente resultados de execução do module
+             -types                 列出模块类型
+             -examples              列出模块和使用示例
+             -functions, -funcs     列出函数
+             -list, -l file         执行字符串的文件
+             -str, -st cmd          命令字符串模板
+             -out, -o file          shell执行值的输出文件
+             -pipe, -p cmd          将在管道 | 后执行的命令
+             -verbose, -v           详细模式
+             -debug                 启用模块调试
+             -thread, -t <10>       线程数量
+             -pf                    显示函数执行结果，忽略shell
+             -of                    启用函数执行值的输出
+             -filter, -f value      过滤执行字符串的值
+             -sleep <5>             线程间延迟秒数
+             -module <type:module>  选择类型和模块
+             -pm                    仅显示模块执行结果
+             -proxy PROXY           为请求设置代理
+             -format <format>       输出格式(txt、csv、json)
+             -upgrade               通过Git更新String-X
+             -retry, -r <0>         重试次数
+
+
 ```
 
 ## 💡 实际示例
@@ -256,7 +379,7 @@ cat hosts.txt | ./strx -st "host {STRING}" -v
 
 #### 3. 日志和数据分析
 ```bash
-# 在泄露数据中搜索CPF
+# 在泄露中搜索CPF
 ./strx -l cpfs.txt -st "grep -Ei '{STRING}' -R ./database/" -v
 
 # 处理SQL转储
@@ -289,162 +412,537 @@ cat ips.txt | ./strx -st "curl -s 'https://ipinfo.io/{STRING}/json'" -p "jq -r '
 ./strx -l wordlist.txt -st "curl -s -o /dev/null -w '%{http_code}' https://target.com/{STRING}" -p "grep '^200$'"
 ```
 
+#### 3. 数据处理
+```bash
+# 从多个文件提取邮箱
+./strx -l files.txt -st "cat {STRING}" -module "ext:email" -pm > all_emails.txt
+
+# 编码转换
+./strx -l base64_data.txt -st "debase64({STRING})" -pf -of
+
+# 生成哈希
+./strx -l passwords.txt -st "md5({STRING}); sha256({STRING})" -pf -o hashes.txt
+
+# 使用json格式
+echo 'com.br' | ./strx  -st "echo {STRING}" -o bing.json -format json -module 'clc:bing' -pm -v
+```
+
+### 与系统管道结合
+```bash
+# 使用jq的复杂管道
+curl -s 'https://api.github.com/users' | jq -r '.[].login' | ./strx -st "curl -s 'https://api.github.com/users/{STRING}'" -p "jq -r '.name, .location'"
+
+# Apache日志处理
+cat access.log | awk '{print $1}' | sort -u | ./strx -st "whois {STRING}" -p "grep -i 'country'" -t 5
+
+# SSL证书分析
+./strx -l domains.txt -st "echo | openssl s_client -connect {STRING}:443 2>/dev/null" -p "openssl x509 -noout -subject"
+```
+
+### 探查和搜索引擎
+```bash
+# Google基本探查
+./strx -l dorks.txt -st "echo {STRING}" -module "clc:google" -pm
+
+# 在政府网站搜索PDF文件
+echo 'site:gov filetype:pdf "confidential"' | ./strx -st "echo {STRING}" -module "clc:googlecse" -pm
+
+# 查找暴露的管理面板
+echo 'inurl:admin intitle:"login"' | ./strx -st "echo {STRING}" -module "clc:yahoo" -pm
+
+# 使用相同探查的多个搜索引擎
+echo 'intext:"internal use only"' | ./strx -st "echo {STRING}" -module "clc:duckduckgo" -pm > duckduckgo_results.txt
+echo 'intext:"internal use only"' | ./strx -st "echo {STRING}" -module "clc:bing" -pm > bing_results.txt
+
+# 引擎间结果比较
+cat dorks.txt | ./strx -st "echo {STRING}" -module "clc:google" -pm | sort > google_results.txt
+cat dorks.txt | ./strx -st "echo {STRING}" -module "clc:bing" -pm | sort > bing_results.txt
+comm -23 google_results.txt bing_results.txt > google_exclusive.txt
+```
+
+### 使用代理进行探查
+```bash
+# 使用代理进行探查以避免封锁
+./strx -l dorks.txt -st "echo {STRING}" -module "clc:google" -proxy "http://127.0.0.1:9050" -pm
+
+# 使用认证代理
+cat dorks.txt | ./strx -st "echo {STRING}" -module "clc:yahoo" -proxy "http://user:pass@server:8080" -pm
+
+# 使用TOR进行探查
+./strx -l sensitive_dorks.txt -st "echo {STRING}" -module "clc:google" -proxy "https://127.0.0.1:9050" -pm -t 1 -sleep 5
+
+# 结构化输出探查 + 认证代理
+./strx -l sqli_dorks.txt -st "echo {STRING}" -module "clc:googlecse" -proxy "http://user:pass@10.0.0.1:8080" -pm -module "out:json" -pm
+
+# 通过代理列表的分布式收集
+cat proxy_list.txt | while read proxy; do
+  ./strx -l target_dorks.txt -st "echo {STRING}" -module "clc:bing" -proxy "$proxy" -pm -t 3 -sleep 2
+done > combined_results.txt
+```
+
 ## 🔧 集成函数
 
-String-X包含可在`{STRING}`模板和管道命令中使用的内置函数。这些函数在shell命令执行之前被处理。
 
-### 可用函数表
+String-X包含超过25个内置函数，可在模板`{STRING}`和管道命令中使用。这些函数在shell命令执行前处理，涵盖哈希、编码、字符串操作、随机值生成、数据分析、文档验证、HTTP请求、文件操作等。
+
+### 语法
+```bash
+# 简单函数
+./strx -l data.txt -st "funcao({STRING})" -pf
+
+# 多个函数
+./strx -l data.txt -st "{STRING}; md5({STRING}); base64({STRING})" -pf
+
+# 带参数的函数
+./strx -l data.txt -st "str_rand(10); int_rand(5)" -pf
+```
+
+
+### 可用函数(主要)
 
 | 函数 | 描述 | 示例 |
 |--------|-----------|---------|
-| `clear` | Remove espaços, tabs e quebras de linha | `clear({STRING})` |
-| `base64` / `debase64` | Codifica/decodifica Base64 | `base64({STRING})` |
-| `hex` / `dehex` | Codifica/decodifica hexadecimal | `hex({STRING})` |
-| `sha1`, `sha256`, `md5` | Gera hash | `sha256({STRING})` |
-| `str_rand`, `int_rand` | Gera string/número aleatório | `str_rand(10)` |
-| `ip` | Resolve hostname para IP | `ip({STRING})` |
-| `replace` | Substitui substring | `replace(http:,https:,{STRING})` |
-| `get` | Requisição HTTP GET | `get(https://{STRING})` |
-| `urlencode` | Codifica URL | `urlencode({STRING})` |
-| `rev` | Inverte string | `rev({STRING})` |
-| `timestamp` | Timestamp atual | `timestamp()` |
-| `extract_domain` | Extrai domínio de URL | `extract_domain({STRING})` |
-| `jwt_decode` | Decodifica JWT (payload) | `jwt_decode({STRING})` |
-| `whois_lookup` | Consulta WHOIS | `whois_lookup({STRING})` |
-| `cert_info` | Info de certificado SSL | `cert_info({STRING})` |
-| `user_agent` | User-Agent aleatório | `user_agent()` |
-| `cidr_expand` | Expande faixa CIDR | `cidr_expand(192.168.0.0/30)` |
-| `subdomain_gen` | Gera subdomínios comuns | `subdomain_gen({STRING})` |
-| `email_validator` | Valida email | `email_validator({STRING})` |
-| `hash_file` | Hashes de arquivo | `hash_file(path.txt)` |
-| `encode_url_all` | Codifica URL (tudo) | `encode_url_all({STRING})` |
-| `phone_format` | Formata telefone BR | `phone_format({STRING})` |
-| `password_strength` | Força de senha | `password_strength({STRING})` |
-| `social_media_extract` | Extrai handles sociais | `social_media_extract({STRING})` |
-| `leak_check_format` | Formata email para leaks | `leak_check_format({STRING})` |
-| `cpf_validate` | Valida CPF | `cpf_validate({STRING})` |
+| `clear` | 删除空格、制表符和换行符 | `clear({STRING})` |
+| `base64` / `debase64` | Base64编码/解码 | `base64({STRING})` |
+| `hex` / `dehex` | 十六进制编码/解码 | `hex({STRING})` |
+| `sha1`, `sha256`, `md5` | 生成哈希 | `sha256({STRING})` |
+| `str_rand`, `int_rand` | 生成随机字符串/数字 | `str_rand(10)` |
+| `ip` | 将主机名解析为IP | `ip({STRING})` |
+| `replace` | 替换子字符串 | `replace(http:,https:,{STRING})` |
+| `get` | HTTP GET请求 | `get(https://{STRING})` |
+| `urlencode` | URL编码 | `urlencode({STRING})` |
+| `rev` | 反转字符串 | `rev({STRING})` |
+| `timestamp` | 当前时间戳 | `timestamp()` |
+| `extract_domain` | 从URL提取域名 | `extract_domain({STRING})` |
+| `jwt_decode` | 解码JWT(载荷) | `jwt_decode({STRING})` |
+| `whois_lookup` | WHOIS查询 | `whois_lookup({STRING})` |
+| `cert_info` | SSL证书信息 | `cert_info({STRING})` |
+| `user_agent` | 随机User-Agent | `user_agent()` |
+| `cidr_expand` | 展开CIDR范围 | `cidr_expand(192.168.0.0/30)` |
+| `subdomain_gen` | 生成常见子域名 | `subdomain_gen({STRING})` |
+| `email_validator` | 验证邮箱 | `email_validator({STRING})` |
+| `hash_file` | 文件哈希 | `hash_file(path.txt)` |
+| `encode_url_all` | URL编码(全部) | `encode_url_all({STRING})` |
+| `phone_format` | 格式化巴西电话 | `phone_format({STRING})` |
+| `password_strength` | 密码强度 | `password_strength({STRING})` |
+| `social_media_extract` | 提取社交媒体句柄 | `social_media_extract({STRING})` |
+| `leak_check_format` | 格式化邮箱用于泄露检查 | `leak_check_format({STRING})` |
+| `cpf_validate` | 验证CPF | `cpf_validate({STRING})` |
+
+
+> 查看`utils/helper/functions.py`中的完整列表和示例，或在CLI中使用`--functions`获取详细文档。
+
+#### 哈希和编码
+```bash
+# 生成多个哈希
+./strx -l passwords.txt -st "md5({STRING}); sha1({STRING}); sha256({STRING})" -pf
+
+# 使用Base64
+./strx -l data.txt -st "base64({STRING})" -pf
+echo "SGVsbG8gV29ybGQ=" | ./strx -st "debase64({STRING})" -pf
+```
+
+#### 随机值生成
+```bash
+# 生成随机字符串
+./strx -l domains.txt -st "https://{STRING}/admin?token=str_rand(32)" -pf
+
+# 生成随机数字
+./strx -l apis.txt -st "curl '{STRING}?id=int_rand(6)'" -pf
+```
+
+#### 请求和解析
+```bash
+# 解析IP
+./strx -l hosts.txt -st "{STRING}; ip({STRING})" -pf
+
+# 发送GET请求
+./strx -l urls.txt -st "get(https://{STRING})" -pf
+```
+
+#### 字符串操作
+```bash
+# 替换协议
+./strx -l urls.txt -st "replace(http:,https:,{STRING})" -pf
+
+# 反转字符串
+./strx -l data.txt -st "rev({STRING})" -pf
+
+# URL编码
+./strx -l params.txt -st "urlencode({STRING})" -pf
+```
+
+### 控制参数
+
+- **`-pf`**: 仅显示函数结果(忽略shell执行)
+- **`-of`**: 将函数结果保存到输出文件
+
+```bash
+# 仅显示函数结果
+./strx -l domains.txt -st "{STRING}; md5({STRING})" -pf
+
+# 将函数保存到文件
+./strx -l data.txt -st "base64({STRING})" -pf -of -o encoded.txt
+```
+
+### 函数示例
+> **💡 提示**: 您可以通过编辑`utils/helper/functions.py`文件添加自定义函数
+```python
+@staticmethod
+def check_admin_exemplo(value: str) -> str:
+  try:
+      if '<p>admin</p>' in value:
+        return value
+  except:
+    return str()
+```
+
+### 使用示例函数
+```bash
+# 执行创建的函数
+./strx -l data.txt -st "check_admin_exemplo({STRING})" -pf
+```
 
 
 ## 🧩 模块系统
 
 String-X使用可扩展的模块化架构，允许在不修改主代码的情况下添加特定功能。模块按类型组织并动态加载。
 
-### 提取器模块 (EXT)
+### 可用模块类型
 
-提取器模块使用正则表达式从字符串中提取特定数据。
+| 类型 | 代码 | 描述 | 位置 |
+|------|--------|-----------|-------------|
+| **Extractor** | `ext` | 使用正则表达式提取特定数据 | `utils/auxiliary/ext/` |
+| **Collector** | `clc` | 从API/服务收集信息 | `utils/auxiliary/clc/` |
+| **Output** | `out` | 数据格式化和发送 | `utils/auxiliary/out/` |
+| **Connection** | `con` | 专业化连接 | `utils/auxiliary/con/` |
+| **AI** | `ai` | 人工智能  | `utils/auxiliary/ai/` |
 
-#### 可用模块：
-- **`email`**：提取有效的电子邮件地址
-- **`domain`**：提取域名和子域名
-- **`url`**：提取完整的URL（HTTP/HTTPS）
-- **`phone`**：提取电话号码（巴西格式）
 
+#### 基本语法
 ```bash
-# 从数据转储中提取电子邮件
-./strx -l database_dump.txt -st "echo '{STRING}'" -module "ext:email" -pm
-
-# 从日志中提取域名
-cat access.log | ./strx -st "echo '{STRING}'" -module "ext:domain" -pm | sort -u
+./strx -module "类型:模块名"
 ```
 
-### 收集器模块 (CLC)
+#### 相关参数
+- **`-module 类型:名称`**: 指定要使用的模块
+- **`-pm`**: 仅显示模块结果(省略shell输出)
 
-收集器模块向外部服务发出请求以获取额外信息。
 
-#### 可用模块：
-- **`dns`**：收集DNS记录（A、MX、TXT等）
+### 提取器模块(EXT)
+使用正则表达式提取模式和特定数据的模块：
+
+| 模块      | 描述                                 | CLI示例 |
+|-------------|-------------------------------------------|-------------|
+| `email`     | 提取有效电子邮件地址         | `-module "ext:email"` |
+| `domain`    | 提取域名和子域名             | `-module "ext:domain"` |
+| `url`       | 提取完整URL(HTTP/HTTPS)         | `-module "ext:url"` |
+| `phone`     | 提取电话号码(巴西)            | `-module "ext:phone"` |
+| `credential`| 提取凭据、令牌、密钥         | `-module "ext:credential"` |
+| `ip`        | 提取IPv4/IPv6地址                 | `-module "ext:ip"` |
+| `hash`      | 提取MD5、SHA1、SHA256、SHA512哈希    | `-module "ext:hash"` |
 
 ```bash
-# 收集DNS信息
+# 示例：从数据转储中提取邮箱
+./strx -l database_dump.txt -st "echo '{STRING}'" -module "ext:email" -pm
+```
+
+
+### 收集器模块(CLC)
+用于外部信息收集、API和分析的模块：
+
+| 模块        | 描述                                 | CLI示例 |
+|---------------|-------------------------------------------|-------------|
+| `archive`     | 从Wayback Machine收集存档URL | `-module "clc:archive"` |
+| `bing`        | 在Bing中进行探查搜索          | `-module "clc:bing"` |
+| `crtsh`       | 收集SSL/TLS证书和子域名 | `-module "clc:crtsh"` |
+| `dns`         | 收集DNS记录(A、MX、TXT、NS)     | `-module "clc:dns"` |
+| `duckduckgo`  | 在DuckDuckGo中进行探查搜索    | `-module "clc:duckduckgo"` |
+| `emailverify` | 验证邮箱有效性(MX、SMTP)    | `-module "clc:emailverify"` |
+| `ezilon`      | 在Ezilon中进行探查搜索        | `-module "clc:ezilon"` |
+| `geoip`       | IP地理位置                     | `-module "clc:geoip"` |
+| `google`      | 在Google中进行探查搜索        | `-module "clc:google"` |
+| `googlecse`   | 使用Google CSE进行探查搜索| `-module "clc:googlecse"` |
+| `ipinfo`      | IP/主机端口扫描                 | `-module "clc:ipinfo"` |
+| `lycos`       | 在Lycos中进行探查搜索         | `-module "clc:lycos"` |
+| `naver`       | 在Naver中进行探查搜索(韩语)| `-module "clc:naver"` |
+| `netscan`     | 网络扫描(主机、服务)         | `-module "clc:netscan"` |
+| `shodan`      | 查询Shodan API                       | `-module "clc:shodan"` |
+| `sogou`       | 在Sogou中进行探查搜索(中文)| `-module "clc:sogou"` |
+| `subdomain`   | 子域名枚举                 | `-module "clc:subdomain"` |
+| `virustotal`  | 查询VirusTotal API                   | `-module "clc:virustotal"` |
+| `whois`       | 域名WHOIS查询                | `-module "clc:whois"` |
+| `yahoo`       | 在Yahoo中进行探查搜索         | `-module "clc:yahoo"` |
+
+```bash
+# 示例：收集DNS信息
 ./strx -l domains.txt -st "echo {STRING}" -module "clc:dns" -pm
+
+# 示例：使用搜索引擎收集信息
+./strx -l dorks.txt -st "echo {STRING}" -module "clc:bing" -pm
+./strx -l dorks.txt -st "echo {STRING}" -module "clc:google" -pm
+./strx -l dorks.txt -st "echo {STRING}" -module "clc:googlecse" -pm
+./strx -l dorks.txt -st "echo {STRING}" -module "clc:yahoo" -pm
+./strx -l dorks.txt -st "echo {STRING}" -module "clc:duckduckgo" -pm
+
+# 特定探查示例
+echo 'site:fbi.gov filetype:pdf' | ./strx -st "echo {STRING}" -module "clc:google" -pm
+echo 'site:github.com inurl:admin' | ./strx -st "echo {STRING}" -module "clc:googlecse" -pm
+echo 'inurl:admin' | ./strx -st "echo {STRING}" -module "clc:lycos" -pm
+echo 'site:github.com' | ./strx -st "echo {STRING}" -module "clc:ezilon" -pm
+echo 'filetype:pdf' | ./strx -st "echo {STRING}" -module "clc:yahoo" -pm
+```
+
+
+### 输出模块(OUT)
+用于结果输出和集成的模块：
+
+| 模块        | 描述                                 | CLI示例 |
+|---------------|-------------------------------------------|-------------|
+| `sqlite`      | 将数据保存到SQLite数据库               | `-module "out:sqlite"` |
+| `mysql`       | 将数据保存到MySQL数据库                | `-module "out:mysql"` |
+| `telegram`    | 通过Telegram Bot发送结果         | `-module "out:telegram"` |
+| `slack`       | 通过Slack Webhook发送结果        | `-module "out:slack"` |
+| `json`        | 将结果保存为JSON                  | `-module "out:json"` |
+| `csv`         | 将结果保存为CSV                   | `-module "out:csv"` |
+| `xml`         | 将结果保存为XML                   | `-module "out:xml"` |
+| `opensearch`  | 在Open Search中索引结果          | `-module "out:opensearch"` |
+
+```bash
+# 示例：保存到SQLite
+./strx -l data.txt -st "process {STRING}" -module "out:sqlite" -pm
+```
+
+
+### 连接模块(CON)
+用于专业化连接和探测的模块：
+
+| 模块        | 描述                                 | CLI示例 |
+|---------------|-------------------------------------------|-------------|
+| `ssh`         | SSH连接和远程执行             | `-module "con:ssh"` |
+| `ftp`         | FTP连接和列表/下载           | `-module "con:ftp"` |
+| `http_probe`  | HTTP/HTTPS探测，头部分析   | `-module "con:http_probe"` |
+
+```bash
+# 示例：探测HTTP服务器
+./strx -l urls.txt -st "{STRING}" -module "con:http_probe" -pm
+```
+
+### 人工智能模块(AI)
+用于人工智能提示的模块：
+
+| 模块        | 描述                                 | CLI示例 |
+|---------------|-------------------------------------------|-------------|
+| `gemini`      | Google Gemini AI提示 - ([创建API密钥](https://aistudio.google.com/app/apikey))    | `-module "ai:gemini"` |
+
+```bash
+# 示例：使用提示文件
+./strx -l prompts.txt -st "echo {STRING}" -module "ai:gemini" -pm
+
+# 示例：收集URL并发送分析构建提示
+./strx -l urls.txt -st "echo '分析URL: {STRING}'" -module "ai:gemini" -pm
+```
+
+#### 实际示例
+```bash
+# 提取邮箱并保存排序
+./strx -l breach_data.txt -st "echo '{STRING}'" -module "ext:email" -pm | sort -u > emails.txt
+
+# 检查可疑域名的DNS
+./strx -l suspicious_domains.txt -st "echo {STRING}" -module "clc:dns" -pm -v
+
+# 多模块管道
+cat logs.txt | ./strx -st "echo '{STRING}'" -module "ext:domain" -pm | ./strx -st "echo {STRING}" -module "clc:dns" -pm
+
+# 提取URL并检查状态
+./strx -l pages.txt -st "cat {STRING}" -module "ext:url" -pm | ./strx -st "curl -I {STRING}" -p "grep 'HTTP/'"
+```
+
+### 新模块开发
+
+要创建新模块，请遵循标准结构：
+
+#### 提取器模块(ext)
+```python
+"""
+模块介绍
+"""
+from core.basemodule import BaseModule
+import re
+
+class ModuleName(BaseModule):
+    
+    def __init__(self):
+      super().__init__()
+
+
+      # 定义模块元信息
+      self.meta.update({
+          "name": "模块名称...",
+          "description": "描述模块...",
+          "author": "创建者姓名...",
+          "type": "extractor | collector | Output..."
+      })
+
+      # 定义此模块所需的选项
+      self.options = {
+          "data":   str(),
+          "regex":  str(),
+          "proxy":  str()
+      }
+    
+    # 执行的必需函数
+    def run(self):
+        """
+        模块逻辑上下文
+          > 通过以下方式访问选项信息：self.options.get(key_name)
+        """
+        # 保存模块执行信息
+        self.set_result(value_regex)
+```
+
+### 过滤器和模块
+
+您可以将过滤器与模块结合使用，进行更具体的处理：
+
+```bash
+# 仅提取.gov域名的邮箱
+./strx -l data.txt -st "echo '{STRING}'" -module "ext:email" -pm -f ".gov"
+
+# 仅对.br域名进行DNS查找
+./strx -l domains.txt -st "echo {STRING}" -module "clc:dns" -pm -f ".br"
 ```
 
 ## 🎯 过滤器和选择性处理
 
-过滤系统允许只处理满足特定条件的字符串。
+过滤器系统允许仅处理符合特定条件的字符串，优化性能和精度。
 
+### 过滤器使用
 ```bash
-# 只过滤.gov.br域名
+./strx -f "过滤器值" / ./strx --filter "过滤器值"
+```
+
+### 过滤器示例
+```bash
+# 仅过滤.gov.br域名
 ./strx -l domains.txt -st "curl {STRING}" -f ".gov.br"
 
-# 只过滤HTTPS URL
+# 仅过滤HTTPS URL
 ./strx -l urls.txt -st "curl {STRING}" -f "https"
+
+# 过滤特定IP
+./strx -l logs.txt -st "analyze {STRING}" -f "192.168"
+
+# 过滤文件扩展名
+./strx -l files.txt -st "process {STRING}" -f ".pdf"
+```
+
+### 与模块结合
+```bash
+# 提取邮箱并保存排序
+./strx -l breach_data.txt -st "echo '{STRING}'" -module "ext:email" -pm | sort -u > emails.txt
+
+# 检查可疑域名的DNS
+./strx -l suspicious_domains.txt -st "echo {STRING}" -module "clc:dns" -pm -v
+
+# 多模块管道
+cat logs.txt | ./strx -st "echo '{STRING}'" -module "ext:domain" -pm | ./strx -st "echo {STRING}" -module "clc:dns" -pm
+
+# 提取URL并检查状态
+./strx -l pages.txt -st "cat {STRING}" -module "ext:url" -pm | ./strx -st "curl -I {STRING}" -p "grep 'HTTP/'"
 ```
 
 ## ⚡ 并行处理
 
-String-X通过线程支持并行处理，以加速大量数据的操作。
+String-X通过线程支持并行处理，以加速大数据量操作。
 
+### 线程配置
 ```bash
-# 快速HTTP状态验证
-./strx -l big_url_list.txt -st "curl -I {STRING}" -p "grep 'HTTP/'" -t 100
+# 定义线程数
+./strx -t 50 / ./strx --thread 50
 
-# 大规模DNS解析
-./strx -l huge_domain_list.txt -st "dig +short {STRING}" -t 50 -sleep 1
+# 定义线程间延迟
+./strx -sleep 2
 ```
 
----
+### 线程示例
+```bash
+# 快速HTTP状态检查
+./strx -l big_url_list.txt -st "curl -I {STRING}" -p "grep 'HTTP/'" -t 100
 
-### 终端输出
+# 批量DNS解析
+./strx -l huge_domain_list.txt -st "dig +short {STRING}" -t 50 -sleep 1
 
--  使用的示例命令: ```cat hosts.txt  | ./strx -str 'host {STRING}'```
+# 端口扫描
+./strx -l ip_list.txt -st "nmap -p 80,443 {STRING}" -t 20 -sleep 3
+```
+
+### 线程最佳实践
+- **速率限制**：使用`-sleep`避免服务过载
+- **适当的数量**：根据可用资源调整`-t`
+- **监控(详细模式)**：使用`-v`跟踪进度
+## 📸 视觉示例
+
+### 基本执行
+**命令**: `cat hosts.txt | ./strx -str 'host {STRING}'`
 
 ![Screenshot](/asset/img1.png)
 
--  使用的示例命令: ```cat hosts.txt | ./strx -str "curl -Iksw 'CODE:%{response_code};IP:%{remote_ip};HOST:%{url.host};SERVER:%header{server}' https://{STRING}"  -p "grep -o -E 'CODE:.(.*)|IP:.(.*)|HOST:.(.*)|SERVER:.(.*)'" -t 30``` 
+### 线程处理
+**命令**: `cat hosts.txt | ./strx -str "curl -Iksw 'CODE:%{response_code};IP:%{remote_ip};HOST:%{url.host};SERVER:%header{server}' https://{STRING}" -p "grep -o -E 'CODE:.(.*)|IP:.(.*)|HOST:.(.*)|SERVER:.(.*)'" -t 30`
 
 ![Screenshot](/asset/img3.png)
 
 ### 详细模式
-> 使用 -v / -verbose
-
--  使用的示例命令: ```cat hosts.txt  | ./strx -str 'host {STRING}' -v```
+**命令**: `cat hosts.txt | ./strx -str 'host {STRING}' -v`
 
 ![Screenshot](/asset/img2.png)
 
-### 输出文件
-> 输出文件格式
-
+### 输出文件格式
 ```
 output-%d-%m-%Y-%H.txt > output-15-06-2025-11.txt
 ```
 
----
-
-
 ## 🤝 贡献
 
-欢迎贡献！请：
+欢迎贡献！要贡献：
 
-1. Fork项目
-2. 创建您的功能分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交您的更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 打开Pull Request
+1. **Fork** 仓库
+2. **创建** 您的功能分支(`git checkout -b feature/AmazingFeature`)
+3. **提交** 您的更改(`git commit -m 'Add some AmazingFeature'`)
+4. **推送** 到分支(`git push origin feature/AmazingFeature`)
+5. **打开** Pull Request
 
-## 👨‍💻 作者
+### 贡献类型
+- 🐛 **错误修复**
+- ✨ **新功能**
+- 📝 **文档改进**
+- 🧩 **新模块**
+- ⚡ **性能优化**
 
-```bash
- + 作者:   MrCl0wn
- + 博客:   http://blog.mrcl0wn.com
- + GitHub: https://github.com/MrCl0wnLab
- + GitHub: https://github.com/MrCl0wnLab
- + Twitter: https://twitter.com/MrCl0wnLab
- + 邮箱:   mrcl0wnlab@gmail.com
-```
+### 模块开发
+要创建新模块，请参考[模块系统](#-模块系统)部分并遵循既定标准。
 
 ## 📄 许可证
 
-该项目基于MIT许可证 - 详见[LICENSE](LICENSE)文件。
+本项目根据MIT许可证获得许可 - 有关详细信息，请参阅[LICENSE](LICENSE)文件。
 
+## 👨‍💻 作者
+
+**MrCl0wn**
+- 🌐 **博客**: [http://blog.mrcl0wn.com](http://blog.mrcl0wn.com)
+- 🐙 **GitHub**: [@MrCl0wnLab](https://github.com/MrCl0wnLab) | [@MrCl0wnLab](https://github.com/MrCl0wnLab)
+- 🐦 **Twitter**: [@MrCl0wnLab](https://twitter.com/MrCl0wnLab)
+- 📧 **邮箱**: mrcl0wnlab@gmail.com
+
+---
 
 <div align="center">
 
-**⭐ 如果此项目对您有用，请考虑给它加星！**
+**⭐ 如果这个项目对您有用，请考虑给个星星！**
 
-**💡 随时欢迎建议和反馈！**
+**💡 欢迎建议和反馈！**
 
-**💀 Hacker Hackeia!**
+**💀 黑客入侵！**
 
 </div>
-

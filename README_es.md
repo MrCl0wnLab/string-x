@@ -1,14 +1,15 @@
 <center>
 
 <h1 align="center">
-  <br>
-  🔧 String-X (STRX)
+  <a href="#/"><img src="./asset/logo.png"></a>
 </h1>
 
 <h4 align="center">Herramienta de Automatización para Manipulación de Strings</h4>
 
 <p align="center">
-Herramienta modular de automatización desarrollada para auxiliar analistas en OSINT, pentesting y análisis de datos a través de la manipulación dinámica de strings en líneas de comando Linux. Sistema basado en plantillas con procesamiento paralelo y módulos extensibles.
+String-X (strx) es una herramienta de automatización modular desarrollada para profesionales de Infosec y entusiastas del hacking. Especializada en manipulación dinámica de strings en entornos Linux.
+
+Con arquitectura modular, ofrece características avanzadas para OSINT, pentest y análisis de datos, incluyendo procesamiento paralelo, módulos especializados de extracción, recolección e integración con APIs externas. Sistema basado en plantillas con más de 25 funciones integradas.
 </p>
 
 <p align="center">
@@ -41,48 +42,155 @@ Herramienta modular de automatización desarrollada para auxiliar analistas en O
 - [Contribución](#-contribución)
 - [Autor](#-autor)
 
-## ✨ Características
+## ✨ CARACTERÍSTICAS
 
-- 🚀 **Procesamiento Paralelo**: Sistema de hilos configurable para alto rendimiento
-- 🔧 **Arquitectura Modular**: Extensible a través de módulos EXT, CLC, OUT y CON
-- 🔄 **Plantilla Dinámica**: Sistema de sustitución de strings con placeholder `{STRING}`
-- 🛠️ **Funciones Integradas**: Funciones de hash, codificación, requests y generación de valores aleatorios
-- 📁 **Múltiples Fuentes**: Soporte para archivos, stdin y pipes
-- 🎯 **Filtrado Avanzado**: Sistema de filtros para procesamiento selectivo
-- 💾 **Salida Flexible**: Guardado en archivos con timestamp automático
+- 🚀 **Procesamiento Paralelo**: Sistema multi-threading configurable para ejecución de alto rendimiento
+- 🧩 **Arquitectura Modular**: Estructura extensible con módulos especializados (EXT, CLC, OUT, CON, AI)
+- 🔄 **Plantilla Dinámica**: Sistema de sustitución con placeholder `{STRING}` para manipulación flexible
+- 🛠️ **+25 Funciones Integradas**: Hash, encoding, requests, validación y generación de valores aleatorios
+- 📁 **Múltiples Fuentes**: Soporte para archivos, stdin y encadenamiento de pipes
+- 🎯 **Filtrado Inteligente**: Sistema de filtros para procesamiento selectivo de strings
+- 💾 **Salida Flexible**: Formateo TXT, CSV y JSON con timestamp automático
+- 🔌 **Integraciones Externas**: APIs, bases de datos y servicios de notificación
+- 🔍 **Extracción Avanzada**: Patrones complejos con regex y procesamiento especializado
+- 🔒 **OSINT y Pentest**: Características optimizadas para reconocimiento y análisis de seguridad
+- 🌐 **Dorking Multi-Motor**: Integración con Google, Bing, Yahoo, DuckDuckGo y otros
+- 🧠 **Integración con IA**: Módulo para procesamiento con Google Gemini
+- 🐋 **Soporte Docker**: Ejecución containerizada para entornos aislados
 
 ## 📦 INSTALACIÓN
 
 ### Requisitos
-- Python 3.8+
+- Python 3.12+
 - Linux/MacOS
-- Librerías listadas en `requirements.txt`
+- Bibliotecas listadas en `requirements.txt`
 
 ### Instalación Rápida
 ```bash
-# Clonar el repositorio
+# Clonar repositorio
 git clone https://github.com/MrCl0wnLab/string-x.git
 cd string-x
 
 # Instalar dependencias
 pip install -r requirements.txt
 
-# Hacer el archivo ejecutable
+# Hacer archivo ejecutable
 chmod +x strx
 
-# Probar instalación
+# Probar instalación con ayuda
 ./strx --help
+
+# Listar tipos de módulos
+./strx -types
+
+# Listar módulos y ejemplos de uso
+./strx -examples
+
+# Listar funciones
+./strx -funcs
 ```
 
-### Instalación vía Pip (próximamente)
+### Creando enlace simbólico (opcional)
 ```bash
-pip install string-x
+# Verificar enlace actual
+ls -la /usr/local/bin/strx
+
+# Si es necesario, recrear el enlace
+sudo rm /usr/local/bin/strx
+sudo ln -sf $HOME/Documents/string-x/strx /usr/local/bin/strx
+```
+
+## ⏫ Sistema de Actualización con Git
+Usa comandos git para descargar nuevas versiones
+```bash
+# Actualizar String-X
+./strx -upgrade
+```
+
+## 🐋 DOCKER
+String-X está disponible como imagen Docker, permitiendo ejecución en entornos aislados sin necesidad de instalación local de dependencias.
+
+### Construyendo la Imagen
+
+```bash
+# Construir imagen Docker
+docker build -t string-x .
+```
+
+### Uso Básico con Docker
+
+```bash
+# Ejecutar con comando por defecto (muestra ejemplos)
+docker run --rm string-x
+
+# Ver ayuda
+docker run --rm string-x -h
+
+# Listar funciones disponibles
+docker run --rm string-x -funcs
+
+# Listar tipos de módulos
+docker run --rm string-x -types
+```
+
+### Procesando Archivos Locales
+
+Para procesar archivos del host, montar el directorio como volumen:
+
+```bash
+# Montar directorio actual y procesar archivo
+docker run --rm -v $(pwd):/datos string-x -l /datos/urls.txt -st "curl -I {STRING}"
+
+# Procesar con múltiples threads
+docker run --rm -v $(pwd):/datos string-x -l /datos/hosts.txt -st "nmap -p 80,443 {STRING}" -t 20
+
+# Guardar resultados en el host
+docker run --rm -v $(pwd):/datos string-x -l /datos/domains.txt -st "dig +short {STRING}" -o /datos/results.txt
+```
+
+### Uso con Módulos
+
+```bash
+# Extraer emails de archivo
+docker run --rm -v $(pwd):/datos string-x -l /datos/dump.txt -st "echo {STRING}" -module "ext:email" -pm
+
+# Dorking con Google
+docker run --rm -v $(pwd):/datos string-x -l /datos/dorks.txt -st "echo {STRING}" -module "clc:google" -pm
+
+# Recopilar información DNS
+docker run --rm -v $(pwd):/datos string-x -l /datos/domains.txt -st "echo {STRING}" -module "clc:dns" -pm
+```
+
+### Procesamiento vía Pipe
+
+```bash
+# Pipes de comandos del host
+echo "github.com" | docker run --rm -i string-x -st "whois {STRING}"
+
+# Combinación con herramientas del host
+cat urls.txt | docker run --rm -i string-x -st "curl -skL {STRING}" -p "grep '<title>'"
+
+# Pipeline complejo
+cat domains.txt | docker run --rm -i string-x -st "echo {STRING}" -module "clc:crtsh" -pm | sort -u
+```
+
+### Configuraciones Avanzadas
+
+```bash
+# Usar proxy dentro del container
+docker run --rm -v $(pwd):/datos string-x -l /datos/dorks.txt -st "echo {STRING}" -module "clc:bing" -proxy "http://172.17.0.1:8080" -pm
+
+# Definir formato de salida
+docker run --rm -v $(pwd):/datos string-x -l /datos/targets.txt -st "echo {STRING}" -format json -o /datos/output.json
+
+# Ejecutar con delay entre threads
+docker run --rm -v $(pwd):/datos string-x -l /datos/apis.txt -st "curl {STRING}" -t 10 -sleep 2
 ```
 
 ## 🧠 CONCEPTOS FUNDAMENTALES
 
 ### Sistema de Plantilla {STRING}
-La herramienta utiliza el placeholder `{STRING}` como palabra clave para la sustitución dinámica de valores. Este sistema permite que cada línea de entrada sea procesada individualmente, reemplazando `{STRING}` por el valor actual.
+La herramienta utiliza el placeholder `{STRING}` como palabra clave para sustitución dinámica de valores. Este sistema permite que cada línea de entrada se procese individualmente, reemplazando `{STRING}` con el valor actual.
 
 ```bash
 # Archivo de entrada
@@ -101,7 +209,7 @@ host 'host-03.com.br'
 
 ### Flujo de Procesamiento
 1. **Entrada**: Datos vía archivo (`-l`) o stdin (pipe)
-2. **Plantilla**: Aplicación de la plantilla con `{STRING}`
+2. **Plantilla**: Aplicación de plantilla con `{STRING}`
 3. **Procesamiento**: Ejecución de comandos/módulos
 4. **Pipe**: Procesamiento adicional opcional (`-p`)
 5. **Salida**: Resultado final (pantalla o archivo)
@@ -126,23 +234,23 @@ String-X utiliza una arquitectura modular extensible con cuatro tipos principale
 | **Connection** | `con` | Conexiones especializadas (SSH, FTP, etc) | `utils/auxiliary/con/` |
 
 ### Estructura de Directorios
-```
+```bash
 string-x/
-├── strx                    # Ejecutable principal
-├── config/                 # Configuraciones globales
-├── core/                   # Núcleo de la aplicación
-│   ├── command.py         # Procesamiento de comandos
-│   ├── auto_module.py     # Carga dinámica de módulos
-│   ├── thread_process.py  # Sistema de hilos
-│   ├── format.py          # Formateo y codificación
-│   └── style_cli.py       # Interfaz CLI estilizada
-└── utils/
-    ├── auxiliary/         # Módulos auxiliares
-    │   ├── ext/          # Módulos extractores
-    │   ├── clc/          # Módulos recolectores
-    │   ├── out/          # Módulos de salida
-    │   └── con/          # Módulos de conexión
-    └── helper/           # Funciones auxiliares
+      .
+      ├── asset             # Imágenes, banners y logos usados en documentación e interfaz CLI
+      ├── config            # Archivos de configuración global del proyecto (settings, variables)
+      ├── core              # Núcleo de la aplicación, motor principal y lógica central
+      │   └── banner        # Submódulo para banners ASCII art
+      │       └── asciiart  # Archivos ASCII art para visualización en terminal
+      ├── output            # Directorio por defecto para archivos de salida y logs generados por la herramienta
+      └── utils             # Utilidades y módulos auxiliares para extensiones e integraciones
+          ├── auxiliary     # Módulos auxiliares organizados por función
+          │   ├── ai        # Módulos de inteligencia artificial (ej: prompts Gemini)
+          │   ├── clc       # Módulos recolectores (búsqueda, DNS, whois, APIs externas)
+          │   ├── con       # Módulos de conexión (SSH, FTP, HTTP probe)
+          │   ├── ext       # Módulos extractores (regex: email, dominio, IP, hash, etc)
+          │   └── out       # Módulos de salida/integradores (JSON, CSV, base de datos, APIs)
+          └── helper        # Funciones utilitarias y helpers usados en todo el proyecto
 ```
 
 ## 🚀 USO DE LA HERRAMIENTA
@@ -156,81 +264,27 @@ string-x/
 
 | Parámetro | Descripción | Ejemplo |
 |-----------|-------------|---------|
-| `-h, --help`         |  Mostrar ayuda del proyecto | `-h` |
-| `-types`             |  Lista tipos de módulos | `-types` |
-| `-examples`          |  Lista módulos y ejemplos de uso | `-examples` |
-| `-functions, -funcs` |  Lista funciones | `-funcs` |
+| `-h, --help`         | Mostrar ayuda del proyecto | `-h` |
+| `-types`             | Listar tipos de módulos | `-types` |
+| `-examples`          | Listar módulos y ejemplos de uso | `-examples` |
+| `-functions, -funcs` | Listar funciones | `-funcs` |
 | `-l, --list` | Archivo con strings para procesamiento | `-l hosts.txt` |
 | `-st, --str` | Plantilla de comando con `{STRING}` | `-st "curl {STRING}"` |
 | `-o, --out` | Archivo de salida para resultados | `-o results.txt` |
 | `-p, --pipe` | Comando adicional vía pipe | `-p "grep 200"` |
 | `-v, --verbose` | Modo verboso con detalles | `-v` |
-| `-t, --thread` | Número de hilos paralelos | `-t 50` |
+| `-debug` | Habilitar debug de módulos | `-debug` |
+| `-t, --thread` | Número de threads paralelos | `-t 50` |
 | `-f, --filter` | Filtro para selección de strings | `-f ".gov.br"` |
 | `-module` | Selección de módulo específico | `-module "ext:email"` |
 | `-pm` | Mostrar solo resultados del módulo | `-pm` |
 | `-pf` | Mostrar solo resultados de funciones | `-pf` |
 | `-of` | Guardar resultados de funciones en archivo | `-of` |
-| `-sleep` | Retardo entre hilos (segundos) | `-sleep 2` |
-
-### Interfaz de la Aplicación
-
-```bash
-usage: strx [-h] [-types] [-examples] [-functions] [-list file] [-str cmd] [-out file] 
-            [-pipe cmd] [-verbose] [-thread <10>] [-pf] [-of] [-filter value] [-sleep <5>]
-            [-module <type:module>] [-pm]
-
- 
-                                             _
-                                            (T)          _
-                                        _         .=.   (R)
-                                       (S)   _   /\/(`)_         ▓
-                                        ▒   /\/`\/ |\ 0`\      ░
-                                        b   |░-.\_|_/.-||
-                                        r   )/ |_____| \(    _
-                            █               0  #/\ /\#  ░   (X)
-                             ░                _| + o |_                ░
-                             b         _     ((|, ^ ,|))               b
-                             r        (1)     `||\_/||`                r  
-                                               || _ ||      _
-                                ▓              | \_/ ░     (V)
-                                b          0.__.\   /.__.0   ░
-                                r           `._  `"`  _.'           ▒
-                                               ) ;  \ (             b
-                                        ░    1'-' )/`'-1            r
-                                                 0`     
-                        
-                              ██████    ▄▄▄█████▓    ██▀███     ▒██   ██▒ 
-                            ▒██    ▒    ▓  ██▒ ▓▒   ▓██ ▒ ██▒   ░▒ █ █ ▒░
-                            ░ ▓██▄      ▒ ▓██░ ▒░   ▓██ ░▄█ ▒   ░░  █   ░
-                              ▒   ██▒   ░ ▓██▓ ░    ▒██▀▀█▄      ░ █ █ ▒ 
-                            ▒██████▒▒     ▒██▒ ░    ░██▓ ▒██▒   ▒██▒ ▒██▒
-                            ▒ ▒▓▒ ▒ ░     ▒ ░░      ░ ▒▓ ░▒▓░   ▒▒ ░ ░▓ ░
-                            ░ ░▒  ░ ░       ░         ░▒ ░ ▒░   ░░   ░▒ ░
-                            ░  ░  ░       ░           ░░   ░     ░    ░  
-                                  ░                    ░         ░    ░  
-                                  ░                                      
-                                
-                                String-X: Tool for automating commands
-
-options:
-             -h, --help             show this help message and exit
-             -types                 Lista tipos de módulos
-             -examples              Lista módulos e exemplos de uso
-             -functions, -funcs     Lista funções
-             -list, -l file         Arquivo com strings para execução
-             -str, -st cmd          String template de comando
-             -out, -o file          Arquivo output de valores da execução shell
-             -pipe, -p cmd          Comando que será executado depois de um pipe |
-             -verbose, -v           Modo verboso
-             -thread, -t <10>       Quantidade de threads
-             -pf                    Mostrar resultados da execução de função, ignora shell
-             -of                    Habilitar output de valores da execução de função
-             -filter, -f value      Valor para filtrar strings para execução
-             -sleep <5>             Segundos de delay entre threads
-             -module <type:module>  Selectionar o tipo e module
-             -pm                    Mostrar somente resultados de execução do module
-```
+| `-sleep` | Delay entre threads (segundos) | `-sleep 2` |
+| `-proxy` | Establecer proxy para requests | `-proxy "http://127.0.0.1:8080"` |
+| `-format` | Formato de salida (txt, csv, json) | `-format json` |
+| `-upgrade` | Actualizar String-X vía Git | `-upgrade` |
+| `-r, --retry` | Número de intentos de reintento | `-r 3` |
 
 ## 💡 EJEMPLOS PRÁCTICOS
 
@@ -245,7 +299,7 @@ options:
 cat hosts.txt | ./strx -st "host {STRING}" -v
 ```
 
-#### 2. Peticiones HTTP con Análisis
+#### 2. Requests HTTP con Análisis
 ```bash
 # Verificar estado de URLs
 ./strx -l urls.txt -st "curl -I {STRING}" -p "grep 'HTTP/'" -t 20
@@ -277,7 +331,7 @@ cat ips.txt | ./strx -st "curl -s 'https://ipinfo.io/{STRING}/json'" -p "jq -r '
 ./strx -l subdomains.txt -st "dig +short {STRING}" -module "clc:dns" -pm
 ```
 
-#### 2. Seguridad y Pentesting
+#### 2. Seguridad y Pentest
 ```bash
 # Escaneo de puertos con nmap
 ./strx -l targets.txt -st "nmap -p 80,443 {STRING}" -p "grep 'open'" -t 10
@@ -289,154 +343,358 @@ cat ips.txt | ./strx -st "curl -s 'https://ipinfo.io/{STRING}/json'" -p "jq -r '
 ./strx -l wordlist.txt -st "curl -s -o /dev/null -w '%{http_code}' https://target.com/{STRING}" -p "grep '^200$'"
 ```
 
+#### 3. Procesamiento de Datos
+```bash
+# Extraer emails de múltiples archivos
+./strx -l files.txt -st "cat {STRING}" -module "ext:email" -pm > all_emails.txt
+
+# Conversión de encoding
+./strx -l base64_data.txt -st "debase64({STRING})" -pf -of
+
+# Generación de hashes
+./strx -l passwords.txt -st "md5({STRING}); sha256({STRING})" -pf -o hashes.txt
+
+# Uso de formateo json
+echo 'com.br' | ./strx  -st "echo {STRING}" -o bing.json -format json -module 'clc:bing' -pm -v
+```
+
+### Dorking y Motores de Búsqueda
+```bash
+# Dorking básico en Google
+./strx -l dorks.txt -st "echo {STRING}" -module "clc:google" -pm
+
+# Búsqueda de archivos PDF en sitios gubernamentales
+echo 'site:gov filetype:pdf "confidential"' | ./strx -st "echo {STRING}" -module "clc:googlecse" -pm
+
+# Encontrar paneles de admin expuestos
+echo 'inurl:admin intitle:"login"' | ./strx -st "echo {STRING}" -module "clc:yahoo" -pm
+
+# Múltiples motores de búsqueda con mismo dork
+echo 'intext:"internal use only"' | ./strx -st "echo {STRING}" -module "clc:duckduckgo" -pm > duckduckgo_results.txt
+echo 'intext:"internal use only"' | ./strx -st "echo {STRING}" -module "clc:bing" -pm > bing_results.txt
+
+# Comparar resultados entre motores
+cat dorks.txt | ./strx -st "echo {STRING}" -module "clc:google" -pm | sort > google_results.txt
+cat dorks.txt | ./strx -st "echo {STRING}" -module "clc:bing" -pm | sort > bing_results.txt
+comm -23 google_results.txt bing_results.txt > google_exclusive.txt
+```
+
+### Dorking con Proxy
+```bash
+# Usando proxy con dorking para evitar bloqueos
+./strx -l dorks.txt -st "echo {STRING}" -module "clc:google" -proxy "http://127.0.0.1:9050" -pm
+
+# Usando proxy con autenticación
+cat dorks.txt | ./strx -st "echo {STRING}" -module "clc:yahoo" -proxy "http://user:pass@server:8080" -pm
+
+# Aplicando dorking con TOR
+./strx -l sensitive_dorks.txt -st "echo {STRING}" -module "clc:google" -proxy "https://127.0.0.1:9050" -pm -t 1 -sleep 5
+
+# Dorking con salida estructurada + proxy con autenticación
+./strx -l sqli_dorks.txt -st "echo {STRING}" -module "clc:googlecse" -proxy "http://user:pass@10.0.0.1:8080" -pm -module "out:json" -pm
+
+# Recolección distribuida a través de lista de proxies
+cat proxy_list.txt | while read proxy; do
+  ./strx -l target_dorks.txt -st "echo {STRING}" -module "clc:bing" -proxy "$proxy" -pm -t 3 -sleep 2
+done > combined_results.txt
+```
+
 ## 🔧 FUNCIONES INTEGRADAS
 
-String-X incluye funciones built-in que pueden ser utilizadas dentro de las plantillas `{STRING}` y comandos pipe. Estas funciones son procesadas antes de la ejecución de los comandos shell.
+String-X incluye más de 25 funciones incorporadas que pueden utilizarse dentro de plantillas `{STRING}` y comandos pipe. Estas funciones se procesan antes de la ejecución de comandos shell y cubren desde hash, encoding, manipulación de strings, generación de valores aleatorios, análisis de datos, validación de documentos, requests HTTP, manipulación de archivos y mucho más.
 
-### Tabla de Funciones Disponibles
+### Sintaxis
+```bash
+# Función simple
+./strx -l data.txt -st "funcion({STRING})" -pf
 
-| FUNCIÓN | DESCRIPCIÓN | EJEMPLO |
-|--------|-----------|---------|
-| `clear` | Remove espaços, tabs e quebras de linha | `clear({STRING})` |
-| `base64` / `debase64` | Codifica/decodifica Base64 | `base64({STRING})` |
-| `hex` / `dehex` | Codifica/decodifica hexadecimal | `hex({STRING})` |
-| `sha1`, `sha256`, `md5` | Gera hash | `sha256({STRING})` |
-| `str_rand`, `int_rand` | Gera string/número aleatório | `str_rand(10)` |
-| `ip` | Resolve hostname para IP | `ip({STRING})` |
-| `replace` | Substitui substring | `replace(http:,https:,{STRING})` |
-| `get` | Requisição HTTP GET | `get(https://{STRING})` |
-| `urlencode` | Codifica URL | `urlencode({STRING})` |
-| `rev` | Inverte string | `rev({STRING})` |
-| `timestamp` | Timestamp atual | `timestamp()` |
-| `extract_domain` | Extrai domínio de URL | `extract_domain({STRING})` |
-| `jwt_decode` | Decodifica JWT (payload) | `jwt_decode({STRING})` |
+# Múltiples funciones
+./strx -l data.txt -st "{STRING}; md5({STRING}); base64({STRING})" -pf
+
+# Función con parámetros
+./strx -l data.txt -st "str_rand(10); int_rand(5)" -pf
+```
+
+### Funciones Disponibles (Principales)
+
+| Función | Descripción | Ejemplo |
+|---------|-------------|---------|
+| `clear` | Eliminar espacios, tabs y saltos de línea | `clear({STRING})` |
+| `base64` / `debase64` | Codificar/decodificar Base64 | `base64({STRING})` |
+| `hex` / `dehex` | Codificar/decodificar hexadecimal | `hex({STRING})` |
+| `sha1`, `sha256`, `md5` | Generar hash | `sha256({STRING})` |
+| `str_rand`, `int_rand` | Generar string/número aleatorio | `str_rand(10)` |
+| `ip` | Resolver hostname a IP | `ip({STRING})` |
+| `replace` | Reemplazar substring | `replace(http:,https:,{STRING})` |
+| `get` | Request HTTP GET | `get(https://{STRING})` |
+| `urlencode` | Codificar URL | `urlencode({STRING})` |
+| `rev` | Invertir string | `rev({STRING})` |
+| `timestamp` | Timestamp actual | `timestamp()` |
+| `extract_domain` | Extraer dominio de URL | `extract_domain({STRING})` |
+| `jwt_decode` | Decodificar JWT (payload) | `jwt_decode({STRING})` |
 | `whois_lookup` | Consulta WHOIS | `whois_lookup({STRING})` |
 | `cert_info` | Info de certificado SSL | `cert_info({STRING})` |
-| `user_agent` | User-Agent aleatório | `user_agent()` |
-| `cidr_expand` | Expande faixa CIDR | `cidr_expand(192.168.0.0/30)` |
-| `subdomain_gen` | Gera subdomínios comuns | `subdomain_gen({STRING})` |
-| `email_validator` | Valida email | `email_validator({STRING})` |
-| `hash_file` | Hashes de arquivo | `hash_file(path.txt)` |
-| `encode_url_all` | Codifica URL (tudo) | `encode_url_all({STRING})` |
-| `phone_format` | Formata telefone BR | `phone_format({STRING})` |
-| `password_strength` | Força de senha | `password_strength({STRING})` |
-| `social_media_extract` | Extrai handles sociais | `social_media_extract({STRING})` |
-| `leak_check_format` | Formata email para leaks | `leak_check_format({STRING})` |
-| `cpf_validate` | Valida CPF | `cpf_validate({STRING})` |
+| `user_agent` | User-Agent aleatorio | `user_agent()` |
+| `cidr_expand` | Expandir rango CIDR | `cidr_expand(192.168.0.0/30)` |
+| `subdomain_gen` | Generar subdominios comunes | `subdomain_gen({STRING})` |
+| `email_validator` | Validar email | `email_validator({STRING})` |
+| `hash_file` | Hashes de archivo | `hash_file(path.txt)` |
+| `encode_url_all` | Codificar URL (todo) | `encode_url_all({STRING})` |
+| `phone_format` | Formatear teléfono BR | `phone_format({STRING})` |
+| `password_strength` | Fuerza de contraseña | `password_strength({STRING})` |
+| `social_media_extract` | Extraer handles sociales | `social_media_extract({STRING})` |
+| `leak_check_format` | Formatear email para leaks | `leak_check_format({STRING})` |
+| `cpf_validate` | Validar CPF | `cpf_validate({STRING})` |
 
+> Ver la lista completa y ejemplos en `utils/helper/functions.py` o usar `--functions` en CLI para documentación detallada.
 
 ## 🧩 SISTEMA DE MÓDULOS
 
 String-X utiliza una arquitectura modular extensible que permite agregar funcionalidades específicas sin modificar el código principal. Los módulos están organizados por tipo y se cargan dinámicamente.
 
+### Tipos de Módulos Disponibles
+
+| Tipo | Código | Descripción | Ubicación |
+|------|--------|-------------|-----------|
+| **Extractor** | `ext` | Extracción de datos específicos usando regex | `utils/auxiliary/ext/` |
+| **Collector** | `clc` | Recolección de información de APIs/servicios | `utils/auxiliary/clc/` |
+| **Output** | `out` | Formateo y envío de datos | `utils/auxiliary/out/` |
+| **Connection** | `con` | Conexiones especializadas | `utils/auxiliary/con/` |
+| **AI** | `ai` | Inteligencia artificial | `utils/auxiliary/ai/` |
+
+#### Sintaxis Básica
+```bash
+./strx -module "tipo:nombre_del_modulo"
+```
+
+#### Parámetros Relacionados
+- **`-module tipo:nombre`**: Especifica el módulo a utilizar
+- **`-pm`**: Muestra solo resultados del módulo (omite salida shell)
+
 ### Módulos Extractor (EXT)
+Módulos para extracción de patrones y datos específicos usando regex:
 
-Los módulos extractores utilizan expresiones regulares para extraer datos específicos de strings.
-
-#### Módulos Disponibles:
-- **`email`**: Extrae direcciones de email válidas
-- **`domain`**: Extrae dominios y subdominios
-- **`url`**: Extrae URLs completas (HTTP/HTTPS)
-- **`phone`**: Extrae números de teléfono (formato brasileño)
+| Módulo      | Descripción                                 | Ejemplo CLI |
+|-------------|---------------------------------------------|-------------|
+| `email`     | Extraer direcciones de email válidas       | `-module "ext:email"` |
+| `domain`    | Extraer dominios y subdominios              | `-module "ext:domain"` |
+| `url`       | Extraer URLs completas (HTTP/HTTPS)        | `-module "ext:url"` |
+| `phone`     | Extraer números de teléfono (BR)           | `-module "ext:phone"` |
+| `credential`| Extraer credenciales, tokens, claves       | `-module "ext:credential"` |
+| `ip`        | Extraer direcciones IPv4/IPv6              | `-module "ext:ip"` |
+| `hash`      | Extraer hashes MD5, SHA1, SHA256, SHA512   | `-module "ext:hash"` |
 
 ```bash
-# Extraer emails de dump de datos
+# Ejemplo: Extraer emails de dump de datos
 ./strx -l database_dump.txt -st "echo '{STRING}'" -module "ext:email" -pm
-
-# Extraer dominios de logs
-cat access.log | ./strx -st "echo '{STRING}'" -module "ext:domain" -pm | sort -u
 ```
 
 ### Módulos Collector (CLC)
+Módulos para recolección de información externa, APIs y análisis:
 
-Los módulos recolectores hacen peticiones a servicios externos para obtener información adicional.
-
-#### Módulos Disponibles:
-- **`dns`**: Recolecta registros DNS (A, MX, TXT, etc.)
+| Módulo        | Descripción                                 | Ejemplo CLI |
+|---------------|---------------------------------------------|-------------|
+| `archive`     | Recopilar URLs archivadas de Wayback Machine | `-module "clc:archive"` |
+| `bing`        | Realizar búsquedas con dorks en Bing       | `-module "clc:bing"` |
+| `crtsh`       | Recopilar certificados SSL/TLS y subdominios| `-module "clc:crtsh"` |
+| `dns`         | Recopilar registros DNS (A, MX, TXT, NS)   | `-module "clc:dns"` |
+| `duckduckgo`  | Realizar búsquedas con dorks en DuckDuckGo | `-module "clc:duckduckgo"` |
+| `emailverify` | Verificar validez de emails (MX, SMTP)     | `-module "clc:emailverify"` |
+| `ezilon`      | Realizar búsquedas con dorks en Ezilon     | `-module "clc:ezilon"` |
+| `geoip`       | Geolocalización de IPs                     | `-module "clc:geoip"` |
+| `google`      | Realizar búsquedas con dorks en Google     | `-module "clc:google"` |
+| `googlecse`   | Realizar búsquedas con dorks usando Google CSE | `-module "clc:googlecse"` |
+| `ipinfo`      | Escáner de puertos IP/host                 | `-module "clc:ipinfo"` |
+| `lycos`       | Realizar búsquedas con dorks en Lycos      | `-module "clc:lycos"` |
+| `naver`       | Realizar búsquedas con dorks en Naver (Coreano) | `-module "clc:naver"` |
+| `netscan`     | Escáner de red (hosts, servicios)          | `-module "clc:netscan"` |
+| `shodan`      | Consultar API Shodan                       | `-module "clc:shodan"` |
+| `sogou`       | Realizar búsquedas con dorks en Sogou (Chino) | `-module "clc:sogou"` |
+| `subdomain`   | Enumeración de subdominios                 | `-module "clc:subdomain"` |
+| `virustotal`  | Consultar API VirusTotal                   | `-module "clc:virustotal"` |
+| `whois`       | Consulta WHOIS de dominios                 | `-module "clc:whois"` |
+| `yahoo`       | Realizar búsquedas con dorks en Yahoo      | `-module "clc:yahoo"` |
 
 ```bash
-# Recolectar información DNS
+# Ejemplo: Recopilar información DNS
 ./strx -l domains.txt -st "echo {STRING}" -module "clc:dns" -pm
+
+# Ejemplo: Recopilar información usando motores de búsqueda
+./strx -l dorks.txt -st "echo {STRING}" -module "clc:bing" -pm
+./strx -l dorks.txt -st "echo {STRING}" -module "clc:google" -pm
+./strx -l dorks.txt -st "echo {STRING}" -module "clc:googlecse" -pm
+./strx -l dorks.txt -st "echo {STRING}" -module "clc:yahoo" -pm
+./strx -l dorks.txt -st "echo {STRING}" -module "clc:duckduckgo" -pm
+
+# Ejemplos con dorking específico
+echo 'site:fbi.gov filetype:pdf' | ./strx -st "echo {STRING}" -module "clc:google" -pm
+echo 'site:github.com inurl:admin' | ./strx -st "echo {STRING}" -module "clc:googlecse" -pm
+echo 'inurl:admin' | ./strx -st "echo {STRING}" -module "clc:lycos" -pm
+echo 'site:github.com' | ./strx -st "echo {STRING}" -module "clc:ezilon" -pm
+echo 'filetype:pdf' | ./strx -st "echo {STRING}" -module "clc:yahoo" -pm
+```
+
+### Módulos Output (OUT)
+Módulos para salida e integración de resultados:
+
+| Módulo        | Descripción                                 | Ejemplo CLI |
+|---------------|---------------------------------------------|-------------|
+| `sqlite`      | Guardar datos en base SQLite               | `-module "out:sqlite"` |
+| `mysql`       | Guardar datos en base MySQL                | `-module "out:mysql"` |
+| `telegram`    | Enviar resultados vía Telegram Bot         | `-module "out:telegram"` |
+| `slack`       | Enviar resultados vía Slack Webhook        | `-module "out:slack"` |
+| `json`        | Guardar resultados en JSON                 | `-module "out:json"` |
+| `csv`         | Guardar resultados en CSV                  | `-module "out:csv"` |
+| `xml`         | Guardar resultados en XML                  | `-module "out:xml"` |
+| `opensearch`  | Indexar resultados en Open Search          | `-module "out:opensearch"` |
+
+```bash
+# Ejemplo: Guardar en SQLite
+./strx -l data.txt -st "process {STRING}" -module "out:sqlite" -pm
+```
+
+### Módulos Connection (CON)
+Módulos para conexiones y sondeo especializado:
+
+| Módulo        | Descripción                                 | Ejemplo CLI |
+|---------------|---------------------------------------------|-------------|
+| `ssh`         | Conexión SSH y ejecución remota            | `-module "con:ssh"` |
+| `ftp`         | Conexión FTP y listado/descarga            | `-module "con:ftp"` |
+| `http_probe`  | Sondeo HTTP/HTTPS, análisis de headers     | `-module "con:http_probe"` |
+
+```bash
+# Ejemplo: Sondear servidores HTTP
+./strx -l urls.txt -st "{STRING}" -module "con:http_probe" -pm
+```
+
+### Módulos de Inteligencia Artificial (AI)
+Módulos para prompts de IA:
+
+| Módulo        | Descripción                                 | Ejemplo CLI |
+|---------------|---------------------------------------------|-------------|
+| `gemini`      | Prompt para Google Gemini AI - ([Crear API Key](https://aistudio.google.com/app/apikey)) | `-module "ai:gemini"` |
+
+```bash
+# Ejemplo: Usar archivos con Prompts
+./strx -l prompts.txt -st "echo {STRING}" -module "ai:gemini" -pm
+
+# Ejemplo: Recopilar URLs y enviar para análisis construyendo Prompt
+./strx -l urls.txt -st "echo 'Analizar URL: {STRING}'" -module "ai:gemini" -pm
 ```
 
 ## 🎯 FILTROS Y PROCESAMIENTO SELECTIVO
 
-El sistema de filtros permite procesar solo strings que cumplan criterios específicos.
+El sistema de filtros permite procesar solo strings que cumplan criterios específicos, optimizando rendimiento y precisión.
 
+### Uso de Filtros
+```bash
+./strx -f "valor_filtro" / ./strx --filter "valor_filtro"
+```
+
+### Ejemplos de Filtros
 ```bash
 # Filtrar solo dominios .gov.br
 ./strx -l domains.txt -st "curl {STRING}" -f ".gov.br"
 
 # Filtrar solo URLs HTTPS
 ./strx -l urls.txt -st "curl {STRING}" -f "https"
+
+# Filtrar IPs específicos
+./strx -l logs.txt -st "analyze {STRING}" -f "192.168"
+
+# Filtrar extensiones de archivo
+./strx -l files.txt -st "process {STRING}" -f ".pdf"
 ```
 
 ## ⚡ PROCESAMIENTO PARALELO
 
-String-X soporta procesamiento paralelo a través de hilos para acelerar operaciones en grandes volúmenes de datos.
+String-X soporta procesamiento paralelo a través de threads para acelerar operaciones en grandes volúmenes de datos.
 
+### Configuración de Threads
+```bash
+# Definir número de threads
+./strx -t 50 / ./strx --thread 50
+
+# Definir delay entre threads
+./strx -sleep 2
+```
+
+### Ejemplos con Threading
 ```bash
 # Verificación rápida de estado HTTP
 ./strx -l big_url_list.txt -st "curl -I {STRING}" -p "grep 'HTTP/'" -t 100
 
 # Resolución DNS masiva
 ./strx -l huge_domain_list.txt -st "dig +short {STRING}" -t 50 -sleep 1
+
+# Escaneo de puertos
+./strx -l ip_list.txt -st "nmap -p 80,443 {STRING}" -t 20 -sleep 3
+```
+
+### Mejores Prácticas para Threading
+- **Rate limiting**: Usar `-sleep` para evitar sobrecarga de servicios
+- **Número adecuado**: Ajustar `-t` según recursos disponibles
+- **Monitoreo (verbose)**: Usar `-v` para seguir progreso
+
+## 📸 EJEMPLOS VISUALES
+
+### Ejecución Básica
+**Comando**: `cat hosts.txt | ./strx -str 'host {STRING}'`
+
+![Screenshot](/asset/img1.png)
+
+### Procesamiento con Threading
+**Comando**: `cat hosts.txt | ./strx -str "curl -Iksw 'CODE:%{response_code};IP:%{remote_ip};HOST:%{url.host};SERVER:%header{server}' https://{STRING}" -p "grep -o -E 'CODE:.(.*)|IP:.(.*)|HOST:.(.*)|SERVER:.(.*)'" -t 30`
+
+![Screenshot](/asset/img3.png)
+
+### Modo Verbose
+**Comando**: `cat hosts.txt | ./strx -str 'host {STRING}' -v`
+
+![Screenshot](/asset/img2.png)
+
+### Formato de Archivo de Salida
+```
+output-%d-%m-%Y-%H.txt > output-15-06-2025-11.txt
 ```
 
 ## 🤝 CONTRIBUCIÓN
 
-¡Contribuciones son bienvenidas! Por favor:
+¡Las contribuciones son bienvenidas! Para contribuir:
 
-1. Fork el proyecto
-2. Crea tu rama de feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
+1. **Fork** del repositorio
+2. **Crear** una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. **Commit** tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. **Push** a la rama (`git push origin feature/AmazingFeature`)
+5. **Abrir** un Pull Request
 
-## 👨‍💻 AUTOR
+### Tipos de Contribución
+- 🐛 **Corrección de bugs**
+- ✨ **Nuevas características**
+- 📝 **Mejoras de documentación**
+- 🧩 **Nuevos módulos**
+- ⚡ **Optimizaciones de rendimiento**
 
-```bash
- + Autor:   MrCl0wn
- + Blog:    http://blog.mrcl0wn.com
- + GitHub:  https://github.com/MrCl0wnLab
- + GitHub:  https://github.com/MrCl0wnLab
- + Twitter: https://twitter.com/MrCl0wnLab
- + Email:   mrcl0wnlab@gmail.com
-```
+### Desarrollo de Módulos
+Para crear nuevos módulos, consultar la sección [Sistema de Módulos](#-sistema-de-módulos) y seguir patrones establecidos.
 
 ## 📄 LICENCIA
 
 Este proyecto está licenciado bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para detalles.
 
+## 👨‍💻 AUTOR
+
+**MrCl0wn**
+- 🌐 **Blog**: [http://blog.mrcl0wn.com](http://blog.mrcl0wn.com)
+- 🐙 **GitHub**: [@MrCl0wnLab](https://github.com/MrCl0wnLab) | [@MrCl0wnLab](https://github.com/MrCl0wnLab)
+- 🐦 **Twitter**: [@MrCl0wnLab](https://twitter.com/MrCl0wnLab)
+- 📧 **Email**: mrcl0wnlab@gmail.com
+
 ---
-
-### SALIDA TERMINAL
-
--  Comando ejemplo usado: ```cat hosts.txt  | ./strx -str 'host {STRING}'```
-
-![Screenshot](/asset/img1.png)
-
--  Comando ejemplo usado: ```cat hosts.txt | ./strx -str "curl -Iksw 'CODE:%{response_code};IP:%{remote_ip};HOST:%{url.host};SERVER:%header{server}' https://{STRING}"  -p "grep -o -E 'CODE:.(.*)|IP:.(.*)|HOST:.(.*)|SERVER:.(.*)'" -t 30``` 
-
-![Screenshot](/asset/img3.png)
-
-### VERBOSE
-> usando -v / -verbose
-
--  Comando ejemplo usado: ```cat hosts.txt  | ./strx -str 'host {STRING}' -v```
-
-![Screenshot](/asset/img2.png)
-
-### ARCHIVO DE SALIDA
-> formato de archivo output
-
-```
-output-%d-%m-%Y-%H.txt > output-15-06-2025-11.txt
-```
 
 <div align="center">
 
-**⭐ Si este proyecto te fue útil, ¡considera darle una estrella!**
+**⭐ ¡Si este proyecto fue útil, considera darle una estrella!**
 
 **💡 ¡Sugerencias y feedback son siempre bienvenidos!**
 

@@ -1,14 +1,15 @@
 <center>
 
 <h1 align="center">
-  <br>
-  🔧 String-X (STRX)
+  <a href="#/"><img src="./asset/logo.png"></a>
 </h1>
 
 <h4 align="center">أداة الأتمتة لمعالجة النصوص</h4>
 
 <p align="center">
-أداة أتمتة معيارية مطورة لمساعدة المحللين في OSINT، اختبار الاختراق وتحليل البيانات من خلال المعالجة الديناميكية للنصوص في أوامر Linux. نظام قائم على القوالب مع معالجة متوازية ووحدات قابلة للتوسيع.
+String-X (strx) هي أداة أتمتة معيارية مطورة لمحترفي أمن المعلومات وعشاق الهاكينغ. متخصصة في المعالجة الديناميكية للنصوص في بيئة Linux.
+
+مع البنية المعيارية، تقدم ميزات متقدمة لـ OSINT واختبار الاختراق وتحليل البيانات، بما في ذلك المعالجة المتوازية، ووحدات الاستخراج المتخصصة، ووظائف التجميع، والتكامل مع واجهات برمجة التطبيقات الخارجية. نظام قائم على قوالب مرنة مع أكثر من 25 وظيفة متكاملة.
 </p>
 
 <p align="center">
@@ -43,18 +44,24 @@
 
 ## ✨ الميزات
 
-- 🚀 **معالجة متوازية**: نظام threads قابل للتكوين للحصول على أداء عالي
-- 🔧 **بنية معيارية**: قابلة للتوسيع من خلال وحدات EXT، CLC، OUT، وCON
-- 🔄 **قالب ديناميكي**: نظام استبدال النصوص مع العنصر النائب `{STRING}`
-- 🛠️ **وظائف مدمجة**: وظائف hash، encoding، requests وتوليد قيم عشوائية
-- 📁 **مصادر متعددة**: دعم للملفات، stdin والأنابيب
-- 🎯 **تصفية متقدمة**: نظام مرشحات للمعالجة الانتقائية
-- 💾 **إخراج مرن**: حفظ في ملفات مع timestamp تلقائي
+- 🚀 **معالجة متوازية**: نظام متعدد الخيوط قابل للتكوين لتنفيذ عالي الأداء
+- 🧩 **بنية معيارية**: هيكل قابل للتوسيع مع وحدات متخصصة (EXT، CLC، OUT، CON، AI)
+- 🔄 **قالب ديناميكي**: نظام استبدال باستخدام العنصر النائب `{STRING}` للمعالجة المرنة
+- 🛠️ **25+ وظيفة متكاملة**: hash، encoding، requests، validation وتوليد قيم عشوائية
+- 📁 **مصادر بيانات متعددة**: دعم للملفات، stdin وسلاسل الأنابيب
+- 🎯 **تصفية ذكية**: نظام مرشحات للمعالجة الانتقائية للنصوص
+- 💾 **إخراج مرن**: تنسيقات TXT، CSV وJSON مع طوابع زمنية تلقائية
+- 🔌 **تكاملات خارجية**: واجهات برمجة التطبيقات، قواعد البيانات وخدمات الإشعارات
+- 🔍 **استخراج متقدم**: أنماط تعبيرات نمطية معقدة ومعالجة متخصصة
+- 🔒 **OSINT واختبار الاختراق**: موارد محسنة للاستطلاع وتحليل الأمان
+- 🌐 **استكشاف متعدد المحركات**: تكامل مع Google، Bing، Yahoo، DuckDuckGo وغيرها
+- 🧠 **تكامل الذكاء الاصطناعي**: وحدة معالجة Google Gemini
+- 🐋 **دعم Docker**: تنفيذ مُحتوى في بيئات معزولة
 
 ## 📦 التثبيت
 
-### المتطلبات
-- Python 3.8+
+### متطلبات النظام
+- Python 3.12+
 - Linux/MacOS
 - المكتبات المدرجة في `requirements.txt`
 
@@ -70,41 +77,144 @@ pip install -r requirements.txt
 # جعل الملف قابل للتنفيذ
 chmod +x strx
 
-# اختبار التثبيت
+# اختبار التثبيت وعرض المساعدة
 ./strx --help
+
+# قائمة أنواع الوحدات
+./strx -types
+
+# قائمة الوحدات وأمثلة الاستخدام
+./strx -examples
+
+# قائمة الوظائف
+./strx -funcs
+
 ```
 
-### التثبيت عبر Pip (قريباً)
+### إنشاء رابط رمزي (اختياري)
 ```bash
-pip install string-x
+# فحص الرابط الحالي
+ls -la /usr/local/bin/strx
+
+# إذا لزم الأمر، إعادة إنشاء الرابط
+sudo rm /usr/local/bin/strx
+sudo ln -sf $HOME/Documentos/string-x/strx /usr/local/bin/strx
 ```
+
+## ⏫ نظام التحديث باستخدام Git
+يستخدم أوامر git لتنزيل إصدارات جديدة
+```bash
+# تحديث String-X
+./strx -upgrade
+```
+
+## 🐋 DOCKER
+يتوفر String-X كصورة Docker، مما يسمح بالتشغيل في بيئات معزولة دون الحاجة لتثبيت التبعيات محلياً.
+
+### بناء الصورة
+
+```bash
+# بناء صورة Docker
+docker build -t string-x .
+```
+
+### الاستخدام الأساسي مع Docker
+
+```bash
+# تشغيل مع الأمر الافتراضي (عرض الأمثلة)
+docker run --rm string-x
+
+# عرض المساعدة
+docker run --rm string-x -h
+
+# قائمة الوظائف المتاحة
+docker run --rm string-x -funcs
+
+# قائمة أنواع الوحدات
+docker run --rm string-x -types
+```
+
+### معالجة الملفات المحلية
+
+لمعالجة ملفات المضيف، قم بتركيب الدليل كحجم:
+
+```bash
+# تركيب الدليل الحالي ومعالجة الملف
+docker run --rm -v $(pwd):/dados string-x -l /dados/urls.txt -st "curl -I {STRING}"
+
+# معالجة مع خيوط متعددة
+docker run --rm -v $(pwd):/dados string-x -l /dados/hosts.txt -st "nmap -p 80,443 {STRING}" -t 20
+
+# حفظ النتائج على المضيف
+docker run --rm -v $(pwd):/dados string-x -l /dados/domains.txt -st "dig +short {STRING}" -o /dados/results.txt
+```
+
+### استخدام الوحدات
+
+```bash
+# استخراج رسائل البريد الإلكتروني من ملف
+docker run --rm -v $(pwd):/dados string-x -l /dados/dump.txt -st "echo {STRING}" -module "ext:email" -pm
+
+# استكشاف Google
+docker run --rm -v $(pwd):/dados string-x -l /dados/dorks.txt -st "echo {STRING}" -module "clc:google" -pm
+
+# جمع معلومات DNS
+docker run --rm -v $(pwd):/dados string-x -l /dados/domains.txt -st "echo {STRING}" -module "clc:dns" -pm
+```
+
+### معالجة عبر الأنابيب
+
+```bash
+# أنبوب من أوامر المضيف
+echo "github.com" | docker run --rm -i string-x -st "whois {STRING}"
+
+# دمج مع أدوات المضيف
+cat urls.txt | docker run --rm -i string-x -st "curl -skL {STRING}" -p "grep '<title>'"
+
+# أنبوب معقد
+cat domains.txt | docker run --rm -i string-x -st "echo {STRING}" -module "clc:crtsh" -pm | sort -u
+```
+
+### إعدادات متقدمة
+
+```bash
+# استخدام بروكسي داخل الحاوية
+docker run --rm -v $(pwd):/dados string-x -l /dados/dorks.txt -st "echo {STRING}" -module "clc:bing" -proxy "http://172.17.0.1:8080" -pm
+
+# تحديد تنسيق الإخراج
+docker run --rm -v $(pwd):/dados string-x -l /dados/targets.txt -st "echo {STRING}" -format json -o /dados/output.json
+
+# تنفيذ مع تأخير بين الخيوط
+docker run --rm -v $(pwd):/dados string-x -l /dados/apis.txt -st "curl {STRING}" -t 10 -sleep 2
+```
+
 
 ## 🧠 المفاهيم الأساسية
 
-### نظام القالب {STRING}
-تستخدم الأداة العنصر النائب `{STRING}` كلمة مفتاحية للاستبدال الديناميكي للقيم. يسمح هذا النظام بمعالجة كل سطر من المدخلات بشكل فردي، واستبدال `{STRING}` بالقيمة الحالية.
+### نظام قالب {STRING}
+تستخدم الأداة العنصر النائب `{STRING}` كلمة مفتاحية للاستبدال الديناميكي للقيم. يسمح هذا النظام بمعالجة كل سطر إدخال بشكل فردي، واستبدال `{STRING}` بالقيمة الحالية.
 
 ```bash
-# ملف المدخل
+# ملف الإدخال
 host-01.com.br
 host-02.com.br
 host-03.com.br
 
-# أمر مع قالب
+# أمر مع القالب
 ./strx -l hosts.txt -st "host '{STRING}'"
 
-# النتيجة المولدة
+# النتيجة المُولدة
 host 'host-01.com.br'
 host 'host-02.com.br'
 host 'host-03.com.br'
 ```
 
-### سير المعالجة
-1. **المدخل**: البيانات عبر ملف (`-l`) أو stdin (pipe)
+### تدفق المعالجة
+1. **الإدخال**: البيانات عبر ملف (`-l`) أو stdin (أنبوب)
 2. **القالب**: تطبيق القالب مع `{STRING}`
 3. **المعالجة**: تنفيذ الأوامر/الوحدات
 4. **الأنبوب**: معالجة إضافية اختيارية (`-p`)
-5. **المخرج**: النتيجة النهائية (الشاشة أو ملف)
+5. **الإخراج**: النتيجة النهائية (الشاشة أو ملف)
 
 <center>
 
@@ -126,23 +236,23 @@ host 'host-03.com.br'
 | **Connection** | `con` | اتصالات متخصصة (SSH، FTP، إلخ) | `utils/auxiliary/con/` |
 
 ### هيكل الأدلة
-```
+```bash
 string-x/
-├── strx                    # الملف التنفيذي الرئيسي
-├── config/                 # التكوينات العامة
-├── core/                   # نواة التطبيق
-│   ├── command.py         # معالجة الأوامر
-│   ├── auto_module.py     # تحميل ديناميكي للوحدات
-│   ├── thread_process.py  # نظام threads
-│   ├── format.py          # التنسيق والترميز
-│   └── style_cli.py       # واجهة CLI منسقة
-└── utils/
-    ├── auxiliary/         # وحدات مساعدة
-    │   ├── ext/          # وحدات الاستخراج
-    │   ├── clc/          # وحدات التجميع
-    │   ├── out/          # وحدات الإخراج
-    │   └── con/          # وحدات الاتصال
-    └── helper/           # وظائف مساعدة
+      .
+      ├── asset             # الصور واللافتات والشعارات المستخدمة في الوثائق وواجهة CLI
+      ├── config            # ملفات التكوين العامة للمشروع (الإعدادات، المتغيرات)
+      ├── core              # نواة التطبيق، المحرك الرئيسي والمنطق المركزي
+      │   └── banner        # وحدة فرعية للافتات ASCII الفنية
+      │       └── asciiart  # ملفات الفن ASCII للعرض في الطرفية
+      ├── output            # الدليل الافتراضي لملفات الإخراج والسجلات التي تُولدها الأداة
+      └── utils             # أدوات مساعدة ووحدات مساعدة للتوسيعات والتكاملات
+          ├── auxiliary     # وحدات مساعدة منظمة حسب الوظيفة
+          │   ├── ai        # وحدات الذكاء الاصطناعي (مثال: مطالبات Gemini)
+          │   ├── clc       # وحدات الجامع (البحث، DNS، whois، واجهات برمجة التطبيقات الخارجية)
+          │   ├── con       # وحدات الاتصال (SSH، FTP، HTTP probe)
+          │   ├── ext       # وحدات المستخرج (regex: email، domain، IP، hash، إلخ)
+          │   └── out       # وحدات الإخراج/التكامل (JSON، CSV، قاعدة البيانات، واجهات برمجة التطبيقات)
+          └── helper        # وظائف مساعدة ومساعدات تُستخدم في المشروع بأكمله
 ```
 
 ## 🚀 استخدام الأداة
@@ -156,29 +266,35 @@ string-x/
 
 | المعامل | الوصف | مثال |
 |-----------|-----------|---------|
-| `-h, --help`         |  إظهار مساعدة المشروع | `-h` |
-| `-types`             |  قائمة أنواع الوحدات | `-types` |
-| `-examples`          |  قائمة الوحدات وأمثلة الاستخدام | `-examples` |
-| `-functions, -funcs` |  قائمة الوظائف | `-funcs` |
+| `-h, --help`         | عرض مساعدة المشروع | `-h` |
+| `-types`             | قائمة أنواع الوحدات | `-types` |
+| `-examples`          | قائمة الوحدات وأمثلة الاستخدام | `-examples` |
+| `-functions, -funcs` | قائمة الوظائف | `-funcs` |
 | `-l, --list` | ملف يحتوي على نصوص للمعالجة | `-l hosts.txt` |
 | `-st, --str` | قالب أمر مع `{STRING}` | `-st "curl {STRING}"` |
 | `-o, --out` | ملف إخراج للنتائج | `-o results.txt` |
 | `-p, --pipe` | أمر إضافي عبر أنبوب | `-p "grep 200"` |
 | `-v, --verbose` | وضع مفصل مع تفاصيل | `-v` |
-| `-t, --thread` | عدد threads المتوازية | `-t 50` |
+| `-debug` | تمكين تصحيح الوحدات | `-debug` |
+| `-t, --thread` | عدد الخيوط المتوازية | `-t 50` |
 | `-f, --filter` | مرشح لاختيار النصوص | `-f ".gov.br"` |
 | `-module` | اختيار وحدة محددة | `-module "ext:email"` |
-| `-pm` | إظهار نتائج الوحدة فقط | `-pm` |
-| `-pf` | إظهار نتائج الوظائف فقط | `-pf` |
+| `-pm` | عرض نتائج الوحدة فقط | `-pm` |
+| `-pf` | عرض نتائج الوظائف فقط | `-pf` |
 | `-of` | حفظ نتائج الوظائف في ملف | `-of` |
-| `-sleep` | تأخير بين threads (بالثواني) | `-sleep 2` |
+| `-sleep` | تأخير بين الخيوط (بالثواني) | `-sleep 2` |
+| `-proxy` | تعيين بروكسي للطلبات | `-proxy "http://127.0.0.1:8080"` |
+| `-format` | تنسيق الإخراج (txt، csv، json) | `-format json` |
+| `-upgrade` | تحديث String-X عبر Git | `-upgrade` |
+| `-r, --retry` | عدد المحاولات | `-r 3` |
 
 ### واجهة التطبيق
 
 ```bash
-usage: strx [-h] [-types] [-examples] [-functions] [-list file] [-str cmd] [-out file] 
-            [-pipe cmd] [-verbose] [-thread <10>] [-pf] [-of] [-filter value] [-sleep <5>]
-            [-module <type:module>] [-pm]
+usage: strx [-h] [-types] [-examples] [-functions] [-list file] [-str cmd] 
+            [-out file] [-pipe cmd] [-verbose] [-debug] [-thread <10>] [-pf] [-of] 
+            [-filter value] [-sleep <5>] [-module <type:module>] [-pm] [-proxy PROXY]
+            [-format <format>] [-upgrade] [-retry <0>]
 
  
                                              _
@@ -211,25 +327,32 @@ usage: strx [-h] [-types] [-examples] [-functions] [-list file] [-str cmd] [-out
                                   ░                    ░         ░    ░  
                                   ░                                      
                                 
-                                String-X: Tool for automating commands
+                              String-X: Tool for automating commands  1.0
 
 options:
              -h, --help             show this help message and exit
-             -types                 Lista tipos de módulos
-             -examples              Lista módulos e exemplos de uso
-             -functions, -funcs     Lista funções
-             -list, -l file         Arquivo com strings para execução
-             -str, -st cmd          String template de comando
-             -out, -o file          Arquivo output de valores da execução shell
-             -pipe, -p cmd          Comando que será executado depois de um pipe |
-             -verbose, -v           Modo verboso
-             -thread, -t <10>       Quantidade de threads
-             -pf                    Mostrar resultados da execução de função, ignora shell
-             -of                    Habilitar output de valores da execução de função
-             -filter, -f value      Valor para filtrar strings para execução
-             -sleep <5>             Segundos de delay entre threads
-             -module <type:module>  Selectionar o tipo e module
-             -pm                    Mostrar somente resultados de execução do module
+             -types                 قائمة أنواع الوحدات
+             -examples              قائمة الوحدات وأمثلة الاستخدام
+             -functions, -funcs     قائمة الوظائف
+             -list, -l file         ملف نصوص للتنفيذ
+             -str, -st cmd          قالب أمر نصي
+             -out, -o file          ملف إخراج لقيم تنفيذ shell
+             -pipe, -p cmd          أمر سيتم تنفيذه بعد الأنبوب |
+             -verbose, -v           وضع مفصل
+             -debug                 تمكين تصحيح الوحدات
+             -thread, -t <10>       عدد الخيوط
+             -pf                    عرض نتائج تنفيذ الوظائف، تجاهل shell
+             -of                    تمكين إخراج قيم تنفيذ الوظائف
+             -filter, -f value      قيمة لتصفية نصوص التنفيذ
+             -sleep <5>             ثواني التأخير بين الخيوط
+             -module <type:module>  اختيار النوع والوحدة
+             -pm                    عرض نتائج تنفيذ الوحدة فقط
+             -proxy PROXY           تعيين بروكسي للطلب
+             -format <format>       تنسيق الإخراج (txt، csv، json)
+             -upgrade               تحديث String-X عبر Git
+             -retry, -r <0>         عدد المحاولات
+
+
 ```
 
 ## 💡 أمثلة عملية
@@ -241,7 +364,7 @@ options:
 # عبر ملف
 ./strx -l hosts.txt -st "host {STRING}" -v
 
-# عبر pipe
+# عبر أنبوب
 cat hosts.txt | ./strx -st "host {STRING}" -v
 ```
 
@@ -259,7 +382,7 @@ cat hosts.txt | ./strx -st "host {STRING}" -v
 # البحث عن CPFs في التسريبات
 ./strx -l cpfs.txt -st "grep -Ei '{STRING}' -R ./database/" -v
 
-# معالجة dump SQL
+# معالجة تفريغ SQL
 ./strx -l dump.txt -st "echo '{STRING}'" -module "ext:email" -pm | sort -u
 ```
 
@@ -285,13 +408,13 @@ cat ips.txt | ./strx -st "curl -s 'https://ipinfo.io/{STRING}/json'" -p "jq -r '
 # اختبار حقن SQL
 ./strx -l urls.txt -st "sqlmap -u '{STRING}' --batch" -p "grep 'vulnerable'" -o sqli_results.txt
 
-# bruteforce الأدلة
+# القوة الغاشمة للأدلة
 ./strx -l wordlist.txt -st "curl -s -o /dev/null -w '%{http_code}' https://target.com/{STRING}" -p "grep '^200$'"
 ```
 
 #### 3. معالجة البيانات
 ```bash
-# استخراج emails من ملفات متعددة
+# استخراج رسائل البريد الإلكتروني من ملفات متعددة
 ./strx -l files.txt -st "cat {STRING}" -module "ext:email" -pm > all_emails.txt
 
 # تحويل الترميز
@@ -299,6 +422,9 @@ cat ips.txt | ./strx -st "curl -s 'https://ipinfo.io/{STRING}/json'" -p "jq -r '
 
 # توليد hashes
 ./strx -l passwords.txt -st "md5({STRING}); sha256({STRING})" -pf -o hashes.txt
+
+# استخدام تنسيق json
+echo 'com.br' | ./strx  -st "echo {STRING}" -o bing.json -format json -module 'clc:bing' -pm -v
 ```
 
 ### دمج مع أنابيب النظام
@@ -313,11 +439,53 @@ cat access.log | awk '{print $1}' | sort -u | ./strx -st "whois {STRING}" -p "gr
 ./strx -l domains.txt -st "echo | openssl s_client -connect {STRING}:443 2>/dev/null" -p "openssl x509 -noout -subject"
 ```
 
+### الاستكشاف ومحركات البحث
+```bash
+# استكشاف Google الأساسي
+./strx -l dorks.txt -st "echo {STRING}" -module "clc:google" -pm
+
+# البحث عن ملفات PDF في المواقع الحكومية
+echo 'site:gov filetype:pdf "confidential"' | ./strx -st "echo {STRING}" -module "clc:googlecse" -pm
+
+# العثور على لوحات إدارة مكشوفة
+echo 'inurl:admin intitle:"login"' | ./strx -st "echo {STRING}" -module "clc:yahoo" -pm
+
+# محركات بحث متعددة مع نفس الاستكشاف
+echo 'intext:"internal use only"' | ./strx -st "echo {STRING}" -module "clc:duckduckgo" -pm > duckduckgo_results.txt
+echo 'intext:"internal use only"' | ./strx -st "echo {STRING}" -module "clc:bing" -pm > bing_results.txt
+
+# مقارنة النتائج بين المحركات
+cat dorks.txt | ./strx -st "echo {STRING}" -module "clc:google" -pm | sort > google_results.txt
+cat dorks.txt | ./strx -st "echo {STRING}" -module "clc:bing" -pm | sort > bing_results.txt
+comm -23 google_results.txt bing_results.txt > google_exclusive.txt
+```
+
+### الاستكشاف مع البروكسي
+```bash
+# استخدام بروكسي للاستكشاف لتجنب الحظر
+./strx -l dorks.txt -st "echo {STRING}" -module "clc:google" -proxy "http://127.0.0.1:9050" -pm
+
+# استخدام بروكسي مع مصادقة
+cat dorks.txt | ./strx -st "echo {STRING}" -module "clc:yahoo" -proxy "http://user:pass@server:8080" -pm
+
+# الاستكشاف مع TOR
+./strx -l sensitive_dorks.txt -st "echo {STRING}" -module "clc:google" -proxy "https://127.0.0.1:9050" -pm -t 1 -sleep 5
+
+# استكشاف بإخراج منظم + بروكسي مع مصادقة
+./strx -l sqli_dorks.txt -st "echo {STRING}" -module "clc:googlecse" -proxy "http://user:pass@10.0.0.1:8080" -pm -module "out:json" -pm
+
+# جمع موزع عبر قائمة بروكسيات
+cat proxy_list.txt | while read proxy; do
+  ./strx -l target_dorks.txt -st "echo {STRING}" -module "clc:bing" -proxy "$proxy" -pm -t 3 -sleep 2
+done > combined_results.txt
+```
+
 ## 🔧 الوظائف المدمجة
 
-يتضمن String-X وظائف مدمجة يمكن استخدامها داخل قوالب `{STRING}` وأوامر pipe. تتم معالجة هذه الوظائف قبل تنفيذ أوامر shell.
 
-### البنية
+يتضمن String-X أكثر من 25 وظيفة مدمجة يمكن استخدامها ضمن قوالب `{STRING}` وأوامر الأنابيب. تتم معالجة هذه الوظائف قبل تنفيذ أوامر shell وتغطي hash، encoding، معالجة النصوص، توليد قيم عشوائية، تحليل البيانات، التحقق من الوثائق، طلبات HTTP، معالجة الملفات وأكثر.
+
+### بناء الجملة
 ```bash
 # وظيفة بسيطة
 ./strx -l data.txt -st "funcao({STRING})" -pf
@@ -329,38 +497,40 @@ cat access.log | awk '{print $1}' | sort -u | ./strx -st "whois {STRING}" -p "gr
 ./strx -l data.txt -st "str_rand(10); int_rand(5)" -pf
 ```
 
-### جدول الوظائف المتاحة
 
-| FUNCTION | DESCRIPTION | EXAMPLE |
+### الوظائف المتاحة (الرئيسية)
+
+| الوظيفة | الوصف | مثال |
 |--------|-----------|---------|
-| `clear` | Remove espaços, tabs e quebras de linha | `clear({STRING})` |
-| `base64` / `debase64` | Codifica/decodifica Base64 | `base64({STRING})` |
-| `hex` / `dehex` | Codifica/decodifica hexadecimal | `hex({STRING})` |
-| `sha1`, `sha256`, `md5` | Gera hash | `sha256({STRING})` |
-| `str_rand`, `int_rand` | Gera string/número aleatório | `str_rand(10)` |
-| `ip` | Resolve hostname para IP | `ip({STRING})` |
-| `replace` | Substitui substring | `replace(http:,https:,{STRING})` |
-| `get` | Requisição HTTP GET | `get(https://{STRING})` |
-| `urlencode` | Codifica URL | `urlencode({STRING})` |
-| `rev` | Inverte string | `rev({STRING})` |
-| `timestamp` | Timestamp atual | `timestamp()` |
-| `extract_domain` | Extrai domínio de URL | `extract_domain({STRING})` |
-| `jwt_decode` | Decodifica JWT (payload) | `jwt_decode({STRING})` |
-| `whois_lookup` | Consulta WHOIS | `whois_lookup({STRING})` |
-| `cert_info` | Info de certificado SSL | `cert_info({STRING})` |
-| `user_agent` | User-Agent aleatório | `user_agent()` |
-| `cidr_expand` | Expande faixa CIDR | `cidr_expand(192.168.0.0/30)` |
-| `subdomain_gen` | Gera subdomínios comuns | `subdomain_gen({STRING})` |
-| `email_validator` | Valida email | `email_validator({STRING})` |
-| `hash_file` | Hashes de arquivo | `hash_file(path.txt)` |
-| `encode_url_all` | Codifica URL (tudo) | `encode_url_all({STRING})` |
-| `phone_format` | Formata telefone BR | `phone_format({STRING})` |
-| `password_strength` | Força de senha | `password_strength({STRING})` |
-| `social_media_extract` | Extrai handles sociais | `social_media_extract({STRING})` |
-| `leak_check_format` | Formata email para leaks | `leak_check_format({STRING})` |
-| `cpf_validate` | Valida CPF | `cpf_validate({STRING})` |
+| `clear` | إزالة المساحات والتبويبات وفواصل الأسطر | `clear({STRING})` |
+| `base64` / `debase64` | ترميز/فك ترميز Base64 | `base64({STRING})` |
+| `hex` / `dehex` | ترميز/فك ترميز سادس عشري | `hex({STRING})` |
+| `sha1`, `sha256`, `md5` | توليد hash | `sha256({STRING})` |
+| `str_rand`, `int_rand` | توليد نص/رقم عشوائي | `str_rand(10)` |
+| `ip` | حل اسم المضيف إلى IP | `ip({STRING})` |
+| `replace` | استبدال نص فرعي | `replace(http:,https:,{STRING})` |
+| `get` | طلب HTTP GET | `get(https://{STRING})` |
+| `urlencode` | ترميز URL | `urlencode({STRING})` |
+| `rev` | عكس النص | `rev({STRING})` |
+| `timestamp` | الطابع الزمني الحالي | `timestamp()` |
+| `extract_domain` | استخراج النطاق من URL | `extract_domain({STRING})` |
+| `jwt_decode` | فك ترميز JWT (الحمولة) | `jwt_decode({STRING})` |
+| `whois_lookup` | استعلام WHOIS | `whois_lookup({STRING})` |
+| `cert_info` | معلومات شهادة SSL | `cert_info({STRING})` |
+| `user_agent` | User-Agent عشوائي | `user_agent()` |
+| `cidr_expand` | توسيع نطاق CIDR | `cidr_expand(192.168.0.0/30)` |
+| `subdomain_gen` | توليد نطاقات فرعية شائعة | `subdomain_gen({STRING})` |
+| `email_validator` | التحقق من البريد الإلكتروني | `email_validator({STRING})` |
+| `hash_file` | hashes الملف | `hash_file(path.txt)` |
+| `encode_url_all` | ترميز URL (الكل) | `encode_url_all({STRING})` |
+| `phone_format` | تنسيق الهاتف البرازيلي | `phone_format({STRING})` |
+| `password_strength` | قوة كلمة المرور | `password_strength({STRING})` |
+| `social_media_extract` | استخراج معرفات وسائل التواصل الاجتماعي | `social_media_extract({STRING})` |
+| `leak_check_format` | تنسيق البريد الإلكتروني للتسريبات | `leak_check_format({STRING})` |
+| `cpf_validate` | التحقق من CPF | `cpf_validate({STRING})` |
 
-### أمثلة استخدام الوظائف
+
+> انظر القائمة الكاملة والأمثلة في `utils/helper/functions.py` أو استخدم `--functions` في CLI للحصول على وثائق مفصلة.
 
 #### Hashing والترميز
 ```bash
@@ -404,18 +574,35 @@ echo "SGVsbG8gV29ybGQ=" | ./strx -st "debase64({STRING})" -pf
 
 ### معاملات التحكم
 
-- **`-pf`**: إظهار نتائج الوظائف فقط (تجاهل تنفيذ shell)
+- **`-pf`**: عرض نتائج الوظائف فقط (تجاهل تنفيذ shell)
 - **`-of`**: حفظ نتائج الوظائف في ملف إخراج
 
 ```bash
-# إظهار نتيجة الوظائف فقط
+# عرض نتيجة الوظائف فقط
 ./strx -l domains.txt -st "{STRING}; md5({STRING})" -pf
 
 # حفظ الوظائف في ملف
 ./strx -l data.txt -st "base64({STRING})" -pf -of -o encoded.txt
 ```
 
+### مثال على الوظيفة
 > **💡 نصيحة**: يمكنك إضافة وظائف مخصصة بتحرير ملف `utils/helper/functions.py`
+```python
+@staticmethod
+def check_admin_exemplo(value: str) -> str:
+  try:
+      if '<p>admin</p>' in value:
+        return value
+  except:
+    return str()
+```
+
+### استخدام مثال الوظيفة
+```bash
+# تنفيذ الوظيفة المُنشأة
+./strx -l data.txt -st "check_admin_exemplo({STRING})" -pf
+```
+
 
 ## 🧩 نظام الوحدات
 
@@ -429,141 +616,189 @@ echo "SGVsbG8gV29ybGQ=" | ./strx -st "debase64({STRING})" -pf
 | **Collector** | `clc` | جمع معلومات من APIs/الخدمات | `utils/auxiliary/clc/` |
 | **Output** | `out` | تنسيق وإرسال البيانات | `utils/auxiliary/out/` |
 | **Connection** | `con` | اتصالات متخصصة | `utils/auxiliary/con/` |
+| **AI** | `ai` | الذكاء الاصطناعي  | `utils/auxiliary/ai/` |
 
-### وحدات Extractor (EXT)
 
-تستخدم وحدات الاستخراج التعبيرات النمطية لاستخراج بيانات محددة من النصوص.
-
-#### الوحدات المتاحة:
-- **`email`**: استخراج عناوين email صحيحة
-- **`domain`**: استخراج النطاقات والنطاقات الفرعية
-- **`url`**: استخراج URLs كاملة (HTTP/HTTPS)
-- **`phone`**: استخراج أرقام الهاتف (التنسيق البرازيلي)
-
+#### بناء الجملة الأساسي
 ```bash
-# استخراج emails من dump البيانات
-./strx -l database_dump.txt -st "echo '{STRING}'" -module "ext:email" -pm
-
-# استخراج النطاقات من السجلات
-cat access.log | ./strx -st "echo '{STRING}'" -module "ext:domain" -pm | sort -u
-
-# استخراج URLs من ملفات HTML
-./strx -l html_files.txt -st "cat {STRING}" -module "ext:url" -pm
-
-# استخراج الهواتف من الوثائق
-./strx -l documents.txt -st "cat {STRING}" -module "ext:phone" -pm
-```
-
-### وحدات Collector (CLC)
-
-تقوم وحدات التجميع بطلبات إلى خدمات خارجية للحصول على معلومات إضافية.
-
-#### الوحدات المتاحة:
-- **`dns`**: جمع سجلات DNS (A، MX، TXT، إلخ)
-
-```bash
-# جمع معلومات DNS
-./strx -l domains.txt -st "echo {STRING}" -module "clc:dns" -pm
-
-# DNS lookup مع verbose
-./strx -l subdomains.txt -st "echo {STRING}" -module "clc:dns" -pm -v
-```
-
-### وحدات Output (OUT)
-
-تقوم وحدات الإخراج بتنسيق وإرسال النتائج إلى وجهات مختلفة.
-
-#### الوحدات المتاحة:
-- **`sqlite`**: حفظ البيانات في قاعدة بيانات SQLite
-- **`mysql`**: حفظ البيانات في قاعدة بيانات MySQL
-- **`telegram`**: إرسال النتائج عبر Telegram Bot
-- **`slack`**: إرسال النتائج عبر Slack Webhook
-
-```bash
-# حفظ في SQLite
-./strx -l data.txt -st "process {STRING}" -module "out:sqlite" -pm
-
-# إرسال إلى Telegram
-./strx -l alerts.txt -st "echo '{STRING}'" -module "out:telegram" -pm
-
-# إرسال إلى Slack
-./strx -l reports.txt -st "generate_report {STRING}" -module "out:slack" -pm
-```
-
-### استخدام الوحدات
-
-#### البنية الأساسية
-```bash
-./strx -module "نوع:اسم_الوحدة"
+./strx -module "النوع:اسم_الوحدة"
 ```
 
 #### المعاملات ذات الصلة
-- **`-module نوع:اسم`**: تحديد الوحدة المراد استخدامها
-- **`-pm`**: إظهار نتائج الوحدة فقط (حذف إخراج shell)
+- **`-module النوع:الاسم`**: تحديد الوحدة المراد استخدامها
+- **`-pm`**: عرض نتائج الوحدة فقط (حذف إخراج shell)
 
-#### أمثلة عملية
+
+### وحدات المستخرج (EXT)
+وحدات لاستخراج الأنماط والبيانات المحددة باستخدام regex:
+
+| الوحدة      | الوصف                                 | مثال CLI |
+|-------------|-------------------------------------------|-------------|
+| `email`     | استخراج عناوين بريد إلكتروني صحيحة         | `-module "ext:email"` |
+| `domain`    | استخراج النطاقات والنطاقات الفرعية             | `-module "ext:domain"` |
+| `url`       | استخراج URLs كاملة (HTTP/HTTPS)         | `-module "ext:url"` |
+| `phone`     | استخراج أرقام الهاتف (البرازيل)            | `-module "ext:phone"` |
+| `credential`| استخراج بيانات الاعتماد والرموز والمفاتيح         | `-module "ext:credential"` |
+| `ip`        | استخراج عناوين IPv4/IPv6                 | `-module "ext:ip"` |
+| `hash`      | استخراج hashes MD5، SHA1، SHA256، SHA512    | `-module "ext:hash"` |
 
 ```bash
-# 1. استخراج emails وحفظها مرتبة
+# مثال: استخراج رسائل البريد الإلكتروني من تفريغ البيانات
+./strx -l database_dump.txt -st "echo '{STRING}'" -module "ext:email" -pm
+```
+
+
+### وحدات الجامع (CLC)
+وحدات لجمع المعلومات الخارجية وواجهات برمجة التطبيقات والتحليل:
+
+| الوحدة        | الوصف                                 | مثال CLI |
+|---------------|-------------------------------------------|-------------|
+| `archive`     | جمع URLs مؤرشفة من Wayback Machine | `-module "clc:archive"` |
+| `bing`        | إجراء بحث استكشاف في Bing          | `-module "clc:bing"` |
+| `crtsh`       | جمع شهادات SSL/TLS والنطاقات الفرعية | `-module "clc:crtsh"` |
+| `dns`         | جمع سجلات DNS (A، MX، TXT، NS)     | `-module "clc:dns"` |
+| `duckduckgo`  | إجراء بحث استكشاف في DuckDuckGo    | `-module "clc:duckduckgo"` |
+| `emailverify` | التحقق من صحة البريد الإلكتروني (MX، SMTP)    | `-module "clc:emailverify"` |
+| `ezilon`      | إجراء بحث استكشاف في Ezilon        | `-module "clc:ezilon"` |
+| `geoip`       | الموقع الجغرافي لـ IPs                     | `-module "clc:geoip"` |
+| `google`      | إجراء بحث استكشاف في Google        | `-module "clc:google"` |
+| `googlecse`   | إجراء بحث استكشاف باستخدام Google CSE| `-module "clc:googlecse"` |
+| `ipinfo`      | فحص منافذ IP/المضيف                 | `-module "clc:ipinfo"` |
+| `lycos`       | إجراء بحث استكشاف في Lycos         | `-module "clc:lycos"` |
+| `naver`       | إجراء بحث استكشاف في Naver (كوري)| `-module "clc:naver"` |
+| `netscan`     | فحص الشبكة (المضيفون، الخدمات)         | `-module "clc:netscan"` |
+| `shodan`      | استعلام Shodan API                       | `-module "clc:shodan"` |
+| `sogou`       | إجراء بحث استكشاف في Sogou (صيني)| `-module "clc:sogou"` |
+| `subdomain`   | تعداد النطاقات الفرعية                 | `-module "clc:subdomain"` |
+| `virustotal`  | استعلام VirusTotal API                   | `-module "clc:virustotal"` |
+| `whois`       | استعلام WHOIS للنطاقات                | `-module "clc:whois"` |
+| `yahoo`       | إجراء بحث استكشاف في Yahoo         | `-module "clc:yahoo"` |
+
+```bash
+# مثال: جمع معلومات DNS
+./strx -l domains.txt -st "echo {STRING}" -module "clc:dns" -pm
+
+# مثال: جمع معلومات باستخدام محركات البحث
+./strx -l dorks.txt -st "echo {STRING}" -module "clc:bing" -pm
+./strx -l dorks.txt -st "echo {STRING}" -module "clc:google" -pm
+./strx -l dorks.txt -st "echo {STRING}" -module "clc:googlecse" -pm
+./strx -l dorks.txt -st "echo {STRING}" -module "clc:yahoo" -pm
+./strx -l dorks.txt -st "echo {STRING}" -module "clc:duckduckgo" -pm
+
+# أمثلة استكشاف محددة
+echo 'site:fbi.gov filetype:pdf' | ./strx -st "echo {STRING}" -module "clc:google" -pm
+echo 'site:github.com inurl:admin' | ./strx -st "echo {STRING}" -module "clc:googlecse" -pm
+echo 'inurl:admin' | ./strx -st "echo {STRING}" -module "clc:lycos" -pm
+echo 'site:github.com' | ./strx -st "echo {STRING}" -module "clc:ezilon" -pm
+echo 'filetype:pdf' | ./strx -st "echo {STRING}" -module "clc:yahoo" -pm
+```
+
+
+### وحدات الإخراج (OUT)
+وحدات لإخراج النتائج والتكامل:
+
+| الوحدة        | الوصف                                 | مثال CLI |
+|---------------|-------------------------------------------|-------------|
+| `sqlite`      | حفظ البيانات في قاعدة بيانات SQLite               | `-module "out:sqlite"` |
+| `mysql`       | حفظ البيانات في قاعدة بيانات MySQL                | `-module "out:mysql"` |
+| `telegram`    | إرسال النتائج عبر Telegram Bot         | `-module "out:telegram"` |
+| `slack`       | إرسال النتائج عبر Slack Webhook        | `-module "out:slack"` |
+| `json`        | حفظ النتائج بتنسيق JSON                  | `-module "out:json"` |
+| `csv`         | حفظ النتائج بتنسيق CSV                   | `-module "out:csv"` |
+| `xml`         | حفظ النتائج بتنسيق XML                   | `-module "out:xml"` |
+| `opensearch`  | فهرسة النتائج في Open Search          | `-module "out:opensearch"` |
+
+```bash
+# مثال: الحفظ في SQLite
+./strx -l data.txt -st "process {STRING}" -module "out:sqlite" -pm
+```
+
+
+### وحدات الاتصال (CON)
+وحدات للاتصالات والسبر المتخصص:
+
+| الوحدة        | الوصف                                 | مثال CLI |
+|---------------|-------------------------------------------|-------------|
+| `ssh`         | اتصال SSH وتنفيذ عن بُعد             | `-module "con:ssh"` |
+| `ftp`         | اتصال FTP وقائمة/تحميل           | `-module "con:ftp"` |
+| `http_probe`  | سبر HTTP/HTTPS، تحليل الرؤوس   | `-module "con:http_probe"` |
+
+```bash
+# مثال: سبر خوادم HTTP
+./strx -l urls.txt -st "{STRING}" -module "con:http_probe" -pm
+```
+
+### وحدات الذكاء الاصطناعي (AI)
+وحدات للمطالبات للذكاء الاصطناعي:
+
+| الوحدة        | الوصف                                 | مثال CLI |
+|---------------|-------------------------------------------|-------------|
+| `gemini`      | مطالبة Google Gemini AI - ([إنشاء مفتاح API](https://aistudio.google.com/app/apikey))    | `-module "ai:gemini"` |
+
+```bash
+# مثال: استخدام ملفات المطالبات
+./strx -l prompts.txt -st "echo {STRING}" -module "ai:gemini" -pm
+
+# مثال: جمع URLs وإرسال للتحليل ببناء المطالبة
+./strx -l urls.txt -st "echo 'تحليل URL: {STRING}'" -module "ai:gemini" -pm
+```
+
+#### أمثلة عملية
+```bash
+# استخراج رسائل البريد الإلكتروني وحفظها مرتبة
 ./strx -l breach_data.txt -st "echo '{STRING}'" -module "ext:email" -pm | sort -u > emails.txt
 
-# 2. فحص DNS للنطاقات المشبوهة
+# فحص DNS للنطاقات المشبوهة
 ./strx -l suspicious_domains.txt -st "echo {STRING}" -module "clc:dns" -pm -v
 
-# 3. أنبوب مع وحدات متعددة
+# أنبوب متعدد الوحدات
 cat logs.txt | ./strx -st "echo '{STRING}'" -module "ext:domain" -pm | ./strx -st "echo {STRING}" -module "clc:dns" -pm
 
-# 4. استخراج URLs وفحص الحالة
+# استخراج URLs وفحص الحالة
 ./strx -l pages.txt -st "cat {STRING}" -module "ext:url" -pm | ./strx -st "curl -I {STRING}" -p "grep 'HTTP/'"
 ```
 
 ### تطوير وحدات جديدة
 
-لإنشاء وحدات جديدة، اتبع الهيكل المعياري:
+لإنشاء وحدات جديدة، اتبع الهيكل القياسي:
 
-#### وحدة Extractor (ext)
+#### وحدة المستخرج (ext)
 ```python
 """
-وحدة استخراج مخصصة.
+مقدمة الوحدة
 """
-
+from core.basemodule import BaseModule
 import re
 
-def extract(data):
-    """
-    وظيفة الاستخراج الرئيسية.
+class ModuleName(BaseModule):
     
-    Args:
-        data (str): بيانات المدخل للاستخراج
-        
-    Returns:
-        list: قائمة العناصر المستخرجة
-    """
-    pattern = r'your_regex_here'
-    matches = re.findall(pattern, data, re.IGNORECASE)
-    return matches
-```
+    def __init__(self):
+      super().__init__()
 
-#### وحدة Collector (clc)
-```python
-"""
-وحدة تجميع مخصصة.
-"""
 
-import requests
+      # تحديد معلومات ميتا الوحدة
+      self.meta.update({
+          "name": "اسم الوحدة...",
+          "description": "وصف الوحدة...",
+          "author": "اسم المنشئ...",
+          "type": "extractor | collector | Output..."
+      })
 
-def collect(target):
-    """
-    وظيفة التجميع الرئيسية.
+      # تحديد الخيارات المطلوبة لهذه الوحدة
+      self.options = {
+          "data":   str(),
+          "regex":  str(),
+          "proxy":  str()
+      }
     
-    Args:
-        target (str): الهدف لجمع المعلومات
-        
-    Returns:
-        dict: البيانات المجمعة
-    """
-    # تنفيذ منطق التجميع
-    pass
+    # دالة إجبارية للتنفيذ
+    def run(self):
+        """
+        سياق منطق الوحدة
+          > الوصول لمعلومات الخيارات عبر: self.options.get(key_name)
+        """
+        # حفظ معلومات تنفيذ الوحدة
+        self.set_result(value_regex)
 ```
 
 ### المرشحات والوحدات
@@ -571,16 +806,16 @@ def collect(target):
 يمكنك دمج المرشحات مع الوحدات للمعالجة الأكثر تحديداً:
 
 ```bash
-# استخراج emails فقط من نطاقات .gov
+# استخراج رسائل البريد الإلكتروني من نطاقات .gov فقط
 ./strx -l data.txt -st "echo '{STRING}'" -module "ext:email" -pm -f ".gov"
 
-# DNS lookup فقط للنطاقات .br
+# بحث DNS للنطاقات .br فقط
 ./strx -l domains.txt -st "echo {STRING}" -module "clc:dns" -pm -f ".br"
 ```
 
 ## 🎯 المرشحات والمعالجة الانتقائية
 
-يسمح نظام المرشحات بمعالجة النصوص التي تلبي معايير محددة فقط، مما يحسن الأداء والدقة.
+نظام المرشحات يسمح بمعالجة النصوص التي تلبي معايير محددة فقط، مما يحسن الأداء والدقة.
 
 ### استخدام المرشحات
 ```bash
@@ -589,7 +824,7 @@ def collect(target):
 
 ### أمثلة المرشحات
 ```bash
-# تصفية النطاقات .gov.br فقط
+# تصفية نطاقات .gov.br فقط
 ./strx -l domains.txt -st "curl {STRING}" -f ".gov.br"
 
 # تصفية URLs HTTPS فقط
@@ -604,27 +839,33 @@ def collect(target):
 
 ### دمج مع الوحدات
 ```bash
-# استخراج emails فقط من نطاقات محددة
-./strx -l data.txt -st "echo '{STRING}'" -module "ext:email" -pm -f "gmail.com"
+# استخراج رسائل البريد الإلكتروني وحفظها مرتبة
+./strx -l breach_data.txt -st "echo '{STRING}'" -module "ext:email" -pm | sort -u > emails.txt
 
-# DNS lookup فقط للنطاقات الفرعية
-./strx -l domains.txt -st "echo {STRING}" -module "clc:dns" -pm -f "sub."
+# فحص DNS للنطاقات المشبوهة
+./strx -l suspicious_domains.txt -st "echo {STRING}" -module "clc:dns" -pm -v
+
+# أنبوب متعدد الوحدات
+cat logs.txt | ./strx -st "echo '{STRING}'" -module "ext:domain" -pm | ./strx -st "echo {STRING}" -module "clc:dns" -pm
+
+# استخراج URLs وفحص الحالة
+./strx -l pages.txt -st "cat {STRING}" -module "ext:url" -pm | ./strx -st "curl -I {STRING}" -p "grep 'HTTP/'"
 ```
 
 ## ⚡ المعالجة المتوازية
 
-يدعم String-X المعالجة المتوازية من خلال threads لتسريع العمليات على كميات كبيرة من البيانات.
+يدعم String-X المعالجة المتوازية عبر الخيوط لتسريع العمليات على كميات كبيرة من البيانات.
 
-### تكوين Threads
+### تكوين الخيوط
 ```bash
-# تحديد عدد threads
+# تحديد عدد الخيوط
 ./strx -t 50 / ./strx --thread 50
 
-# تحديد تأخير بين threads
+# تحديد التأخير بين الخيوط
 ./strx -sleep 2
 ```
 
-### أمثلة مع Threading
+### أمثلة الخيوط
 ```bash
 # فحص سريع لحالة HTTP
 ./strx -l big_url_list.txt -st "curl -I {STRING}" -p "grep 'HTTP/'" -t 100
@@ -636,11 +877,10 @@ def collect(target):
 ./strx -l ip_list.txt -st "nmap -p 80,443 {STRING}" -t 20 -sleep 3
 ```
 
-### أفضل الممارسات للThreading
+### أفضل الممارسات للخيوط
 - **تحديد المعدل**: استخدم `-sleep` لتجنب إرهاق الخدمات
-- **عدد مناسب**: اضبط `-t` حسب الموارد المتاحة
-- **المراقبة**: استخدم `-v` لتتبع التقدم
-
+- **العدد المناسب**: اضبط `-t` وفقاً للموارد المتاحة
+- **المراقبة (وضع مفصل)**: استخدم `-v` لتتبع التقدم
 ## 📸 أمثلة بصرية
 
 ### التنفيذ الأساسي
@@ -648,7 +888,7 @@ def collect(target):
 
 ![Screenshot](/asset/img1.png)
 
-### المعالجة مع Threading
+### معالجة الخيوط
 **الأمر**: `cat hosts.txt | ./strx -str "curl -Iksw 'CODE:%{response_code};IP:%{remote_ip};HOST:%{url.host};SERVER:%header{server}' https://{STRING}" -p "grep -o -E 'CODE:.(.*)|IP:.(.*)|HOST:.(.*)|SERVER:.(.*)'" -t 30`
 
 ![Screenshot](/asset/img3.png)
@@ -668,29 +908,29 @@ output-%d-%m-%Y-%H.txt > output-15-06-2025-11.txt
 المساهمات مرحب بها! للمساهمة:
 
 1. **Fork** المستودع
-2. **أنشئ** فرع لميزتك (`git checkout -b feature/AmazingFeature`)
-3. **Commit** تغييراتك (`git commit -m 'Add some AmazingFeature'`)
-4. **Push** إلى الفرع (`git push origin feature/AmazingFeature`)
+2. **أنشئ** فرع ميزتك (`git checkout -b feature/AmazingFeature`)
+3. **أرسل** تغييراتك (`git commit -m 'Add some AmazingFeature'`)
+4. **ادفع** إلى الفرع (`git push origin feature/AmazingFeature`)
 5. **افتح** Pull Request
 
 ### أنواع المساهمة
 - 🐛 **إصلاح الأخطاء**
 - ✨ **ميزات جديدة**
-- 📝 **تحسين التوثيق**
+- 📝 **تحسين الوثائق**
 - 🧩 **وحدات جديدة**
 - ⚡ **تحسينات الأداء**
 
 ### تطوير الوحدات
-لإنشاء وحدات جديدة، راجع قسم [نظام الوحدات](#-نظام-الوحدات) واتبع المعايير المحددة.
+لإنشاء وحدات جديدة، اطلع على قسم [نظام الوحدات](#-نظام-الوحدات) واتبع المعايير المحددة.
 
-## 📄 الرخصة
+## 📄 الترخيص
 
-هذا المشروع مرخص تحت رخصة MIT - راجع ملف [LICENSE](LICENSE) للتفاصيل.
+هذا المشروع مرخص تحت ترخيص MIT - انظر ملف [LICENSE](LICENSE) للتفاصيل.
 
 ## 👨‍💻 المؤلف
 
 **MrCl0wn**
-- 🌐 **مدونة**: [http://blog.mrcl0wn.com](http://blog.mrcl0wn.com)
+- 🌐 **المدونة**: [http://blog.mrcl0wn.com](http://blog.mrcl0wn.com)
 - 🐙 **GitHub**: [@MrCl0wnLab](https://github.com/MrCl0wnLab) | [@MrCl0wnLab](https://github.com/MrCl0wnLab)
 - 🐦 **Twitter**: [@MrCl0wnLab](https://twitter.com/MrCl0wnLab)
 - 📧 **البريد الإلكتروني**: mrcl0wnlab@gmail.com
@@ -703,6 +943,6 @@ output-%d-%m-%Y-%H.txt > output-15-06-2025-11.txt
 
 **💡 الاقتراحات والتعليقات مرحب بها دائماً!**
 
-**💀 Hacker Hackeia!**
+**💀 هاكر هاكيا!**
 
 </div>
