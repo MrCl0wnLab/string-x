@@ -47,15 +47,16 @@ Com arquitetura modular, oferece recursos avançados para OSINT, pentest e anál
 - 🚀 **Processamento Paralelo**: Sistema multi-threading configurável para execução de alta performance
 - 🧩 **Arquitetura Modular**: Estrutura extensível com módulos especializados (EXT, CLC, OUT, CON, AI)
 - 🔄 **Template Dinâmico**: Sistema de substituição com placeholder `{STRING}` para manipulação flexível
-- 🛠️ **+25 Funções Integradas**: Operações de hash, encoding, requests, validação e geração de dados
-- 📡 **Múltiplas Fontes de Entrada**: Suporte a arquivos, stdin e encadeamento de pipes
+- 🛠️ **+25 Funções Integradas**: Hash, encoding, requests, validação e geração de valores aleatórios
+- 📁 **Múltiplas Fontes**: Suporte para arquivos, stdin e encadeamento de pipes
 - 🎯 **Filtragem Inteligente**: Sistema de filtros para processamento seletivo de strings
-- 📊 **Saída Configurável**: Formatação personalizável com timestamp automático e redirecionamento
-- 🔌 **Integrações Externas**: Conexões com APIs, bancos de dados e serviços de notificação
-- 🔍 **Análise Avançada**: Extração de padrões complexos com regex e processamento especializado
-- 🔒 **Ferramentas para Segurança**: Recursos específicos para OSINT, pentest e análise de dados
-- 🌐 **Dorking Automatizado**: Integração com múltiplos motores de busca para OSINT
+- 💾 **Saída Flexível**: Formatação em TXT, CSV e JSON com timestamp automático
+- 🔌 **Integrações Externas**: APIs, bancos de dados e serviços de notificação
+- 🔍 **Extração Avançada**: Padrões complexos com regex e processamento especializado
+- 🔒 **OSINT e Pentest**: Recursos otimizados para reconhecimento e análise de segurança
+- 🌐 **Dorking Multi-Engine**: Integração com Google, Bing, Yahoo, DuckDuckGo e outros
 - 🧠 **Integração com IA**: Módulo para processamento com Google Gemini
+- 🐋 **Suporte Docker**: Execução containerizada para ambientes isolados
 
 ## 📦 INSTALAÇÃO
 
