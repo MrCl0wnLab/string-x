@@ -103,7 +103,7 @@ class NaverDorker(BaseModule):
 
             self.set_result("\n".join(results))
         except Exception as e:
-            self.set_result(f"✗ Erro na busca: {str(e)}")
+            self.handle_error(e, "Erro na busca")
     
     
     def _search_naver(self, dork: str) -> list:
@@ -194,7 +194,7 @@ class NaverDorker(BaseModule):
             return unique_results
                 
         except Exception as e:
-            self.set_result(f"✗ Erro ao conectar ao Naver: {str(e)}")
+            self.handle_error(e, "Erro ao conectar ao Naver")
             raise ValueError(e)
 
     async def _search_page_async(self, headers: dict, encoded_dork: str, page: int, kwargs: dict) -> list:

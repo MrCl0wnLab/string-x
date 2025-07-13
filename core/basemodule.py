@@ -5,6 +5,21 @@ Este módulo contém a classe BaseModule que serve como classe base para todos
 os módulos auxiliares do sistema String-X. Define a interface comum e estrutura
 básica que todos os módulos devem seguir.
 """
+# Bibliotecas padrão
+import traceback
+from typing import Optional, Any, List, Dict, Type
+
+# Bibliotecas de terceiros
+try:
+    from requests.exceptions import RequestException
+except ImportError:
+    RequestException = Exception
+
+try:
+    from httpx import ConnectError, ReadTimeout, ConnectTimeout, TimeoutException
+except ImportError:
+    ConnectError = TimeoutException = ReadTimeout = ConnectTimeout = Exception
+
 # Módulos locais
 from core.output_formatter import OutputFormatter
 
@@ -27,8 +42,9 @@ class BaseModule:
         get_result(): Retorna a lista de resultados armazenados
         _get_cls_name(): Retorna o nome da classe
         run(**kwargs): Método abstrato que deve ser implementado pelas subclasses
+        handle_error(e, user_message, raise_error): Trata e registra erros de forma padronizada
     """
-    retry_operation = None
+    
     def __init__(self):
         """
         Inicializa a classe BaseModule.
@@ -112,3 +128,43 @@ class BaseModule:
             NotImplementedError: Se a subclasse não implementar este método
         """
         raise NotImplementedError("Subclasses devem implementar o método run()")
+    
+    def handle_error(self, e: Exception, user_message: Optional[str] = None, raise_error: bool = False) -> None:
+        """
+        Método auxiliar para tratar erros de forma padronizada.
+        
+        Este método centraliza o tratamento de erros para todos os módulos,
+        registrando informações técnicas no log de debug e fornecendo
+        mensagens mais amigáveis para o usuário final.
+        
+        Args:
+            e: Exceção capturada
+            user_message: Mensagem personalizada para o usuário (opcional)
+            raise_error: Se True, re-lança a exceção após o registro
+            
+        Raises:
+            Exception: Re-lança a exceção original se raise_error for True
+        """
+        error_type = type(e).__name__
+        error_msg = str(e)
+        
+        # Mensagem para log (mais técnica)
+        log_message = f"{error_type}: {error_msg}"
+        self.log_debug(log_message)
+        
+        # Mensagem para o usuário (mais amigável)
+        if user_message:
+            user_error_msg = f"{user_message}: {error_msg}"
+        else:
+            user_error_msg = f"Erro ({error_type}): {error_msg}"
+            
+        self.set_result(user_error_msg)
+        
+        # Registra traceback para erros não esperados
+        if not isinstance(e, (ValueError, RequestException, ConnectError, 
+                              ReadTimeout, ConnectTimeout, TimeoutException)):
+            self.log_debug(traceback.format_exc())
+            
+        # Re-lança a exceção se necessário
+        if raise_error:
+            raise
