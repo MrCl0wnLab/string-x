@@ -23,7 +23,6 @@ import re
 import time
 import random
 import asyncio
-import backoff
 from bs4 import BeautifulSoup
 from requests.exceptions import RequestException
 from urllib.parse import urljoin, quote_plus, unquote, urlparse, parse_qs
@@ -31,6 +30,7 @@ from urllib.parse import urljoin, quote_plus, unquote, urlparse, parse_qs
 from core.format import Format
 from core.http_async import HTTPClient
 from core.basemodule import BaseModule
+from core.retry import retry_operation
 from core.user_agent_generator import UserAgentGenerator
 
 class SogouDorker(BaseModule):
@@ -107,12 +107,7 @@ class SogouDorker(BaseModule):
         except Exception as e:
             self.set_result(f"✗ Erro na busca: {str(e)}")
 
-    @backoff.on_exception(
-        backoff.expo,
-        RequestException,
-        max_tries=3,
-        max_time=30
-    )
+    @retry_operation
     def _search_sogou(self, dork: str) -> list:
         """
         Realiza busca no Sogou usando paginação dinâmica e extrai resultados.
@@ -145,15 +140,10 @@ class SogouDorker(BaseModule):
         # Configurar parâmetros para HTTPClient
         kwargs = {
             'headers': headers,
+            'proxy': self.options.get('proxy') if self.options.get('proxy') else None,
             'timeout': self.options.get('timeout', 30),
             'follow_redirects': True,
         }
-        
-        if self.options.get('proxy'):
-            kwargs['proxies'] = {
-                'http://': self.options.get('proxy'),
-                'https://': self.options.get('proxy')
-            }
         
         try:
             # Primeira página - usar template específico e extrair sessiontime
@@ -189,7 +179,7 @@ class SogouDorker(BaseModule):
                 
         except Exception as e:
             self.set_result(f"✗ Erro ao conectar ao Sogou: {str(e)}")
-            return []
+            raise ValueError(e)
 
     async def _search_first_page_async(self, kwargs: dict, encoded_dork: str) -> list:
         """

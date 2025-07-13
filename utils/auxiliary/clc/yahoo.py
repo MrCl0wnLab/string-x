@@ -22,7 +22,6 @@ import re
 import time
 import random
 import asyncio
-import backoff
 from bs4 import BeautifulSoup
 from requests.exceptions import RequestException
 from urllib.parse import urljoin, urlparse, unquote, quote_plus
@@ -30,6 +29,7 @@ from urllib.parse import urljoin, urlparse, unquote, quote_plus
 from core.format import Format
 from core.http_async import HTTPClient
 from core.basemodule import BaseModule
+from core.retry import retry_operation
 from core.user_agent_generator import UserAgentGenerator
 
 class YahooDorker(BaseModule):
@@ -104,12 +104,7 @@ class YahooDorker(BaseModule):
         except Exception as e:
             self.set_result(f"✗ Erro na busca: {str(e)}")
     
-    @backoff.on_exception(
-        backoff.expo,
-        RequestException,
-        max_tries=3,
-        max_time=30
-    ) 
+    @retry_operation
     def _search(self, dork: str) -> list:
         """
         Realiza busca no Yahoo usando diferentes URLs e extrai resultados.
@@ -126,8 +121,6 @@ class YahooDorker(BaseModule):
         
         # Codificar a query
         encoded_dork = quote_plus(dork)
-        # Definir proxy se fornecido
-        proxy = self.options.get('proxy') if self.options.get('proxy') else None
         # Configurar parâmetros para HTTPClient
         kwargs = {
             'headers': {
@@ -137,10 +130,7 @@ class YahooDorker(BaseModule):
                 'Referer': 'https://br.search.yahoo.com',
                 'DNT': '1'
             },
-            'proxies': {
-                'http://': proxy,
-                'https://': proxy
-            },
+            'proxy': self.options.get('proxy') if self.options.get('proxy') else None,
             'timeout': self.options.get('timeout', 30),
             'follow_redirects': True,
         }
@@ -176,7 +166,7 @@ class YahooDorker(BaseModule):
                 
         except Exception as e:
             self.set_result(f"✗ Erro ao conectar ao Yahoo: {str(e)}")
-            return []
+            raise ValueError(e)
         
     def _is_valid_url(self,url):
         """Verifica se uma URL é válida"""

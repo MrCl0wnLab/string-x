@@ -237,8 +237,6 @@ class GoogleDorker(BaseModule):
         """
         Executa a requisição com tratamento avançado de resposta.
         """
-        # Proxy para requisições
-        proxy = self.options.get('proxy') if self.options.get('proxy') else None
         # Gerar cookies para simular um navegador real
         cookies = self._generate_cookies(config["host"])
 
@@ -248,7 +246,7 @@ class GoogleDorker(BaseModule):
                 'Accept':  "*/*",
                 'Referer': f'https://{config["host"]}/',
                 },
-            'proxy': proxy,
+            'proxy': self.options.get('proxy') if self.options.get('proxy') else None,
             'timeout': self.options.get('timeout', 30),  # Timeout de 10 segundos,
             'follow_redirects': True,
             'cookies': cookies

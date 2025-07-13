@@ -14,6 +14,7 @@ O Internet Archive mantém snapshots históricos de páginas web, o que é útil
 import re
 import asyncio
 import warnings
+import traceback
 from requests.exceptions import RequestException
 
 from core.http_async import HTTPClient
@@ -107,7 +108,7 @@ class archive(BaseModule):
             error_msg = f"Erro na coleta de dados do Wayback Machine: {str(e)}"
             self.log_error(error_msg)
             self.log_debug(f"Exceção: {type(e).__name__}: {str(e)}")
-            import traceback
+            
             self.log_debug(traceback.format_exc())
             self.set_result("")
             return

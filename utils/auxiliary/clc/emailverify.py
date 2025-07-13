@@ -15,6 +15,12 @@ A verificação de emails é um processo importante para:
 Este módulo implementa diferentes níveis de verificação, desde a simples
 validação de formato até tentativas de conexão SMTP para verificação de existência.
 """
+import re
+import socket
+import smtplib
+import socket
+import subprocess
+
 from core.basemodule import BaseModule
 
 
@@ -100,7 +106,7 @@ class EmailVerifier(BaseModule):
     
     def _is_valid_email_syntax(self, email: str) -> bool:
         """Valida sintaxe básica do email."""
-        import re
+        
         
         # Regex para validação básica
         pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
@@ -125,12 +131,11 @@ class EmailVerifier(BaseModule):
     def _check_mx_record(self, domain: str) -> str:
         """Verifica MX record do domínio."""
         try:
-            import socket
-            import struct
+            
             
             # Usar nslookup como fallback se socket DNS não funcionar
             try:
-                import subprocess
+                
                 result = subprocess.run(
                     ['nslookup', '-type=MX', domain],
                     capture_output=True,
@@ -158,7 +163,7 @@ class EmailVerifier(BaseModule):
             
             # Fallback: tentar resolução direta
             try:
-                import socket
+                
                 mx_records = socket.getaddrinfo(domain, None)
                 if mx_records:
                     return "Encontrado (resolução direta)"
@@ -173,8 +178,7 @@ class EmailVerifier(BaseModule):
     def _check_smtp(self, email: str, domain: str) -> str:
         """Verificação SMTP básica (cuidadosa para evitar spam)."""
         try:
-            import smtplib
-            import socket
+            
             
             # Tentar conectar ao servidor SMTP mais comum
             smtp_ports = [25, 587, 465]

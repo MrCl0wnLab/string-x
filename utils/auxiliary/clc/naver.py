@@ -20,7 +20,6 @@ acessar dados que podem estar ausentes ou menos visíveis em motores de busca oc
 
 import re
 import random
-import backoff
 import asyncio
 from bs4 import BeautifulSoup
 from requests.exceptions import RequestException
@@ -29,6 +28,7 @@ from urllib.parse import quote_plus, unquote,  urljoin, urlparse
 from core.format import Format
 from core.http_async import HTTPClient
 from core.basemodule import BaseModule
+from core.retry import retry_operation
 from core.user_agent_generator import UserAgentGenerator
 
 class NaverDorker(BaseModule):
@@ -104,12 +104,7 @@ class NaverDorker(BaseModule):
         except Exception as e:
             self.set_result(f"✗ Erro na busca: {str(e)}")
     
-    @backoff.on_exception(
-        backoff.expo,
-        RequestException,
-        max_tries=3,
-        max_time=30
-    )
+    
     def _search_naver(self, dork: str) -> list:
         """
         Wrapper síncrono para realizar busca no Naver usando paginação e extrair resultados.
@@ -122,6 +117,7 @@ class NaverDorker(BaseModule):
         """
         return asyncio.run(self._search_naver_async(dork))
     
+    @retry_operation
     async def _search_naver_async(self, dork: str) -> list:
         """
         Versão assíncrona para realizar busca no Naver usando paginação e extrair resultados.
@@ -154,15 +150,11 @@ class NaverDorker(BaseModule):
         # Configurar parâmetros para o HTTPClient
         kwargs = {
             'headers': headers,
+            'proxy' : self.options.get('proxy') if self.options.get('proxy') else None,
             'timeout': self.options.get('timeout', 30),
             'follow_redirects': True,
         }
-        
-        if self.options.get('proxy'):
-            kwargs['proxies'] = {
-                'http://': self.options.get('proxy'),
-                'https://': self.options.get('proxy')
-            }
+    
         
         try:
             # Buscar em múltiplas páginas usando o padrão de URL do Naver
@@ -202,7 +194,7 @@ class NaverDorker(BaseModule):
                 
         except Exception as e:
             self.set_result(f"✗ Erro ao conectar ao Naver: {str(e)}")
-            return []
+            raise ValueError(e)
 
     async def _search_page_async(self, headers: dict, encoded_dork: str, page: int, kwargs: dict) -> list:
         """

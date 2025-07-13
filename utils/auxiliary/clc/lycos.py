@@ -20,7 +20,6 @@ através dos motores de busca mainstream como Google ou Bing.
 import re
 import random
 import asyncio
-import backoff
 from bs4 import BeautifulSoup
 from requests.exceptions import RequestException
 from urllib.parse import urljoin, urlparse, quote_plus, unquote
@@ -28,6 +27,7 @@ from urllib.parse import urljoin, urlparse, quote_plus, unquote
 from core.format import Format
 from core.http_async import HTTPClient
 from core.basemodule import BaseModule
+from core.retry import retry_operation
 from core.user_agent_generator import UserAgentGenerator
 
 class LycosDorker(BaseModule):
@@ -264,12 +264,7 @@ class LycosDorker(BaseModule):
             self.set_result(f"✗ Erro ao conectar ao Lycos: {str(e)}")
             return []
     
-    @backoff.on_exception(
-        backoff.expo,
-        RequestException,
-        max_tries=3,
-        max_time=30
-    ) 
+    
     def _search_lycos(self, dork: str) -> list:
         """
         Wrapper síncrono para realizar busca no Lycos usando paginação automática e extrair resultados.
@@ -282,6 +277,7 @@ class LycosDorker(BaseModule):
         """
         return asyncio.run(self._search_lycos_async(dork))
 
+    @retry_operation
     def _get_next_page_url(self, html_content: str) -> str:
         """
         Extrai a URL da próxima página da seção de paginação.
@@ -316,7 +312,7 @@ class LycosDorker(BaseModule):
             return None
             
         except Exception as e:
-            return None
+            raise ValueError(e)
 
     def _extract_urls_from_response(self, html_content: str) -> list:
         """

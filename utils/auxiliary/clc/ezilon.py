@@ -17,7 +17,6 @@ mais abrangente durante a coleta de informações e pode revelar conteúdos
 que não foram indexados ou são difíceis de encontrar em outros buscadores.
 """
 import re
-import time
 import random
 import backoff
 import asyncio
@@ -28,6 +27,7 @@ from urllib.parse import urljoin, urlparse, quote_plus, unquote
 
 from core.http_async import HTTPClient
 from core.basemodule import BaseModule
+from core.retry import retry_operation
 from core.user_agent_generator import UserAgentGenerator
 
 class EzilonDorker(BaseModule):
@@ -112,12 +112,7 @@ class EzilonDorker(BaseModule):
         except Exception as e:
             self.set_result(f"✗ Erro na busca: {str(e)}")
     
-    @backoff.on_exception(
-        backoff.expo,
-        RequestException,
-        max_tries=3,
-        max_time=30
-    )
+    
     def _search_ezilon(self, dork: str) -> list:
         """
         Wrapper síncrono para busca no Ezilon usando paginação e extrair resultados.
@@ -129,7 +124,8 @@ class EzilonDorker(BaseModule):
             list: Lista de URLs válidas encontradas
         """
         return asyncio.run(self._search_ezilon_async(dork))
-
+    
+    @retry_operation
     async def _search_ezilon_async(self, dork: str) -> list:
         """
         Versão assíncrona para busca no Ezilon usando paginação e extrair resultados.
@@ -162,15 +158,11 @@ class EzilonDorker(BaseModule):
         # Configurar parâmetros para o HTTPClient
         kwargs = {
             'headers': headers,
+            'proxy': self.options.get('proxy') if self.options.get('proxy') else None,
             'timeout': self.options.get('timeout', 30),
             'follow_redirects': True,
         }
         
-        if self.options.get('proxy'):
-            kwargs['proxies'] = {
-                'http://': self.options.get('proxy'),
-                'https://': self.options.get('proxy')
-            }
         
         try:
             # Buscar em múltiplas páginas usando o padrão de URL do Ezilon
@@ -206,7 +198,7 @@ class EzilonDorker(BaseModule):
             
         except Exception as e:
             self.set_result(f"✗ Erro ao conectar ao Ezilon: {str(e)}")
-            return []
+            raise ValueError(e)
 
     async def _search_page_async(self, headers: dict, encoded_dork: str, page: int, kwargs: dict) -> list:
         """

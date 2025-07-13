@@ -24,6 +24,7 @@ import asyncio
 
 from core.basemodule import BaseModule
 from core.http_async import HTTPClient
+from core.retry import retry_operation
 
 class SubdomainEnum(BaseModule):
     """
@@ -84,6 +85,7 @@ class SubdomainEnum(BaseModule):
         for subdomain in sorted(subdomains):
             self.set_result(subdomain)
     
+    @retry_operation
     def _crtsh_search(self, domain: str) -> set:
         """Busca subdomínios no crt.sh"""
         url = f"https://crt.sh/?q=%25.{domain}&output=json"
@@ -94,37 +96,38 @@ class SubdomainEnum(BaseModule):
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
                 'Accept': 'application/json',
             },
+            'proxy': self.options.get('proxy') if self.options.get('proxy') else None,  
             'timeout': self.options.get('timeout', 30),
             'follow_redirects': True,
         }
         
-        if self.options.get('proxy'):
-            kwargs['proxies'] = {
-                'http://': self.options.get('proxy'),
-                'https://': self.options.get('proxy')
-            }
-            
+        try:
         # Executar requisição assíncrona
-        async def make_request():
-            return await self.request.send_request([url], **kwargs)
+            async def make_request():
+                return await self.request.send_request([url], **kwargs)
+            
+            response = asyncio.run(make_request())[0]
+            
+            subdomains = set()
+            if response.status_code == 200:
+                try:
+                    data = response.json()
+                    for entry in data:
+                        name = entry.get('name_value', '')
+                        if '\n' in name:
+                            subdomains.update(name.split('\n'))
+                        else:
+                            subdomains.add(name)
+                except:
+                    pass
+            
+            return {sub.strip() for sub in subdomains if sub.strip() and domain in sub}
         
-        response = asyncio.run(make_request())[0]
+        except Exception as e:
+            self.set_result(f"✗ Erro ao conectar ao crt.sh: {str(e)}")
+            raise ValueError(e)
         
-        subdomains = set()
-        if response.status_code == 200:
-            try:
-                data = response.json()
-                for entry in data:
-                    name = entry.get('name_value', '')
-                    if '\n' in name:
-                        subdomains.update(name.split('\n'))
-                    else:
-                        subdomains.add(name)
-            except:
-                pass
-        
-        return {sub.strip() for sub in subdomains if sub.strip() and domain in sub}
-    
+    @retry_operation
     def _certspotter_search(self, domain: str) -> set:
         """Busca subdomínios no CertSpotter"""
         url = f"https://api.certspotter.com/v1/issuances?domain={domain}&include_subdomains=true&expand=dns_names"
@@ -135,34 +138,34 @@ class SubdomainEnum(BaseModule):
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
                 'Accept': 'application/json',
             },
+            'proxy': self.options.get('proxy') if self.options.get('proxy') else None,  
             'timeout': self.options.get('timeout', 30),
             'follow_redirects': True,
         }
         
-        if self.options.get('proxy'):
-            kwargs['proxies'] = {
-                'http://': self.options.get('proxy'),
-                'https://': self.options.get('proxy')
-            }
+        try:
+            # Executar requisição assíncrona
+            async def make_request():
+                return await self.request.send_request([url], **kwargs)
             
-        # Executar requisição assíncrona
-        async def make_request():
-            return await self.request.send_request([url], **kwargs)
+            response = asyncio.run(make_request())[0]
+            
+            subdomains = set()
+            if response.status_code == 200:
+                try:
+                    data = response.json()
+                    for entry in data:
+                        dns_names = entry.get('dns_names', [])
+                        subdomains.update(dns_names)
+                except:
+                    pass
+            
+            return {sub for sub in subdomains if domain in sub}
+        except Exception as e:
+            self.set_result(f"✗ Erro ao conectar ao CertSpotter: {str(e)}")
+            raise ValueError(e)
         
-        response = asyncio.run(make_request())[0]
-        
-        subdomains = set()
-        if response.status_code == 200:
-            try:
-                data = response.json()
-                for entry in data:
-                    dns_names = entry.get('dns_names', [])
-                    subdomains.update(dns_names)
-            except:
-                pass
-        
-        return {sub for sub in subdomains if domain in sub}
-    
+    @retry_operation
     def _hackertarget_search(self, domain: str) -> set:
         """Busca subdomínios no HackerTarget"""
         url = f"https://api.hackertarget.com/hostsearch/?q={domain}"
@@ -173,28 +176,27 @@ class SubdomainEnum(BaseModule):
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
             },
+            'proxy': self.options.get('proxy') if self.options.get('proxy') else None,
             'timeout': self.options.get('timeout', 30),
             'follow_redirects': True,
         }
-        
-        if self.options.get('proxy'):
-            kwargs['proxies'] = {
-                'http://': self.options.get('proxy'),
-                'https://': self.options.get('proxy')
-            }
+
+        try:     
+            # Executar requisição assíncrona
+            async def make_request():
+                return await self.request.send_request([url], **kwargs)
             
-        # Executar requisição assíncrona
-        async def make_request():
-            return await self.request.send_request([url], **kwargs)
-        
-        response = asyncio.run(make_request())[0]
-        
-        subdomains = set()
-        if response.status_code == 200:
-            lines = response.text.strip().split('\n')
-            for line in lines:
-                if ',' in line:
-                    subdomain = line.split(',')[0].strip()
-                    subdomains.add(subdomain)
-        
-        return subdomains
+            response = asyncio.run(make_request())[0]
+            
+            subdomains = set()
+            if response.status_code == 200:
+                lines = response.text.strip().split('\n')
+                for line in lines:
+                    if ',' in line:
+                        subdomain = line.split(',')[0].strip()
+                        subdomains.add(subdomain)
+            
+            return subdomains
+        except Exception as e:
+            self.set_result(f"✗ Erro ao conectar ao HackerTarget: {str(e)}")
+            raise ValueError(e)

@@ -30,6 +30,7 @@ from requests.exceptions import RequestException
 from config import setting
 from core.http_async import HTTPClient
 from core.basemodule import BaseModule
+from core.retry import retry_operation
 from core.user_agent_generator import UserAgentGenerator
 
 class GoogleCSEDorker(BaseModule):
@@ -66,6 +67,7 @@ class GoogleCSEDorker(BaseModule):
             'proxy': str(),  # Proxies para requisições
             'retry': 0,              # Número de tentativas de requisição
             'retry_delay': 1,        # Atraso entre tentativas de requisição
+            'debug': False,  # Modo de debug para mostrar informações detalhadas
         }
         
         # Lista de CSE IDs do Google - cada ID representa um mecanismo de busca customizado
@@ -274,12 +276,7 @@ class GoogleCSEDorker(BaseModule):
         
         return True
     
-    @backoff.on_exception(
-        backoff.expo,
-        RequestException,
-        max_tries=3,
-        max_time=30
-    )
+    
     def _make_request(self, url: str) -> str:
         """
         Wrapper síncrono para fazer uma requisição HTTP para a URL especificada.
@@ -292,6 +289,7 @@ class GoogleCSEDorker(BaseModule):
         """
         return asyncio.run(self._make_request_async(url))
     
+    @retry_operation
     async def _make_request_async(self, url: str) -> str:
         """
         Versão assíncrona para fazer uma requisição HTTP para a URL especificada.
@@ -305,7 +303,7 @@ class GoogleCSEDorker(BaseModule):
         Returns:
             str: Conteúdo da resposta ou string vazia em caso de erro
         """
-        proxy = self.options.get('proxy') if self.options.get('proxy') else None
+
         kwargs = {
             'headers' : {
                     'User-Agent': UserAgentGenerator.get_random_lib(),  # User agent aleatório gerado dinamicamente
@@ -317,10 +315,7 @@ class GoogleCSEDorker(BaseModule):
                     'Cache-Control': 'max-age=0',
                     'Accept-Encoding': 'gzip, deflate, br, zstd'
                 },
-            'proxies': {
-                'http://': proxy,
-                'https://': proxy
-                },
+            'proxy': self.options.get('proxy') if self.options.get('proxy') else None,
             'timeout': self.options.get('timeout', 30),  # Timeout de 10 segundos,
             'follow_redirects': True,
         }
@@ -343,4 +338,4 @@ class GoogleCSEDorker(BaseModule):
                 return ""
         except Exception as e:
             self.set_result(f"⚠️ Erro de requisição: {e}")
-            return ""
+            raise ValueError(e)

@@ -18,11 +18,9 @@ O uso do DuckDuckGo também evita limitações de rate e captchas frequentes
 encontrados em outros motores de busca.
 """
 import re
-import json
 import time
 import random
 import asyncio
-import backoff
 from bs4 import BeautifulSoup
 from requests.exceptions import RequestException
 from urllib.parse import quote_plus, unquote, urljoin, urlparse
@@ -30,6 +28,7 @@ from urllib.parse import quote_plus, unquote, urljoin, urlparse
 from core.format import Format
 from core.http_async import HTTPClient
 from core.basemodule import BaseModule
+from core.retry import retry_operation
 from core.user_agent_generator import UserAgentGenerator
 
 class DuckDuckGoDorker(BaseModule):
@@ -109,12 +108,7 @@ class DuckDuckGoDorker(BaseModule):
         except Exception as e:
             self.set_result(f"✗ Erro na busca: {str(e)}")
     
-    @backoff.on_exception(
-        backoff.expo,
-        RequestException,
-        max_tries=3,
-        max_time=30
-    )
+    @retry_operation
     def _search_duckduckgo(self, dork: str) -> list:
         """
         Realiza busca no DuckDuckGo usando diferentes URLs e extrai resultados.
@@ -130,7 +124,6 @@ class DuckDuckGoDorker(BaseModule):
         
         # Codificar a query
         encoded_dork = quote_plus(dork)
-        proxy = self.options.get('proxy') if self.options.get('proxy') else None
         # Headers básicos para simular navegador
         kwargs = {
             'headers' : {
@@ -142,10 +135,7 @@ class DuckDuckGoDorker(BaseModule):
                 'Connection': 'keep-alive',
                 'Upgrade-Insecure-Requests': '1',
                 },
-            'proxies': {
-                'http://': proxy,
-                'https://': proxy
-                },
+            'proxy': self.options.get('proxy') if self.options.get('proxy') else None,
             'timeout': self.options.get('timeout', 30),  # Timeout de 10 segundos,
             'follow_redirects': True,
         }
@@ -202,7 +192,7 @@ class DuckDuckGoDorker(BaseModule):
                 
         except RequestException as e:
             self.set_result(f"✗ Erro ao conectar ao DuckDuckGo: {str(e)}")
-            return []
+            raise ValueError(e)
 
     def _extract_urls_from_response(self, html_content: str) -> list:
         """
