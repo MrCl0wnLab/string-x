@@ -65,7 +65,7 @@ class GoogleDorker(BaseModule):
             'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:google" -pm',  # Exemplo de uso do módulo
             'proxy': str(),
             'retry': 4,             # Número de tentativas de requisição
-            'retry_delay': 1,       # Atraso entre tentativas de requisição                                                                # Proxies para requisições
+            'retry_delay': 1,       # Atraso entre tentativas de requisição
         }
 
         self.pagination = []  # Contador de páginas para navegação
@@ -256,11 +256,9 @@ class GoogleDorker(BaseModule):
             async def make_request():
                 return await self.request.send_request([url], **kwargs)
             response = asyncio.run(make_request())[0]
-            print(response)
             # Faz a requisição
             return response.text
         except Exception as e:
-            #print(f"Erro ao fazer requisição para {config['host']}: {str(e)}")
             if debug_mode:
                 self.set_result(f"⚠️ Erro na requisição para {config['host']}: {str(e)}")
             raise ValueError(e)
