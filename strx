@@ -20,7 +20,7 @@ Tipos de módulos suportados:
 Author: Cleiton Pinheiro aka MrCl0wn
 Email: mrcl0wnlab[@]gmail.com
 License: MIT
-Version: 0.1
+Version: 1.0
 """
 
 # Biblioteca padrão
@@ -192,6 +192,7 @@ if __name__ == '__main__':
         parser.add_argument('-out', '-o', metavar="file", help="Arquivo output de valores da execução shell", default=setting.LOG_FILE_OUTPUT)
         parser.add_argument('-pipe', '-p', metavar="cmd", help="Comando que será executado depois de um pipe |", default=None)
         parser.add_argument('-verbose', '-v', help="Modo verboso", action='store_true', default=False)
+        parser.add_argument('-debug', help="Habilitar debug de módulos", action='store_true', default=setting.DEBUG, required=False)
         parser.add_argument('-thread', '-t', metavar=f"<{setting.THREAD_MAX}>", help="Quantidade de threads", default=setting.THREAD_MAX)
         parser.add_argument('-pf', help="Mostrar resultados da execução de função, ignora shell", action='store_true', default=False)
         parser.add_argument('-of', help="Habilitar output de valores da execução de função", action='store_true', default=False)
@@ -202,7 +203,7 @@ if __name__ == '__main__':
         parser.add_argument('-proxy', help="Setar um proxy para request", default=str(), required=False)
         parser.add_argument('-format', metavar="<format>", help=f"Formato de saída ({', '.join(setting.OUTPUT_FORMATS)})", default=setting.DEFAULT_OUTPUT_FORMAT, choices=setting.OUTPUT_FORMATS)
         parser.add_argument('-upgrade', help="Atualizar String-X via Git", action='store_true')
-
+        parser.add_argument('-retry', '-r', metavar=f"<{setting.RETRY_OPERATIONS}>", help="Quantidade de tentativas", default=setting.RETRY_OPERATIONS, required=False)
         ARGS = parser.parse_args() 
 
         # Adicionar na lógica principal (linha ~200, antes de outros processamentos)

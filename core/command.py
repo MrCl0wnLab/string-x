@@ -67,8 +67,9 @@ class Command:
         self.verbose: bool = False
         self._type_module: str = str()
         self._proxy : str = str()
-        self.output_format: str = "txt"  # formato padrão
-      
+        self.output_format: str = "txt"
+        self._debug: str = str()
+        self._retry: str = str()
 
         self._logging_config = {
             "version": 1,
@@ -200,7 +201,7 @@ class Command:
         if obj_module := auto_load.load_module():
             # Update current module name
             self._current_module = _type_module
-            obj_module.options.update({"data": data, "proxy": self._proxy})
+            obj_module.options.update({'data': data, 'proxy': self._proxy, 'debug': self._debug, 'retry': self._retry})
             obj_module.run()
             return obj_module
         return None
@@ -348,6 +349,8 @@ class Command:
             self._type_module = args.module
             self._print_result_module = args.pm
             self._proxy = args.proxy
+            self._debug = args.debug
+            self._retry = args.retry
             # Reset module and function information
             self._current_module = str()
             self._current_function = str()

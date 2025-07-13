@@ -275,6 +275,7 @@ string-x/
 | `-o, --out` | Arquivo de saída para resultados | `-o results.txt` |
 | `-p, --pipe` | Comando adicional via pipe | `-p "grep 200"` |
 | `-v, --verbose` | Modo verboso com detalhes | `-v` |
+| `-debug` | Habilitar debug de módulos | `-debug` |
 | `-t, --thread` | Número de threads paralelas | `-t 50` |
 | `-f, --filter` | Filtro para seleção de strings | `-f ".gov.br"` |
 | `-module` | Seleção de módulo específico | `-module "ext:email"` |
@@ -284,13 +285,16 @@ string-x/
 | `-sleep` | Delay entre threads (segundos) | `-sleep 2` |
 | `-proxy` | Setar proxy para requests | `-proxy "http://127.0.0.1:8080"` |
 | `-format` | Formato de saída (txt, csv, json) | `-format json` |
+| `-upgrade` | Atualizar String-X via Git | `-upgrade` |
+| `-r, --retry` | Quantidade de tentativas | `-r 3` |
 
 ### Interface da Aplicação
 
 ```bash
-usage: strx [-h] [-types] [-examples] [-functions] [-list file] [-str cmd] [-out file] 
-            [-pipe cmd] [-verbose] [-thread <10>] [-pf] [-of] [-filter value] [-sleep <5>] 
-            [-module <type:module>] [-pm] [-proxy PROXY] [-format <format>]
+usage: strx [-h] [-types] [-examples] [-functions] [-list file] [-str cmd] 
+            [-out file] [-pipe cmd] [-verbose] [-debug] [-thread <10>] [-pf] [-of] 
+            [-filter value] [-sleep <5>] [-module <type:module>] [-pm] [-proxy PROXY]
+            [-format <format>] [-upgrade] [-retry <0>]
 
  
                                              _
@@ -323,7 +327,7 @@ usage: strx [-h] [-types] [-examples] [-functions] [-list file] [-str cmd] [-out
                                   ░                    ░         ░    ░  
                                   ░                                      
                                 
-                                String-X: Tool for automating commands
+                              String-X: Tool for automating commands  1.0
 
 options:
              -h, --help             show this help message and exit
@@ -335,6 +339,7 @@ options:
              -out, -o file          Arquivo output de valores da execução shell
              -pipe, -p cmd          Comando que será executado depois de um pipe |
              -verbose, -v           Modo verboso
+             -debug                 Habilitar debug de módulos
              -thread, -t <10>       Quantidade de threads
              -pf                    Mostrar resultados da execução de função, ignora shell
              -of                    Habilitar output de valores da execução de função
@@ -344,6 +349,9 @@ options:
              -pm                    Mostrar somente resultados de execução do module
              -proxy PROXY           Setar um proxy para request
              -format <format>       Formato de saída (txt, csv, json)
+             -upgrade               Atualizar String-X via Git
+             -retry, -r <0>         Quantidade de tentativas
+
 
 ```
 

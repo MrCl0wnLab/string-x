@@ -30,6 +30,13 @@ LOG_FILE_OUTPUT = f'{LOG_DIRECTORY}/output-{TIME}.log'
 # REQUEST
 REQUEST_USER_AGENT = 'String-X/1.0'
 
+# RETRY
+RETRY_OPERATIONS = 0  # Default retry operations
+RETRY_DELAY = 2  # Default delay in seconds between retries
+
+# DEGUB
+DEBUG = False  # Default debug mode is off
+
 # BANNERS
 BANNER = AsciiBanner()
 BANNER_DEFAULT = 'strx'
