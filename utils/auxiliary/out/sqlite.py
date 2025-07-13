@@ -33,14 +33,14 @@ class SqliteOutput(BaseModule):
             'version': '1.0',
             'description': 'Salva dados em banco SQLite',
             'type': 'output'
+        ,
+            'example': './strx -l domains.txt -st "echo {STRING}" -module "out:sqlite" -pm'
         }
         
         self.options = {
             'database': 'strx_results.db',
             'table': 'results',
-            'data': str(),
-            'example': './strx -l domains.txt -st "echo {STRING}" -module "out:sqlite" -pm',
-            'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'data': str(),            'debug': False,  # Modo de debug para mostrar informações detalhadas
             'timeout': 10,  # Tempo limite para operações de banco de dados
             'retry': 0,              # Número de tentativas de requisição
             'retry_delay': 1,        # Atraso entre tentativas de requisição

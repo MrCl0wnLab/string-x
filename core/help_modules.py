@@ -21,8 +21,10 @@ from core.style_cli import StyleCli
 
 CLI = StyleCli()
 
-# Constante para o caminho base dos módulos
-BASE_MODULES_PATH = 'utils/auxiliary'
+# Obtém o diretório base do projeto (raiz do string-x)
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Constante para o caminho base dos módulos (caminho absoluto)
+BASE_MODULES_PATH = os.path.join(ROOT_DIR, 'utils/auxiliary')
 
 def discover_module_types():
     """Descobre dinamicamente os tipos de módulos disponíveis."""
@@ -47,7 +49,7 @@ def discover_module_types():
                         if hasattr(module, 'MODULE_TYPE'):
                             module_desc = module.MODULE_TYPE.capitalize()
                             display_name = f"{module_type.upper()} ({module_desc})"
-                            modules_dirs[display_name] = f'{BASE_MODULES_PATH}/{module_type}/'
+                            modules_dirs[display_name] = os.path.join(BASE_MODULES_PATH, module_type)
                         else:
                             # Se não encontrar MODULE_TYPE, usa o nome da pasta
                             display_name = f"{module_type.upper()}"
@@ -137,8 +139,9 @@ def show_module_examples():
             
             instance = load_module_class(module_path, module_name)
             if instance:
-                example = instance.options.get('example', 'No example available')
                 meta = getattr(instance, 'meta', {})
+                # Primeiro tenta obter o exemplo de meta, se não existir procura em options para compatibilidade
+                example = meta.get('example', instance.options.get('example', 'No example available'))
                 description = meta.get('description', 'No description')
                 
                 table.add_row(module_name, description, example)
@@ -186,8 +189,9 @@ def show_specific_example(module_type, module_name):
         if not category_info:
             category_info = module_type.upper()
         
-        example = instance.options.get('example', 'No example available')
         meta = getattr(instance, 'meta', {})
+        # Primeiro tenta obter o exemplo de meta, se não existir procura em options para compatibilidade
+        example = meta.get('example', instance.options.get('example', 'No example available'))
         
         # Tabela de informações do módulo
         info_table = Table(title=f"🔧 {category_info} - {module_name}", box=ROUNDED)
@@ -221,7 +225,8 @@ def show_specific_example(module_type, module_name):
 
 def show_helper_functions():
     """Lista todas as funções disponíveis no módulo helper/functions.py em formato de tabela."""
-    functions_path = 'utils/helper/functions.py'
+    # Usa o caminho absoluto para o arquivo de funções auxiliares
+    functions_path = os.path.join(ROOT_DIR, 'utils/helper/functions.py')
     
     if not os.path.exists(functions_path):
         CLI.console.print(Panel(f"❌ Helper functions file not found: {functions_path}", 

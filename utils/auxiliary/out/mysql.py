@@ -32,6 +32,8 @@ class MySqlOutput(BaseModule):
             'version': '1.0',
             'description': 'Salva dados em banco MySQL',
             'type': 'output'
+        ,
+            'example': './strx -l data.txt -st "echo {STRING}" -module "out:mysql" -pm'
         }
         
         self.options = {
@@ -41,9 +43,7 @@ class MySqlOutput(BaseModule):
             'username': str(),
             'password': str(),
             'table': 'results',
-            'data': str(),
-            'example': './strx -l data.txt -st "echo {STRING}" -module "out:mysql" -pm',
-            'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'data': str(),            'debug': False,  # Modo de debug para mostrar informações detalhadas
             'retry': 0,              # Número de tentativas de requisição
             'retry_delay': 1,        # Atraso entre tentativas de requisição
         }

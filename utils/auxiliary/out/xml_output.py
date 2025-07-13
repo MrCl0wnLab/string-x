@@ -25,15 +25,15 @@ class XMLOutput(BaseModule):
             'version': '1.0',
             'description': 'Salva resultados em formato XML estruturado',
             'type': 'output'
+        ,
+            'example': './strx -l data.txt -st "echo {STRING}" -module "out:xml_output" -pm'
         }
         
         self.options = {
             'data': str(),
             'file': 'output.xml',
             'root_element': 'stringx_results',
-            'item_element': 'result',
-            'example': './strx -l data.txt -st "echo {STRING}" -module "out:xml_output" -pm',
-            'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'item_element': 'result',            'debug': False,  # Modo de debug para mostrar informações detalhadas
             'retry': 0,              # Número de tentativas de requisição
             'retry_delay': 1,        # Atraso entre tentativas de requisição
         }

@@ -23,15 +23,15 @@ class IPExtractor(BaseModule):
             'version': '1.0',
             'description': 'Extrai endereços IPv4 e IPv6',
             'type': 'extractor'
+        ,
+            'example': './strx -l logs.txt -st "echo {STRING}" -module "ext:ip" -pm'
         }
         
         self.options = {
             'data': str(),
             'ipv4': True,
             'ipv6': True,
-            'private': True,  # Incluir IPs privados
-            'example': './strx -l logs.txt -st "echo {STRING}" -module "ext:ip" -pm',
-            'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'private': True,  # Incluir IPs privados            'debug': False,  # Modo de debug para mostrar informações detalhadas
             'retry': 0,              # Número de tentativas de requisição
             'retry_delay': 1,        # Atraso entre tentativas de requisição 
         }

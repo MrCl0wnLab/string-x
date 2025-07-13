@@ -33,14 +33,14 @@ class SlackOutput(BaseModule):
             'version': '1.0',
             'description': 'Envia dados via Slack Webhook',
             'type': 'output'
+        ,
+            'example': './strx -l alerts.txt -st "echo {STRING}" -module "out:slack" -pm'
         }
         
         self.options = {
             'webhook_url': str(),
             'channel': str(),
-            'data': str(),
-            'example': './strx -l alerts.txt -st "echo {STRING}" -module "out:slack" -pm',
-            'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'data': str(),            'debug': False,  # Modo de debug para mostrar informações detalhadas
             'timeout': 10,  # Tempo limite para requisição HTTP
             'retry': 0,              # Número de tentativas de requisição
             'retry_delay': 1,        # Atraso entre tentativas de requisição

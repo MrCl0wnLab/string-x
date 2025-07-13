@@ -56,15 +56,15 @@ class GoogleCSEDorker(BaseModule):
             'version': '1.0',
             'description': 'Realiza buscas avançadas usando Google Custom Search Engine',
             'type': 'collector'
+        ,
+            'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:googlecse" -pm'
         }
         # Opções configuráveis do módulo
         self.options = {
             'data': str(),  # Dork para busca
             'delay': 3,     # Delay entre requisições (segundos)
             'timeout': 20,  # Timeout para requisições
-            'max_pages': 15,  # Número máximo de resultados por CSE
-            'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:googlecse" -pm',
-            'proxy': str(),  # Proxies para requisições
+            'max_pages': 15,  # Número máximo de resultados por CSE            'proxy': str(),  # Proxies para requisições
             'retry': 0,              # Número de tentativas de requisição
             'retry_delay': 1,        # Atraso entre tentativas de requisição
             'debug': False,  # Modo de debug para mostrar informações detalhadas

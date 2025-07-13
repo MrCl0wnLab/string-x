@@ -23,13 +23,13 @@ class HashExtractor(BaseModule):
             'version': '1.0',
             'description': 'Extrai hashes MD5, SHA1, SHA256, SHA512',
             'type': 'extractor'
+        ,
+            'example': './strx -l password_dump.txt -st "echo {STRING}" -module "ext:hash" -pm'
         }
         
         self.options = {
             'data': str(),
-            'hash_types': ['md5', 'sha1', 'sha256', 'sha512', 'all'],
-            'example': './strx -l password_dump.txt -st "echo {STRING}" -module "ext:hash" -pm',
-            'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'hash_types': ['md5', 'sha1', 'sha256', 'sha512', 'all'],            'debug': False,  # Modo de debug para mostrar informações detalhadas
             'retry': 0,              # Número de tentativas de requisição
             'retry_delay': 1,        # Atraso entre tentativas de requisição
         }

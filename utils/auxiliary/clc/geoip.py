@@ -45,15 +45,15 @@ class GeoIPCollector(BaseModule):
             'version': '1.1',
             'description': 'Geolocalização de endereços IP',
             'type': 'collector'
+        ,
+            'example': './strx -l ips.txt -st "echo {STRING}" -module "clc:geoip" -pm'
         }
         # Opções configuráveis do módulo
         self.options = {
             'data': str(),  # IP address
             'api_provider': 'auto',  # auto, ipapi, ipinfo, freegeoip
             'include_isp': True,
-            'timeout': 10,
-            'example': './strx -l ips.txt -st "echo {STRING}" -module "clc:geoip" -pm',
-            'debug': False,  # Modo de debug para mostrar informações detalhadas 
+            'timeout': 10,            'debug': False,  # Modo de debug para mostrar informações detalhadas 
             'retry': 0,              # Número de tentativas de requisição
             'retry_delay': 1,        # Atraso entre tentativas de requisição   
         }

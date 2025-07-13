@@ -21,13 +21,13 @@ class CredentialExtractor(BaseModule):
             'version': '1.0', 
             'description': 'Extrai credenciais, tokens API, chaves',
             'type': 'extractor'
+        ,
+            'example': './strx -l config_files.txt -st "echo {STRING}" -module "ext:credential" -pm'
         }
         
         self.options = {
             'data': str(),
-            'types': ['all'],  # aws, github, slack, password, ssh
-            'example': './strx -l config_files.txt -st "echo {STRING}" -module "ext:credential" -pm',
-            'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'types': ['all'],  # aws, github, slack, password, ssh            'debug': False,  # Modo de debug para mostrar informações detalhadas
             'retry': 0,              # Número de tentativas de requisição
             'retry_delay': 1,        # Atraso entre tentativas de requisição
         }

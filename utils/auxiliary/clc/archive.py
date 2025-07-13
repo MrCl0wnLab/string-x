@@ -48,30 +48,22 @@ class archive(BaseModule):
             'version': '1.0',
             'description': 'Coleta URLs arquivadas de um domínio usando o Wayback Machine (archive.org)',
             'type': 'collector'
+        ,
+            'example': './strx -l domains.txt -st "echo {STRING}" -module "clc:archive" -pm'
         }
         # Opções configuráveis do módulo
         self.options = {
             'data': str(),           # Domínio alvo
             'timeout': 30,           # Timeout para requisições
             'proxy': str(),          # Proxies para requisições
-            'debug': False,          # Modo de debug para mostrar informações detalhadas
-            'example': './strx -l domains.txt -st "echo {STRING}" -module "clc:archive" -pm',
-            'retry': 0,              # Número de tentativas de requisição
+            'debug': False,          # Modo de debug para mostrar informações detalhadas            'retry': 0,              # Número de tentativas de requisição
             'retry_delay': 1,        # Atraso entre tentativas de requisição
         }
 
 
    
     
-    def log_debug(self, message):
-        """
-        Registra uma mensagem de debug se o modo de debug estiver ativado.
-        
-        Args:
-            message (str): Mensagem de log
-        """
-        if self.options.get('debug'):
-            print(f"[ARCHIVE-DEBUG] {message}")
+
 
     def run(self):
         """

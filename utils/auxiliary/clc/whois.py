@@ -20,18 +20,27 @@ Estas informações são valiosas para:
 - Correlacionar domínios pertencentes à mesma entidade
 - Identificar informações de contato para investigações adicionais
 """
+# Bibliotecas padrão
+from typing import Optional, Dict, Any
+
+# Bibliotecas de terceiros
 import whois
 
+# Módulos locais
 from core.basemodule import BaseModule
 
 class WhoisInfo(BaseModule):
     """
     Coletor de informações WHOIS.
     
-    Esta classe coleta dados WHOIS de domínios especificados.
+    Esta classe coleta dados WHOIS de domínios especificados,
+    oferecendo informações completas sobre registros de domínios.
     """
     
-    def __init__(self):
+    def __init__(self) -> None:
+        """
+        Inicializa o módulo coletor de informações WHOIS.
+        """
         super().__init__()
         self.meta = {
             'name': 'WHOIS Information Collector',
@@ -39,19 +48,81 @@ class WhoisInfo(BaseModule):
             'version': '1.0',
             'description': 'Coleta informações WHOIS de domínios',
             'type': 'collector'
+        ,
+            'example': './strx -l domains.txt -st "echo {STRING}" -module "clc:whois" -pm'
         }
         self.options = {
-            'data': str(),
-            'example': './strx -l domains.txt -st "echo {STRING}" -module "clc:whois" -pm',
-            'debug': False,  # Modo de debug para mostrar informações detalhadas
-            'retry': 0,              # Número de tentativas de requisição
-            'retry_delay': 1,        # Atraso entre tentativas de requisição    
+            'data': str(),            # Domínio alvo para consulta WHOIS            'debug': False,           # Modo de debug para mostrar informações detalhadas
+            'retry': 0,               # Número de tentativas de requisição
+            'retry_delay': 1,         # Atraso entre tentativas de requisição    
         }
     
-    def run(self):
+    def run(self) -> None:
+        """
+        Executa a consulta WHOIS para o domínio especificado.
+        
+        Esta função realiza uma consulta WHOIS para o domínio fornecido
+        e retorna as informações de registro disponíveis.
+        
+        Returns:
+            None: Os resultados são armazenados através do método set_result
+            
+        Raises:
+            ValueError: Se o domínio for inválido
+            WhoisCommandFailed: Se o comando WHOIS falhar
+            FailedParsingWhoisOutput: Se não for possível interpretar a saída WHOIS
+        """
         domain = self.options.get("data", "").strip()
         if not domain:
-            return None
+            self.log_debug("Nenhum domínio fornecido")
+            return
         
-        whois_info = whois.whois(domain)
-        self.set_result(str(whois_info))
+        try:
+            self.log_debug(f"Iniciando consulta WHOIS para: {domain}")
+            
+            whois_info = whois.whois(domain)
+            
+            if whois_info:
+                self.log_debug("Informações WHOIS obtidas com sucesso")
+                
+                # Log de informações importantes encontradas
+                if hasattr(whois_info, 'domain_name') and whois_info.domain_name:
+                    self.log_debug(f"Nome de domínio: {whois_info.domain_name}")
+                
+                if hasattr(whois_info, 'registrar') and whois_info.registrar:
+                    self.log_debug(f"Registrar: {whois_info.registrar}")
+                
+                if hasattr(whois_info, 'creation_date') and whois_info.creation_date:
+                    self.log_debug(f"Data de criação: {whois_info.creation_date}")
+                
+                if hasattr(whois_info, 'expiration_date') and whois_info.expiration_date:
+                    self.log_debug(f"Data de expiração: {whois_info.expiration_date}")
+                    
+                if hasattr(whois_info, 'name_servers') and whois_info.name_servers:
+                    if isinstance(whois_info.name_servers, list):
+                        self.log_debug(f"Servidores de nome: {', '.join(whois_info.name_servers[:3])}")
+                    else:
+                        self.log_debug(f"Servidores de nome: {whois_info.name_servers}")
+                
+                self.set_result(str(whois_info))
+            else:
+                self.log_debug("Nenhuma informação WHOIS encontrada")
+                self.set_result("Nenhuma informação WHOIS disponível para este domínio")
+                
+        except Exception as e:
+            if "command failed" in str(e).lower():
+                error_msg = f"Falha no comando WHOIS: {str(e)}"
+                self.log_debug(error_msg)
+                self.set_result(f"Erro na consulta WHOIS: {error_msg}")
+            elif "failed parsing" in str(e).lower():
+                error_msg = f"Falha ao interpretar saída WHOIS: {str(e)}"
+                self.log_debug(error_msg)
+                self.set_result(f"Erro ao processar resposta WHOIS: {error_msg}")
+            elif "timed out" in str(e).lower() or "timeout" in str(e).lower():
+                error_msg = f"Timeout na consulta WHOIS: {str(e)}"
+                self.log_debug(error_msg)
+                self.set_result(f"Timeout na consulta WHOIS para: {domain}")
+            else:
+                error_msg = f"Erro inesperado: {type(e).__name__}: {str(e)}"
+                self.log_debug(error_msg)
+                self.set_result(f"Falha na consulta WHOIS: {error_msg}")

@@ -65,6 +65,8 @@ class IPInfo(BaseModule):
             'version': '1.1',
             'description': 'Coleta informações detalhadas sobre endereços IP usando ipinfo.io',
             'type': 'collector'
+        ,
+            'example': './strx -l ips.txt -st "echo {STRING}" -module "clc:ipinfo" -pm'
         }
         # Opções configuráveis do módulo
         self.options = {

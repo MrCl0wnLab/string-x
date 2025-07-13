@@ -17,16 +17,20 @@ Este módulo implementa diversas técnicas anti-detecção para evitar bloqueios
 e captchas durante as pesquisas, como rotação de user agents, delays aleatórios
 e múltiplas estratégias de requisição.
 """
+# Bibliotecas padrão
 import re
 import time
 import random
 import asyncio
-from bs4 import BeautifulSoup
-from core.format import Format
-from requests.exceptions import RequestException
 from typing import List, Dict, Optional, Any, Tuple
 from urllib.parse import quote_plus, unquote, urlencode
 
+# Bibliotecas de terceiros
+from bs4 import BeautifulSoup
+from requests.exceptions import RequestException
+
+# Módulos locais
+from core.format import Format
 from core.http_async import HTTPClient
 from core.basemodule import BaseModule
 from core.retry import retry_operation
@@ -39,11 +43,18 @@ class GoogleDorker(BaseModule):
     Esta classe permite realizar buscas avançadas no Google utilizando dorks
     para identificar informações específicas, como arquivos sensíveis,
     diretórios expostos e vulnerabilidades potenciais.
+    
+    Implementa técnicas anti-detecção como rotação de user-agents, cookies
+    personalizados, headers variados e configurações regionais aleatórias
+    para evitar o bloqueio por captcha durante as buscas intensivas.
     """
     
     def __init__(self):
         """
         Inicializa o módulo de dorking Google.
+        
+        Configura opções padrão, metadados do módulo, cliente HTTP assíncrono
+        e estruturas de dados para armazenamento de resultados e paginação.
         """
         super().__init__()
         # Instância do cliente HTTP assíncrono
@@ -55,6 +66,8 @@ class GoogleDorker(BaseModule):
             'version': '2.0',
             'description': 'Realiza buscas avançadas com dorks no Google',
             'type': 'collector'
+        ,
+            'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:google" -pm'
         }
         # Opções configuráveis do módulo
         self.options = {
@@ -91,7 +104,14 @@ class GoogleDorker(BaseModule):
         
     def run(self):
         """
-        Executa busca de dorks no Google.
+        Executa busca de dorks usando Google.
+        
+        Este método coordena todo o processo de busca, incluindo a 
+        verificação da dork fornecida, realização da busca inicial
+        e processamento de páginas de resultado adicionais.
+        
+        Returns:
+            None: Os resultados são armazenados internamente através do método set_result
         """
         try:
             dork = Format.clear_value(self.options.get('data').strip())
@@ -113,17 +133,35 @@ class GoogleDorker(BaseModule):
                 return
 
             self.set_result("\n".join(results))
+        except RequestException as e:
+            self.set_result(f"✗ Erro na requisição: {str(e)}")
+        except ValueError as e:
+            self.set_result(f"✗ Erro de valor: {str(e)}")
         except Exception as e:
             self.set_result(f"✗ Erro na busca: {str(e)}")
     
     def _first_search_google(self, dork: str) -> List[str]:
         """
         Realiza busca no Google usando diferentes técnicas.
+        
+        Este método executa a busca principal no Google, utilizando técnicas de 
+        rotação de configurações regionais para evitar bloqueios. Processa a
+        resposta para extrair URLs e links de paginação.
+        
+        Args:
+            dork (str): Termo de busca (dork) a ser pesquisado
+            
+        Returns:
+            List[str]: Lista de URLs encontrados nos resultados da busca
+            
+        Raises:
+            RequestException: Erro na requisição HTTP
+            ValueError: Erro no processamento de valores
         """
         results = []
         debug_mode = self.options.get('debug')
 
-         # Shuffle para aleatorizar a ordem dos hosts e profiles
+        # Shuffle para aleatorizar a ordem dos hosts e profiles
         random.shuffle(self.country_configs)
         config = self.country_configs[0]
         # Codificar a query
@@ -152,13 +190,28 @@ class GoogleDorker(BaseModule):
                 for url in page_results:
                     results.append(url)
 
+        except RequestException as e:
+            if debug_mode:
+                self.set_result(f"⚠️ Erro de requisição com {config['host']}: {str(e)}")
+        except ValueError as e:
+            if debug_mode:
+                self.set_result(f"⚠️ Erro de processamento com {config['host']}: {str(e)}")
         except Exception as e:
             if debug_mode:
                 self.set_result(f"⚠️ Erro com {config['host']}: {str(e)}")
         return results
     
-    # Gerar um valor aleatório para 'sei' seguindo o padrão observado
     def _generate_sei_value(self) -> str:
+        """
+        Gera um valor aleatório para o parâmetro 'sei' da URL.
+        
+        Este método cria um valor para o parâmetro 'sei' seguindo o padrão
+        observado nas requisições do Google, ajudando a simular requisições
+        legítimas de um navegador para evitar detecção.
+        
+        Returns:
+            str: String aleatória formatada de acordo com o padrão do Google
+        """
         # Primeira parte: caracteres aleatórios (geralmente letras maiúsculas e números)
         first_part = ''.join(random.choices('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=8))
         # Segunda parte: geralmente tem formato fixo (ex: CqaQ)
@@ -178,6 +231,18 @@ class GoogleDorker(BaseModule):
     def _build_search_url(self, config: Dict[str, str], encoded_dork: str) -> str:
         """
         Cria URL de busca com parâmetros adequados.
+        
+        Este método constrói uma URL de pesquisa do Google com parâmetros 
+        específicos para a região selecionada, incluindo configurações para
+        maximizar resultados e minimizar filtros. Também adiciona parâmetros
+        aleatórios para variar a assinatura das requisições.
+        
+        Args:
+            config (Dict[str, str]): Configuração regional com host, hl e gl
+            encoded_dork (str): Termo de busca já codificado para URL
+            
+        Returns:
+            str: URL completa para realizar a busca
         """
         
         # Parâmetros da URL    
@@ -213,6 +278,16 @@ class GoogleDorker(BaseModule):
     def _generate_cookies(self, host: str) -> Dict[str, str]:
         """
         Gera cookies para simular navegação legítima.
+        
+        Este método cria um conjunto de cookies com valores semelhantes aos
+        gerados por navegadores reais durante sessões de navegação no Google,
+        ajudando a evitar a detecção como bot.
+        
+        Args:
+            host (str): Nome do host para o qual os cookies serão gerados
+            
+        Returns:
+            Dict[str, str]: Dicionário com os cookies necessários para a requisição
         """
         timestamp = int(time.time())
         rand_id = ''.join(random.choices('0123456789abcdef', k=16))
@@ -235,7 +310,23 @@ class GoogleDorker(BaseModule):
                      config: Dict[str, str],
                      debug_mode: bool) -> Optional[str]:
         """
-        Executa a requisição com tratamento avançado de resposta.
+        Executa a requisição HTTP com tratamento avançado de resposta.
+        
+        Este método realiza uma requisição HTTP assíncrona utilizando headers
+        e cookies personalizados para simular um navegador real. Implementa
+        tratamento de erros e suporte a proxies.
+        
+        Args:
+            url (str): URL completa para fazer a requisição
+            config (Dict[str, str]): Configuração regional com host
+            debug_mode (bool): Indica se o modo de debug está ativado
+            
+        Returns:
+            Optional[str]: Conteúdo HTML da página ou None em caso de erro
+            
+        Raises:
+            RequestException: Erro relacionado à requisição HTTP
+            ValueError: Erro no processamento da resposta
         """
         # Gerar cookies para simular um navegador real
         cookies = self._generate_cookies(config["host"])
@@ -247,7 +338,7 @@ class GoogleDorker(BaseModule):
                 'Referer': f'https://{config["host"]}/',
                 },
             'proxy': self.options.get('proxy') if self.options.get('proxy') else None,
-            'timeout': self.options.get('timeout', 30),  # Timeout de 10 segundos,
+            'timeout': self.options.get('timeout', 30),
             'follow_redirects': True,
             'cookies': cookies
         }
@@ -256,16 +347,29 @@ class GoogleDorker(BaseModule):
             async def make_request():
                 return await self.request.send_request([url], **kwargs)
             response = asyncio.run(make_request())[0]
-            # Faz a requisição
             return response.text
-        except Exception as e:
+        except RequestException as e:
             if debug_mode:
                 self.set_result(f"⚠️ Erro na requisição para {config['host']}: {str(e)}")
-            raise ValueError(e)
+            raise
+        except Exception as e:
+            if debug_mode:
+                self.set_result(f"⚠️ Erro inesperado na requisição para {config['host']}: {str(e)}")
+            raise ValueError(f"Erro no processamento da requisição: {str(e)}")
         
     def _is_valid_url(self, url: str) -> bool:
         """
-        Verifica se uma URL é válida.
+        Verifica se uma URL é válida e não pertence à lista de bloqueio.
+        
+        Este método filtra URLs para remover resultados indesejados como
+        páginas do próprio Google, mídias sociais ou sites de busca. 
+        Também faz limpeza básica nas URLs recebidas.
+        
+        Args:
+            url (str): URL a ser verificada
+            
+        Returns:
+            bool: True se a URL for válida e não estiver bloqueada, False caso contrário
         """
         
         block_list = [
@@ -293,8 +397,20 @@ class GoogleDorker(BaseModule):
             
         return False
     
-    def _decode_url(self, url):
-        # Função para decodificar sequências de escape Unicode em URLs
+    def _decode_url(self, url: str) -> str:
+        """
+        Decodifica sequências de escape Unicode em URLs.
+        
+        Este método processa a URL para substituir sequências de escape 
+        Unicode por seus caracteres correspondentes e também remove
+        parâmetros de rastreamento como 'srsltid'.
+        
+        Args:
+            url (str): URL para decodificar
+            
+        Returns:
+            str: URL decodificada sem parâmetros de rastreamento
+        """
         unicode_map = {
             r'\u003d': '=', r'\u0026': '&', r'\u002f': '/', 
             r'\u003a': ':', r'\u003f': '?', r'\u003b': ';',
@@ -313,6 +429,19 @@ class GoogleDorker(BaseModule):
         return decoded
     
     def _extract_google_urls(self, html_content: str) -> List[str]:
+        """
+        Extrai URLs dos resultados de busca do Google.
+        
+        Este método analisa o HTML da página de resultados do Google para
+        extrair os links das páginas nos resultados da busca, removendo
+        links internos do Google e decodificando as URLs.
+        
+        Args:
+            html_content (str): Conteúdo HTML da página de resultados
+            
+        Returns:
+            List[str]: Lista de URLs únicas encontradas nos resultados
+        """
         results = []
         if html_content:
             soup = BeautifulSoup(html_content, "html.parser")
@@ -323,13 +452,20 @@ class GoogleDorker(BaseModule):
         
         return list(set(results))
     
-    def _get_pagination(self, html_content: str, config: dict) -> List[str]:
+    def _get_pagination(self, html_content: str, config: Dict[str, str]) -> List[str]:
         """
         Extrai links de navegação da página HTML do Google.
+        
+        Este método analisa o HTML dos resultados do Google para encontrar
+        links de paginação que permitem navegar para as próximas páginas 
+        de resultados.
+        
         Args:
-            html_content (str): Conteúdo HTML da página do Google.
+            html_content (str): Conteúdo HTML da página do Google
+            config (Dict[str, str]): Configuração com informações do host
+            
         Returns:
-            List[str]: Lista de URLs de navegação encontradas.
+            List[str]: Lista de URLs de navegação encontradas
         """
         # Verifica se o conteúdo HTML foi fornecido
         if not html_content:
@@ -337,15 +473,15 @@ class GoogleDorker(BaseModule):
         
         results = []
         
-        # Parse the HTML with BeautifulSoup
+        # Analisa o HTML com BeautifulSoup
         soup = BeautifulSoup(html_content, 'html.parser')
-        # Find all navigation links (anchor tags within navigation elements)
+        # Encontra todos os links de navegação (tags anchor dentro de elementos de navegação)
         navigation = soup.find('div', role='navigation')
         if navigation:
             links = navigation.find_all('a', href=True)
             for url in links:
                 if url["href"]:
-                    results.append(f"https://{config["host"]}/{url["href"]}")
+                    results.append(f"https://{config['host']}/{url['href']}")
         return results
 
    

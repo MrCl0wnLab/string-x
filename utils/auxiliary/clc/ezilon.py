@@ -53,6 +53,8 @@ class EzilonDorker(BaseModule):
             'version': '1.0',
             'description': 'Realiza buscas avançadas com dorks no Ezilon',
             'type': 'collector'
+        ,
+            'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:ezilon" -pm'
         }
         # Opções configuráveis do módulo
         self.options = {
@@ -60,9 +62,7 @@ class EzilonDorker(BaseModule):
             'delay': 2,     # Delay entre requisições (segundos)
             'timeout': 15,  # Timeout para requisições
             'max_results': 30,  # Número máximo de resultados
-            'max_pages': 5,  # Número máximo de páginas para buscar
-            'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:ezilon" -pm',
-            'proxy': str(),  # Proxies para requisições (opcional)
+            'max_pages': 5,  # Número máximo de páginas para buscar            'proxy': str(),  # Proxies para requisições (opcional)
             'debug': False,  # Modo de debug para mostrar informações detalhadas  
             'retry': 0,              # Número de tentativas de requisição
             'retry_delay': 1,        # Atraso entre tentativas de requisição  

@@ -49,6 +49,8 @@ class ShodanCollector(BaseModule):
             'version': '1.0',
             'description': 'Coleta informações via API Shodan',
             'type': 'collector'
+        ,
+            'example': './strx -l ips.txt -st "echo {STRING}" -module "clc:shodan" -pm'
         }
         # Opções configuráveis do módulo
         self.options = {
@@ -56,9 +58,7 @@ class ShodanCollector(BaseModule):
             'api_key': str(),  # API key do Shodan
             'query_type': 'host',  # host, search, count
             'facets': str(),  # Para query type 'search'
-            'limit': 100,
-            'example': './strx -l ips.txt -st "echo {STRING}" -module "clc:shodan" -pm',
-            'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'limit': 100,            'debug': False,  # Modo de debug para mostrar informações detalhadas
             'proxy': str(),  # Proxies para requisições (opcional)
             'retry': 0,              # Número de tentativas de requisição
             'retry_delay': 1,        # Atraso entre tentativas de requisição  

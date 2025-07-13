@@ -30,9 +30,15 @@ import signal
 import select
 
 # CRÍTICO: Configurar caminhos ANTES de qualquer import local
+# Define o diretório do script como diretório base, independente de onde o script é executado
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-os.chdir(SCRIPT_DIR)
+ORIGINAL_DIR = os.getcwd()  # Salva o diretório original de execução
+
+# Adiciona o diretório do script ao path do Python para permitir importar módulos locais
 sys.path.insert(0, SCRIPT_DIR)
+
+# Muda para o diretório do script para que os caminhos relativos funcionem
+os.chdir(SCRIPT_DIR)
 
 # Módulos locais
 from config import setting
@@ -164,6 +170,10 @@ if __name__ == '__main__':
     FILE = FileLocal()
     THREAD = ThreadProcess()
     CMD = Command()
+    
+    # Registra uma função para voltar ao diretório original quando o script terminar
+    import atexit
+    atexit.register(lambda: os.chdir(ORIGINAL_DIR))
 
     try:
         parser = RichArgumentParser(

@@ -25,15 +25,15 @@ class CSVOutput(BaseModule):
             'version': '1.0',
             'description': 'Salva resultados em formato CSV',
             'type': 'output'
+        ,
+            'example': './strx -l data.txt -st "echo {STRING}" -module "out:csv_output" -pm'
         }
         
         self.options = {
             'data': str(),
             'file': 'output.csv',
             'columns': ['timestamp', 'data', 'type'],
-            'delimiter': ',',
-            'example': './strx -l data.txt -st "echo {STRING}" -module "out:csv_output" -pm',
-            'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'delimiter': ',',            'debug': False,  # Modo de debug para mostrar informações detalhadas
             'retry': 0,              # Número de tentativas de requisição
             'retry_delay': 1,        # Atraso entre tentativas de requisição
         }

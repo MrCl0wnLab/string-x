@@ -3,18 +3,33 @@ Módulo Google Gemini AI para String-X.
 
 Este módulo fornece integração com a API Gemini AI do Google para processamento
 de linguagem natural, geração de texto e outras capacidades de IA.
-"""
-import httpx
-import json
 
+O Google Gemini é um modelo de linguagem avançado que pode ser utilizado para:
+- Geração de conteúdo e texto criativo
+- Análise e extração de informações de dados não estruturados
+- Respostas a perguntas baseadas em conhecimento geral
+- Resumo e simplificação de textos complexos
+- Tradução e adaptação de conteúdo entre idiomas
+- Conversão entre diferentes formatos de dados e textos
+"""
+# Bibliotecas padrão
+import json
+from typing import Dict, Any, Optional
+
+# Bibliotecas de terceiros
+import httpx
+from httpx import HTTPError, RequestError, TimeoutException
+
+# Módulos locais
 from core.basemodule import BaseModule
 
 class GeminiAI(BaseModule):
     """
     Módulo para interagir com a API Gemini AI do Google.
     
-    Este módulo permite enviar prompts para a API Gemini e receber
-    respostas geradas para várias tarefas de processamento de texto.
+    Esta classe permite enviar prompts para a API Google Gemini e receber
+    respostas geradas para várias tarefas de processamento de texto,
+    incluindo geração de conteúdo, análise de dados e resposta a perguntas.
     """
     
     def __init__(self):
@@ -28,7 +43,8 @@ class GeminiAI(BaseModule):
             'author': 'MrCl0wn',
             'version': '1.0',
             'description': 'Prompt para usar os modelos Google Gemini AI',
-            'type': 'ai'
+            'type': 'ai',
+            'example': './strx -l prompts.txt -st "echo {STRING}" -module "ai:gemini" -pm'
         }
         
         self.options = {
@@ -37,32 +53,50 @@ class GeminiAI(BaseModule):
             'data': str(),  # O texto do prompt
             'temperature': 0.7,  # Controla aleatoriedade (0.0 a 1.0)
             'max_tokens': 800,  # Máximo de tokens na resposta
-            'example': './strx -l prompts.txt -st "echo {STRING}" -module "ai:gemini" -pm',
             'debug': False  # Modo de debug para mostrar informações detalhadas
         }
         
         self.base_url = "https://generativelanguage.googleapis.com/v1beta/models/"
+        self.log_debug("Módulo Gemini AI inicializado com configurações padrão")
     
-    def run(self):
+    def run(self) -> None:
         """
         Executa a requisição à API Gemini.
         
-        Envia o prompt para a API Gemini e processa a resposta.
+        Este método coordena todo o processo de interação com a API Gemini,
+        incluindo a validação dos parâmetros de entrada, envio do prompt
+        e processamento da resposta recebida.
+        
+        Returns:
+            None: Os resultados são armazenados internamente através do método set_result
+            
+        Raises:
+            ValueError: Erro na validação dos parâmetros
+            HTTPError: Erro na comunicação com a API
+            RequestError: Erro no processamento da requisição
         """
         try:
+            self.log_debug("Iniciando execução do módulo Gemini AI")
+            
             data = self.options.get('data', '').strip()
             api_key = self.options.get('api_key', '')
             model = self.options.get('model', 'gemini-2.0-flash')
             temperature = float(self.options.get('temperature', 0.7))
             max_tokens = int(self.options.get('max_tokens', 800))
             
+            self.log_debug(f"Configuração carregada: modelo={model}, temperatura={temperature}, max_tokens={max_tokens}")
+            
             if not data:
+                self.log_debug("Erro: prompt vazio - requisição abortada")
                 self.set_result("✗ Erro: Nenhum dado de prompt fornecido")
                 return
                 
             if not api_key:
+                self.log_debug("Erro: chave API não fornecida - requisição abortada")
                 self.set_result("✗ Erro: A chave API Gemini é necessária")
                 return
+            
+            self.log_debug(f"Prompt válido recebido com {len(data)} caracteres")
             
             result = self._query_gemini(
                 prompt=data,
@@ -73,9 +107,20 @@ class GeminiAI(BaseModule):
             )
             
             if result:
+                self.log_debug(f"Resposta do Gemini processada com sucesso: {len(result)} caracteres")
                 self.set_result(result)
+            else:
+                self.log_debug("Alerta: resposta vazia recebida da API Gemini")
+                self.set_result("✗ Erro: Resposta vazia recebida da API Gemini")
                 
+        except ValueError as e:
+            self.log_debug(f"Erro de validação nos parâmetros da requisição: {str(e)}")
+            self.set_result(f"✗ Erro de validação: {str(e)}")
+        except HTTPError as e:
+            self.log_debug(f"Erro HTTP na comunicação com a API Gemini: {str(e)}")
+            self.set_result(f"✗ Erro de comunicação com a API Gemini: {str(e)}")
         except Exception as e:
+            self.log_debug(f"Erro inesperado durante execução: {type(e).__name__}: {str(e)}")
             self.set_result(f"✗ Erro da API Gemini: {str(e)}")
     
     def _query_gemini(self, prompt: str, api_key: str, model: str, 
@@ -83,18 +128,39 @@ class GeminiAI(BaseModule):
         """
         Consulta a API Gemini com o prompt fornecido.
         
+        Este método envia uma requisição HTTP para a API Gemini com o prompt
+        especificado e parâmetros de configuração, processa a resposta e
+        extrai o texto gerado pelo modelo.
+        
         Args:
             prompt (str): O texto do prompt a ser enviado ao Gemini
             api_key (str): A chave API para autenticação
             model (str): O modelo Gemini a ser usado
-            temperature (float): Controla a aleatoriedade na geração
+            temperature (float): Controla a aleatoriedade na geração (0.0 a 1.0)
             max_tokens (int): Número máximo de tokens na resposta
             
         Returns:
             str: O texto de resposta gerado ou mensagem de erro
+            
+        Raises:
+            HTTPError: Erro na comunicação com a API
+            ValueError: Erro na validação ou formato dos dados
+            TimeoutException: Timeout durante a requisição
         """
         try:
+            self.log_debug(f"Iniciando consulta à API Gemini com modelo '{model}'")
+            
+            # Validar parâmetros
+            if not (0.0 <= temperature <= 1.0):
+                self.log_debug(f"Parâmetro temperatura inválido: {temperature} (deve estar entre 0.0 e 1.0)")
+                raise ValueError("Temperatura deve estar entre 0.0 e 1.0")
+                
+            if max_tokens <= 0:
+                self.log_debug(f"Parâmetro max_tokens inválido: {max_tokens} (deve ser positivo)")
+                raise ValueError("max_tokens deve ser um número positivo")
+            
             url = f"{self.base_url}{model}:generateContent?key={api_key}"
+            self.log_debug(f"URL da API configurada: {self.base_url}{model}:generateContent")
             
             payload = {
                 "contents": [
@@ -116,7 +182,11 @@ class GeminiAI(BaseModule):
                 "Content-Type": "application/json"
             }
             
+            self.log_debug(f"Payload JSON preparado com prompt de {len(prompt)} caracteres")
+            self.log_debug("Iniciando envio da requisição HTTP com timeout de 30 segundos")
+            
             with httpx.Client() as client:
+                self.log_debug("Conexão cliente HTTP estabelecida")
                 response = client.post(
                     url, 
                     headers=headers, 
@@ -124,19 +194,38 @@ class GeminiAI(BaseModule):
                     timeout=30
                 )
             
+            self.log_debug(f"Resposta da API recebida - Status HTTP: {response.status_code}")
+            
             if response.status_code != 200:
+                self.log_debug(f"Erro na resposta da API: código {response.status_code}")
+                self.log_debug(f"Corpo da resposta de erro: {response.text[:150]}...")
                 return f"✗ Erro de API: {response.status_code} - {response.text}"
             
             result = response.json()
+            self.log_debug("Resposta JSON decodificada com sucesso")
             
             # Extrai o texto gerado da resposta
             if 'candidates' in result and len(result['candidates']) > 0:
+                self.log_debug(f"Encontrados {len(result['candidates'])} candidatos na resposta")
                 if 'content' in result['candidates'][0]:
                     content = result['candidates'][0]['content']
                     if 'parts' in content and len(content['parts']) > 0:
+                        self.log_debug(f"Texto extraído com sucesso: {len(content['parts'][0]['text'])} caracteres")
                         return content['parts'][0]['text']
             
+            self.log_debug("Erro: estrutura de resposta inesperada ou inválida")
+            self.log_debug(f"Estrutura recebida: {json.dumps(result)[:150]}...")
             return f"✗ Formato de Resposta da API Inesperado: {json.dumps(result)[:100]}..."
             
+        except HTTPError as e:
+            self.log_debug(f"Erro HTTP durante a comunicação com a API: {str(e)}")
+            return f"✗ Erro de comunicação com a API: {str(e)}"
+        except TimeoutException as e:
+            self.log_debug(f"Timeout na requisição após 30 segundos: {str(e)}")
+            return f"✗ Timeout durante a requisição: {str(e)}"
+        except ValueError as e:
+            self.log_debug(f"Erro de validação nos parâmetros da requisição: {str(e)}")
+            return f"✗ Erro de validação: {str(e)}"
         except Exception as e:
+            self.log_debug(f"Erro inesperado durante processamento: {type(e).__name__}: {str(e)}")
             return f"✗ Erro de Requisição: {str(e)}"

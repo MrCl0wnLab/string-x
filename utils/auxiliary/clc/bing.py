@@ -4,15 +4,27 @@ Módulo CLC para dorking usando motor de busca Bing.
 Este módulo implementa funcionalidade para realizar buscas avançadas (dorking)
 no motor de busca Bing, permitindo a extração de resultados usando diferentes
 tipos de dorks de busca.
+
+O Bing é um motor de busca da Microsoft que permite o uso de operadores especiais
+para refinar as buscas, permitindo encontrar:
+- Informações específicas em domínios particulares usando site:
+- Documentos de certos tipos usando filetype:
+- Páginas com termos específicos em seus títulos usando intitle:
+- Conteúdo em diferentes idiomas e regiões
 """
+# Bibliotecas padrão
 import re
 import time
 import random
 import asyncio
-from bs4 import BeautifulSoup
-from requests.exceptions import RequestException
+from typing import List, Dict, Any, Optional, Union, Set, Tuple
 from urllib.parse import urljoin, urlparse, quote_plus
 
+# Bibliotecas de terceiros
+from bs4 import BeautifulSoup
+from requests.exceptions import RequestException, ConnectionError, Timeout
+
+# Módulos locais
 from core.format import Format
 from core.http_async import HTTPClient
 from core.basemodule import BaseModule
@@ -26,11 +38,18 @@ class BingDorker(BaseModule):
     Esta classe permite realizar buscas avançadas no Bing utilizando dorks
     para identificar informações específicas, como arquivos sensíveis,
     diretórios expostos e vulnerabilidades potenciais.
+    
+    Implementa métodos para contornar limitações do Bing, como detecção de bots,
+    através de rotação de headers, simulação de navegação e múltiplas estratégias
+    de requisição.
     """
     
     def __init__(self):
         """
         Inicializa o módulo de dorking Bing.
+        
+        Configura opções padrão, metadados do módulo, cliente HTTP assíncrono
+        e templates de URLs para pesquisas no motor Bing.
         """
         super().__init__()
         # Instância do cliente HTTP assíncrono
@@ -42,14 +61,14 @@ class BingDorker(BaseModule):
             'version': '1.0',
             'description': 'Realiza buscas avançadas com dorks no Bing',
             'type': 'collector'
+        ,
+            'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:bing" -pm'
         }
         # Opções configuráveis do módulo
         self.options = {
             'data': str(),          # Dork para busca
             'delay': 2,             # Delay entre requisições (segundos)
-            'timeout': 15,          # Timeout para requisições
-            'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:bing" -pm',
-            'proxy': str(),         # Proxies para requisições (opcional)
+            'timeout': 15,          # Timeout para requisições            'proxy': str(),         # Proxies para requisições (opcional)
             'debug': False,         # Modo de debug para mostrar informações detalhadas
             'retry': 0,             # Número de tentativas de requisição
             'retry_delay': 1,       # Atraso entre tentativas de requisição
@@ -65,12 +84,21 @@ class BingDorker(BaseModule):
 
         ]
     
-    def run(self):
+    def run(self) -> None:
         """
         Executa busca de dorks no Bing.
         
-        Realiza uma busca no motor de busca Bing usando o dork especificado
-        e extrai os resultados, apresentando apenas URLs por padrão ou detalhes completos.
+        Este método coordena todo o processo de busca no Bing, incluindo
+        a validação da dork fornecida, execução da busca e processamento
+        dos resultados obtidos.
+        
+        Returns:
+            None: Os resultados são armazenados internamente através do método set_result
+            
+        Raises:
+            RequestException: Erro na requisição HTTP
+            ValueError: Erro na validação dos parâmetros
+            ConnectionError: Erro de conexão durante a busca
         """
         try:
             dork = Format.clear_value(self.options.get('data', '').strip())
@@ -87,20 +115,35 @@ class BingDorker(BaseModule):
                 return
 
             self.set_result("\n".join(results))
+        except RequestException as e:
+            self.set_result(f"✗ Erro na requisição: {str(e)}")
+        except ConnectionError as e:
+            self.set_result(f"✗ Erro de conexão: {str(e)}")
+        except ValueError as e:
+            self.set_result(f"✗ Erro de validação: {str(e)}")
         except Exception as e:
             self.set_result(f"✗ Erro na busca: {str(e)}")
     
 
     @retry_operation
-    def _search_bing(self, dork: str) -> list:
+    def _search_bing(self, dork: str) -> List[str]:
         """
         Realiza busca no Bing usando diferentes URLs e extrai resultados.
         
+        Este método executa a busca principal no Bing, utilizando diferentes
+        templates de URL para maximizar a coleta de resultados. Processa as
+        respostas HTML para extrair URLs relevantes.
+        
         Args:
-            dork (str): Query de busca (dork)
+            dork (str): Query de busca (dork) a ser pesquisada
             
         Returns:
-            list: Lista de dicionários com os resultados (título, URL, descrição)
+            List[str]: Lista de URLs encontrados nos resultados da busca
+            
+        Raises:
+            RequestException: Erro na requisição HTTP
+            ConnectionError: Erro de conexão durante a busca
+            ValueError: Erro no processamento da resposta
         """
    
         # Lista para armazenar resultados
@@ -154,8 +197,19 @@ class BingDorker(BaseModule):
             self.set_result(f"✗ Erro ao conectar ao Bing: {str(e)}")
             raise ValueError(e)
         
-    def _is_valid_url(self,url):
-        """Verifica se uma URL é válida"""
+    def _is_valid_url(self, url: str) -> bool:
+        """
+        Verifica se uma URL é válida e não pertence à lista de bloqueio.
+        
+        Este método filtra URLs para remover resultados indesejados como
+        páginas do próprio Bing, da Microsoft ou outros sites não relevantes.
+        
+        Args:
+            url (str): URL a ser verificada
+            
+        Returns:
+            bool: True se a URL for válida e não estiver bloqueada, False caso contrário
+        """
         block_list = [
             'bing.com', 'microsoft.com', 'msn.com', 'live.com', 'outlook.com',
             'hotmail.com', 'office.com', 'skype.com', 'xbox.com', 'windows.com',
@@ -173,8 +227,21 @@ class BingDorker(BaseModule):
             return True
         return False
 
-    def _normalize_url(self, url, base_url=None):
-        """Normaliza a URL e converte relativas para absolutas se houver base_url"""
+    def _normalize_url(self, url: str, base_url: Optional[str] = None) -> str:
+        """
+        Normaliza a URL e converte relativas para absolutas se houver base_url.
+        
+        Este método limpa e padroniza URLs, removendo caracteres especiais, 
+        convertendo URLs relativas para absolutas quando uma base é fornecida,
+        e tratando formatos específicos dos resultados do Bing.
+        
+        Args:
+            url (str): URL a ser normalizada
+            base_url (Optional[str]): URL base para converter URLs relativas em absolutas
+            
+        Returns:
+            str: URL normalizada
+        """
         url = url.strip()
 
         if ' › ' in url:
@@ -193,8 +260,21 @@ class BingDorker(BaseModule):
         
         return url
     
-    def _extract_urls_from_html(self, html_content, base_url=None):
-        """Extrai URLs de um conteúdo HTML"""
+    def _extract_urls_from_html(self, html_content: str, base_url: Optional[str] = None) -> Set[str]:
+        """
+        Extrai URLs de um conteúdo HTML.
+        
+        Este método utiliza o BeautifulSoup para analisar o HTML e extrair URLs
+        de diferentes elementos como links, scripts, iframes, etc. Também processa
+        elementos específicos do formato de resultados do Bing.
+        
+        Args:
+            html_content (str): Conteúdo HTML para análise
+            base_url (Optional[str]): URL base para normalizar URLs relativas
+            
+        Returns:
+            Set[str]: Conjunto de URLs únicas extraídas do HTML
+        """
         urls = set()
         soup = BeautifulSoup(html_content, 'html.parser')
         

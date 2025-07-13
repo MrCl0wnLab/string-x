@@ -25,15 +25,15 @@ class JSONOutput(BaseModule):
             'version': '1.0',
             'description': 'Salva resultados em formato JSON estruturado',
             'type': 'output'
+        ,
+            'example': './strx -l data.txt -st "echo {STRING}" -module "out:json_output" -pm'
         }
         
         self.options = {
             'data': str(),
             'file': 'output.json',
             'append': True,
-            'pretty': True,
-            'example': './strx -l data.txt -st "echo {STRING}" -module "out:json_output" -pm',
-            'debug': False,  # Modo de debug para mostrar informações detalhadas 
+            'pretty': True,            'debug': False,  # Modo de debug para mostrar informações detalhadas 
             'retry': 0,              # Número de tentativas de requisição
             'retry_delay': 1,        # Atraso entre tentativas de requisição
         }

@@ -41,14 +41,14 @@ class SubdomainEnum(BaseModule):
             'version': '1.0',
             'description': 'Enumera subdomínios usando CT logs e bruteforce',
             'type': 'collector'
+        ,
+            'example': './strx -l domains.txt -st "echo {STRING}" -module "clc:subdomain" -pm'
         }
         # Opções configuráveis do módulo
         self.options = {
             'data': str(),  # Domínio alvo
             'methods': ['crtsh', 'certspotter', 'hackertarget'],
-            'timeout': 10,
-            'example': './strx -l domains.txt -st "echo {STRING}" -module "clc:subdomain" -pm',
-            'proxy': str(),  # Proxies para requisições (opcional)
+            'timeout': 10,            'proxy': str(),  # Proxies para requisições (opcional)
             'debug': False,  # Modo de debug para mostrar informações detalhadas
             'retry': 0,              # Número de tentativas de requisição
             'retry_delay': 1,        # Atraso entre tentativas de requisição    

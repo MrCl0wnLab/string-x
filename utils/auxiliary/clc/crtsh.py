@@ -13,14 +13,19 @@ esses logs, o que é útil para:
 - Identificação de certificados potencialmente maliciosos
 - Monitoramento de emissão de certificados para um domínio
 """
+# Bibliotecas padrão
 import re
 import json
 import asyncio
 import warnings
 import traceback
 import urllib.parse
-from requests.exceptions import RequestException
+from typing import List, Dict, Any, Optional
 
+# Bibliotecas de terceiros
+from requests.exceptions import RequestException, Timeout, ConnectionError
+
+# Módulos locais
 from core.http_async import HTTPClient
 from core.basemodule import BaseModule
 from core.retry import retry_operation
@@ -38,7 +43,7 @@ class CrtshCollector(BaseModule):
     que armazena dados dos logs de Certificate Transparency.
     """
     
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Inicializa o módulo de coleta crt.sh.
         """
@@ -52,6 +57,8 @@ class CrtshCollector(BaseModule):
             'version': '1.0',
             'description': 'Coleta certificados SSL/TLS e subdomínios usando crt.sh',
             'type': 'collector'
+        ,
+            'example': './strx -l domains.txt -st "echo {STRING}" -module "clc:crtsh" -pm'
         }
         # Opções configuráveis do módulo
         self.options = {
@@ -62,29 +69,25 @@ class CrtshCollector(BaseModule):
             'exclude_wildcards': True,  # Excluir resultados com wildcard (*.) nos nomes
             'sort_unique': True,  # Ordenar e remover duplicados
             'proxy': str(),  # Proxies para requisições
-            'debug': False,  # Modo de debug para mostrar informações detalhadas
-            'example': './strx -l domains.txt -st "echo {STRING}" -module "clc:crtsh" -pm',
-            'retry': 0,             # Número de tentativas de requisição
+            'debug': False,  # Modo de debug para mostrar informações detalhadas            'retry': 0,             # Número de tentativas de requisição
             'retry_delay': 1,       # Atraso entre tentativas de requisição 
         }
-        
-    def log_debug(self, message):
-        """
-        Registra uma mensagem de debug se o modo de debug estiver ativado.
-        
-        Args:
-            message (str): Mensagem de log
-        """
-        if self.options.get('debug'):
-            print(f"[CRTSH-DEBUG] {message}")
-    
 
-    def run(self):
+    def run(self) -> None:
         """
         Executa a coleta de certificados e subdomínios do crt.sh.
         
+        Esta função realiza a consulta ao serviço crt.sh, processa os dados 
+        retornados e extrai os subdomínios associados ao domínio alvo.
+        
         Returns:
-            Resultados da busca de subdomínios para o domínio alvo.
+            None: Os resultados são armazenados através do método set_result
+            
+        Raises:
+            ValueError: Se ocorrer erro na validação ou processamento dos dados
+            RequestException: Se ocorrer erro na comunicação com o serviço crt.sh
+            ConnectionError: Se não for possível estabelecer conexão com o serviço
+            Timeout: Se a requisição exceder o tempo limite configurado
         """
         # Obtém o domínio alvo da entrada
         domain = self.options.get('data')
@@ -92,61 +95,109 @@ class CrtshCollector(BaseModule):
             self.log_debug("Nenhum domínio fornecido")
             return
         
-        self.log_debug(f"Domínio alvo: {domain}")
+        self.log_debug(f"Iniciando coleta de certificados para domínio: {domain}")
         
         # Realiza consulta ao crt.sh
         try:
-            self.log_debug("Iniciando consulta ao crt.sh")
+            self.log_debug("Iniciando consulta ao serviço crt.sh")
+            
+            # Verificar configurações
+            use_wildcard = self.options.get('wildcard', True)
+            if use_wildcard:
+                self.log_debug("Usando busca com wildcard (%.domain)")
+            
+            timeout = self.options.get('timeout', 30)
+            self.log_debug(f"Timeout configurado: {timeout} segundos")
+            
+            proxy = self.options.get('proxy')
+            if proxy:
+                self.log_debug(f"Usando proxy: {proxy}")
+            
+            # Executar consulta
             crt_data = self._query_crtsh(domain)
             
-            self.log_debug(f"Resultados obtidos: {len(crt_data) if crt_data else 0}")
+            total_results = len(crt_data) if crt_data else 0
+            self.log_debug(f"Consulta retornou {total_results} certificados")
             
             if not crt_data:
                 # Nenhum resultado encontrado
-                self.log_debug("Nenhum resultado encontrado")
+                self.log_debug("Nenhum certificado encontrado para o domínio")
                 self.set_result("")
                 return
                 
             # Extrai os subdomínios
+            exclude_wildcards = self.options.get('exclude_wildcards', True)
+            if exclude_wildcards:
+                self.log_debug("Configurado para excluir subdomínios wildcard (*)")
+                
+            sort_unique = self.options.get('sort_unique', True)
+            if sort_unique:
+                self.log_debug("Configurado para ordenar e remover duplicados")
+                
+            self.log_debug("Extraindo subdomínios dos certificados")
             subdomains = self._extract_subdomains(crt_data, domain)
-            self.log_debug(f"Subdomínios extraídos: {len(subdomains)}")
+            self.log_debug(f"Total de subdomínios extraídos: {len(subdomains)}")
             
             # Define o resultado conforme o formato de saída
             if not subdomains:
-                self.log_debug("Nenhum subdomínio extraído")
+                self.log_debug("Nenhum subdomínio extraído após processamento")
                 self.set_result("")
             else:
                 # Converte para string com uma entrada por linha para compatibilidade com StringX
                 result_str = "\n".join(subdomains)
-                self.log_debug(f"Retornando {len(subdomains)} subdomínios")
+                self.log_debug(f"Retornando {len(subdomains)} subdomínios únicos")
                 self.set_result(result_str)
                 
+        except ValueError as e:
+            self.log_debug(f"Erro de validação: {str(e)}")
+            self.set_result(f"Erro de validação: {str(e)}")
+        except RequestException as e:
+            self.log_debug(f"Erro de requisição HTTP: {str(e)}")
+            self.set_result(f"Erro de comunicação com crt.sh: {str(e)}")
+        except ConnectionError as e:
+            self.log_debug(f"Erro de conexão: {str(e)}")
+            self.set_result(f"Falha ao conectar com crt.sh: {str(e)}")
+        except Timeout as e:
+            self.log_debug(f"Timeout na requisição: {str(e)}")
+            self.set_result(f"Timeout na consulta ao crt.sh: {str(e)}")
         except Exception as e:
-            self.log_debug(f"Exceção: {type(e).__name__}: {str(e)}")
+            self.log_debug(f"Erro não tratado: {type(e).__name__}: {str(e)}")
             self.log_debug(traceback.format_exc())
-            self.set_result("")
-            return
+            self.set_result(f"Erro inesperado: {str(e)}")
             
     @retry_operation
-    def _query_crtsh(self, domain: str) -> list:
+    def _query_crtsh(self, domain: str) -> List[Dict[str, Any]]:
         """
         Realiza consulta ao crt.sh e retorna os resultados.
         
         Args:
-            domain (str): Domínio para pesquisa
+            domain: Domínio para pesquisa
             
         Returns:
-            list: Lista de resultados da consulta ao crt.sh
+            Lista de resultados da consulta ao crt.sh
+            
+        Raises:
+            ValueError: Se o domínio for inválido ou a consulta falhar
+            RequestException: Se ocorrer erro na comunicação HTTP
+            ConnectionError: Se não for possível estabelecer conexão
+            Timeout: Se a requisição exceder o tempo limite
         """
         # Sanitiza o domínio de entrada (remove espaços e caracteres não imprimíveis)
         domain = re.sub(r'[^\x20-\x7E]', '', domain).strip()
+        self.log_debug(f"Domínio sanitizado: {domain}")
+        
         # Prepara o domínio para consulta (adiciona wildcard se configurado)
-        query_domain = f"%.{domain}"  # Wildcard para crt.sh
-        encoded_domain = urllib.parse.quote(query_domain) # Encode properly
+        query_domain = f"%.{domain}" if self.options.get('wildcard', True) else domain
+        self.log_debug(f"Query de domínio preparada: {query_domain}")
+        
+        encoded_domain = urllib.parse.quote(query_domain)
+        self.log_debug(f"Domínio codificado: {encoded_domain}")
+        
         # Constrói a URL final com parâmetros codificados adequadamente
         url = f"https://crt.sh/?q={encoded_domain}&output=json"
+        self.log_debug(f"URL de consulta: {url}")
+        
         proxy = self.options.get('proxy') if self.options.get('proxy') else None
-
 
         kwargs = {
             'headers' : {
@@ -156,74 +207,121 @@ class CrtshCollector(BaseModule):
             'proxies': {
                 'http://': proxy,
                 'https://': proxy
-                },
-            'timeout': self.options.get('timeout', 30),  # Timeout de 10 segundos,
+                } if proxy else None,
+            'timeout': self.options.get('timeout', 30),
             'follow_redirects': True,
         }
 
-        self.log_debug(f"URL de consulta: {url}")
-        self.log_debug(f"Parâmetros cliente: {kwargs}")
+        self.log_debug("Configurações da requisição preparadas")
         
         try:
             # Realiza a requisição
             async def make_request():
+                self.log_debug("Iniciando requisição assíncrona")
                 return await self.request.send_request([url], **kwargs)
             
-            self.log_debug("Enviando requisição...")     
+            self.log_debug("Enviando requisição HTTP ao crt.sh")
             response = asyncio.run(make_request())[0]
-            self.log_debug(f"Status code: {response.status_code}")
+            self.log_debug(f"Resposta recebida com status code: {response.status_code}")
                 
             if response.status_code == 200:
                 try:
                     data = response.json()
-                    self.log_debug(f"Dados JSON recebidos: {len(data)} registros")
+                    record_count = len(data)
+                    self.log_debug(f"Resposta JSON válida recebida com {record_count} registros")
+                    
+                    if record_count > 0:
+                        self.log_debug(f"Primeiros certificados: {data[:2]}")
+                    
                     return data
-                except json.JSONDecodeError:
-                    error_msg = "Resposta recebida não é um JSON válido"
-                    print(error_msg)
-                    self.log_debug(f"Resposta: {response.text[:200]}...")
-                    return []
+                except json.JSONDecodeError as e:
+                    error_msg = f"Resposta recebida não é um JSON válido: {str(e)}"
+                    self.log_debug(error_msg)
+                    self.log_debug(f"Primeiros 200 caracteres da resposta: {response.text[:200]}...")
+                    raise ValueError(error_msg)
             else:
                 error_msg = f"Erro na requisição: Status {response.status_code}"
-                self.log_error(error_msg)
-                self.log_debug(f"Resposta: {response.text[:200]}...")
-                return []
+                self.log_debug(error_msg)
+                self.log_debug(f"Primeiros 200 caracteres da resposta: {response.text[:200]}...")
+                raise RequestException(error_msg)
                 
+        except (ConnectionError, Timeout) as e:
+            self.log_debug(f"Erro de conexão ou timeout: {str(e)}")
+            raise
         except Exception as e:
-            self.log_debug(f"Exceção detalhada: {type(e).__name__}: {str(e)}")
+            self.log_debug(f"Exceção não tratada: {type(e).__name__}: {str(e)}")
             self.log_debug(traceback.format_exc())
-            raise ValueError(e)
+            raise ValueError(f"Erro ao consultar crt.sh: {str(e)}")
     
-    def _extract_subdomains(self, crt_data: list, domain: str) -> list:
+    def _extract_subdomains(self, crt_data: List[Dict[str, Any]], domain: str) -> List[str]:
         """
         Extrai e processa subdomínios dos dados de certificados.
         
         Args:
-            crt_data (list): Dados de certificados do crt.sh
-            domain (str): Domínio base para filtragem
+            crt_data: Dados de certificados do crt.sh
+            domain: Domínio base para filtragem
             
         Returns:
-            list: Lista de subdomínios únicos, opcionalmente ordenados
+            Lista de subdomínios únicos, opcionalmente ordenados
+            
+        Raises:
+            ValueError: Se ocorrer erro no processamento dos dados
         """
         result_domains = []
+        self.log_debug(f"Iniciando extração de subdomínios de {len(crt_data)} certificados")
+        
         try:
-            for entry in crt_data:
-                name = entry.get('name_value', '')
-                if '\n' in name:
-                    names = name.split('\n')
-                else:
-                    names = [name]
-                
-                for domain in names:
-                    domain = domain.strip().lower().replace('*.', '')  # Remove wildcard prefix if exists
-                    result_domains.append(domain)
+            excluded_wildcards = 0
+            total_names = 0
             
-            return list(set(result_domains))  # Remove duplicados
+            # Configurações para processamento
+            exclude_wildcards = self.options.get('exclude_wildcards', True)
+            
+            for entry in crt_data:
+                name_value = entry.get('name_value', '')
+                
+                if not name_value:
+                    continue
+                    
+                # Processar nomes que podem estar separados por quebras de linha
+                if '\n' in name_value:
+                    names = name_value.split('\n')
+                    self.log_debug(f"Certificado contém {len(names)} nomes alternativos")
+                else:
+                    names = [name_value]
+                
+                total_names += len(names)
+                
+                for domain_name in names:
+                    domain_name = domain_name.strip().lower()
+                    
+                    # Verificar e processar wildcards
+                    if '*.' in domain_name:
+                        if exclude_wildcards:
+                            excluded_wildcards += 1
+                            continue
+                        else:
+                            domain_name = domain_name.replace('*.', '')
+                    
+                    result_domains.append(domain_name)
+            
+            self.log_debug(f"Processados {total_names} nomes de domínio")
+            if exclude_wildcards:
+                self.log_debug(f"Excluídos {excluded_wildcards} subdomínios wildcard")
+            
+            # Remover duplicados e opcionalmente ordenar
+            unique_domains = list(set(result_domains))
+            self.log_debug(f"Encontrados {len(unique_domains)} subdomínios únicos")
+            
+            if self.options.get('sort_unique', True):
+                self.log_debug("Ordenando subdomínios alfabeticamente")
+                return sorted(unique_domains)
+            
+            return unique_domains
+            
         except Exception as e:
             error_msg = f"Erro ao extrair subdomínios: {str(e)}"
             self.log_debug(error_msg)
-            import traceback
             self.log_debug(traceback.format_exc())
-            return []
-        
-   
+            raise ValueError(error_msg)
+

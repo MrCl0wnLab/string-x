@@ -48,15 +48,15 @@ class VirusTotalCollector(BaseModule):
             'version': '1.0',
             'description': 'Coleta informações via API VirusTotal',
             'type': 'collector'
+        ,
+            'example': './strx -l suspicious_files.txt -st "echo {STRING}" -module "clc:virustotal" -pm'
         }
         # Opções configuráveis do módulo
         self.options = {
             'data': str(),  # URL, IP, domain ou hash
             'api_key': str(),  # API key do VirusTotal
             'resource_type': 'auto',  # auto, url, ip, domain, file
-            'include_details': True,
-            'example': './strx -l suspicious_files.txt -st "echo {STRING}" -module "clc:virustotal" -pm',
-            'retry': 0,              # Número de tentativas de requisição
+            'include_details': True,            'retry': 0,              # Número de tentativas de requisição
             'retry_delay': 1,        # Atraso entre tentativas de requisição
         }
     

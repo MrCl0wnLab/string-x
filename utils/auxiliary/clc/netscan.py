@@ -17,10 +17,15 @@ Este módulo suporta diferentes métodos de escaneamento, incluindo
 ping sweeps para descoberta de hosts, port scans para identificação
 de serviços disponíveis e fingerprinting básico de serviços.
 """
+# Bibliotecas padrão
 import time
 import ipaddress
 import threading
+import subprocess
+import platform
+from typing import List, Dict, Any, Optional
 
+# Módulos locais
 from core.basemodule import BaseModule
 
 class NetworkScanner(BaseModule):
@@ -29,6 +34,7 @@ class NetworkScanner(BaseModule):
     
     Esta classe permite escaneamento de redes para descoberta de hosts
     ativos, análise de portas abertas e identificação de serviços.
+    Implementa diferentes métodos de varredura como ping, port e service scan.
     """
     
     def __init__(self):
@@ -43,6 +49,8 @@ class NetworkScanner(BaseModule):
             'version': '1.0',
             'description': 'Escaneamento de rede e descoberta de hosts',
             'type': 'collector'
+        ,
+            'example': './strx -l networks.txt -st "echo {STRING}" -module "clc:netscan" -pm'
         }
         
         self.options = {
@@ -51,9 +59,7 @@ class NetworkScanner(BaseModule):
             'ports': '22,23,53,80,443,993,995',
             'threads': 50,
             'timeout': 3,
-            'service_detection': False,
-            'example': './strx -l networks.txt -st "echo {STRING}" -module "clc:netscan" -pm',
-            'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'service_detection': False,            'debug': False,  # Modo de debug para mostrar informações detalhadas
             'retry': 0,              # Número de tentativas de requisição
             'retry_delay': 1,        # Atraso entre tentativas de requisição
         }
@@ -61,9 +67,21 @@ class NetworkScanner(BaseModule):
         self.results = []
         self.lock = threading.Lock()
     
-    def run(self):
+    def run(self) -> None:
         """
         Executa escaneamento de rede.
+        
+        Este método coordena todo o processo de escaneamento, incluindo
+        a validação de entrada, descoberta de hosts, análise de portas
+        e serviços, dependendo do tipo de scan selecionado.
+        
+        Returns:
+            None: Os resultados são armazenados internamente através do método set_result
+        
+        Raises:
+            ValueError: Erro na validação dos parâmetros
+            ConnectionError: Erro de conexão durante o scan
+            TimeoutError: Timeout durante o scan
         """
         try:
             data = self.options.get('data', '').strip()
@@ -105,11 +123,32 @@ class NetworkScanner(BaseModule):
             else:
                 self.set_result("ℹ️ Nenhum host ativo encontrado")
                 
+        except ValueError as e:
+            self.set_result(f"✗ Erro de validação: {str(e)}")
+        except ConnectionError as e:
+            self.set_result(f"✗ Erro de conexão: {str(e)}")
+        except TimeoutError as e:
+            self.set_result(f"✗ Timeout no escaneamento: {str(e)}")
         except Exception as e:
             self.set_result(f"✗ Erro no escaneamento: {str(e)}")
     
-    def _parse_targets(self, data: str) -> list:
-        """Parse targets de entrada (IP, CIDR, range)."""
+    def _parse_targets(self, data: str) -> List[str]:
+        """
+        Processa e valida os targets para escaneamento.
+        
+        Este método analisa a entrada que pode ser um único IP,
+        um range de IPs, uma notação CIDR, ou um hostname,
+        e converte em uma lista de alvos para escaneamento.
+        
+        Args:
+            data (str): String contendo IPs, CIDR ou range
+            
+        Returns:
+            List[str]: Lista de hosts para escaneamento
+            
+        Raises:
+            ValueError: Se os alvos forem inválidos ou não puderem ser processados
+        """
         hosts = []
         
         try:
@@ -133,20 +172,31 @@ class NetworkScanner(BaseModule):
                         
             # Single IP
             else:
-                
                 ipaddress.ip_address(data)  # Validar
                 hosts = [data]
                 
+        except ValueError:
+            # Se falhar na validação de IP, lançar erro
+            raise ValueError(f"Endereço IP inválido: {data}")
         except Exception:
-            # Se falhar, tentar como hostname
+            # Se falhar por outro motivo, tentar como hostname
             hosts = [data]
         
         return hosts
     
-    def _ping_scan(self, hosts: list):
-        """Escaneamento de ping para descoberta de hosts."""
-        import subprocess
-        import platform
+    def _ping_scan(self, hosts: List[str]) -> None:
+        """
+        Realiza escaneamento de ping para descoberta de hosts.
+        
+        Este método executa um ping sweep para identificar hosts
+        ativos na rede usando ICMP Echo Request ou equivalente.
+        
+        Args:
+            hosts (List[str]): Lista de hosts para verificar
+            
+        Returns:
+            None: Os resultados são armazenados no atributo self.results
+        """
         
         def ping_host(host):
             try:

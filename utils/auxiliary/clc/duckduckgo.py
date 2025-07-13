@@ -54,15 +54,15 @@ class DuckDuckGoDorker(BaseModule):
             'version': '1.0',
             'description': 'Realiza buscas avançadas com dorks no DuckDuckGo',
             'type': 'collector'
+        ,
+            'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:duckduckgo" -pm'
         }
         # Opções configuráveis do módulo
         self.options = {
             'data': str(),  # Dork para busca
             'delay': 2,     # Delay entre requisições (segundos)
             'timeout': 15,  # Timeout para requisições
-            'max_results': 30,  # Número máximo de resultados
-            'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:duckduckgo" -pm',
-            'proxy': str(),  # Proxies para requisições (opcional)
+            'max_results': 30,  # Número máximo de resultados            'proxy': str(),  # Proxies para requisições (opcional)
             'debug': False,  # Modo de debug para mostrar informações detalhadas
             'retry': 0,              # Número de tentativas de requisição
             'retry_delay': 1,        # Atraso entre tentativas de requisição    

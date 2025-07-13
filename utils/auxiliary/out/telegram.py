@@ -34,14 +34,14 @@ class TelegramOutput(BaseModule):
             'version': '1.0',
             'description': 'Envia dados via Telegram Bot',
             'type': 'output'
+        ,
+            'example': './strx -l results.txt -st "echo {STRING}" -module "out:telegram" -pm'
         }
         
         self.options = {
             'bot_token': str(),
             'chat_id': str(),
-            'data': str(),
-            'example': './strx -l results.txt -st "echo {STRING}" -module "out:telegram" -pm',
-            'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'data': str(),            'debug': False,  # Modo de debug para mostrar informações detalhadas
             'retry': 0,              # Número de tentativas de requisição
             'retry_delay': 1,        # Atraso entre tentativas de requisição
         }
