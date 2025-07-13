@@ -86,8 +86,8 @@ class BaseModule:
             message (str): Mensagem de log
         """
         if self.options.get('debug'):
-            print(f"[ARCHIVE-DEBUG] {message}")
-            
+            print(f"[{self._get_cls_name()}] {message}")
+
     def _get_cls_name(self):
         """
         Retorna o nome da classe atual.
