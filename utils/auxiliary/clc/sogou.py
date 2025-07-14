@@ -25,6 +25,7 @@ import random
 import asyncio
 from bs4 import BeautifulSoup
 from requests.exceptions import RequestException
+from httpx import ConnectError, ReadTimeout, ConnectTimeout, TimeoutException
 from urllib.parse import urljoin, quote_plus, unquote, urlparse, parse_qs
 
 from core.format import Format
@@ -105,7 +106,7 @@ class SogouDorker(BaseModule):
 
             self.set_result("\n".join(results))
         except Exception as e:
-            self.set_result(f"✗ Erro na busca: {str(e)}")
+            self.handle_error(e, "Erro na busca")
 
     @retry_operation
     def _search_sogou(self, dork: str) -> list:
@@ -178,7 +179,7 @@ class SogouDorker(BaseModule):
             return self._filter_and_deduplicate(results, max_results)
                 
         except Exception as e:
-            self.set_result(f"✗ Erro ao conectar ao Sogou: {str(e)}")
+            self.handle_error(e, "Erro ao conectar ao Sogou")
             raise ValueError(e)
 
     async def _search_first_page_async(self, kwargs: dict, encoded_dork: str) -> list:

@@ -23,6 +23,7 @@ import random
 import asyncio
 from bs4 import BeautifulSoup
 from requests.exceptions import RequestException
+from httpx import ConnectError, ReadTimeout, ConnectTimeout, TimeoutException
 from urllib.parse import quote_plus, unquote, urljoin, urlparse
 
 from core.format import Format
@@ -106,7 +107,7 @@ class DuckDuckGoDorker(BaseModule):
 
             self.set_result("\n".join(results))
         except Exception as e:
-            self.set_result(f"✗ Erro na busca: {str(e)}")
+            self.handle_error(e, "Erro na busca")
     
     @retry_operation
     def _search_duckduckgo(self, dork: str) -> list:
@@ -191,7 +192,7 @@ class DuckDuckGoDorker(BaseModule):
                 return unique_results
                 
         except RequestException as e:
-            self.set_result(f"✗ Erro ao conectar ao DuckDuckGo: {str(e)}")
+            self.handle_error(e, "Erro ao conectar ao DuckDuckGo")
             raise ValueError(e)
 
     def _extract_urls_from_response(self, html_content: str) -> list:

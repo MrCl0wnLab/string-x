@@ -99,7 +99,7 @@ class VirusTotalCollector(BaseModule):
                 self.set_result(result)
                 
         except Exception as e:
-            self.set_result(f"✗ Erro VirusTotal: {str(e)}")
+            self.handle_error(e, "Erro VirusTotal")
     
     def _detect_resource_type(self, data: str) -> str:
         """Detecta automaticamente o tipo de recurso."""

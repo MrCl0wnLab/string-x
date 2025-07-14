@@ -22,6 +22,7 @@ import random
 import asyncio
 from bs4 import BeautifulSoup
 from requests.exceptions import RequestException
+from httpx import ConnectError, ReadTimeout, ConnectTimeout, TimeoutException
 from urllib.parse import urljoin, urlparse, quote_plus, unquote
 
 from core.format import Format
@@ -98,7 +99,7 @@ class LycosDorker(BaseModule):
 
             self.set_result("\n".join(results))
         except Exception as e:
-            self.set_result(f"✗ Erro na busca: {str(e)}")
+            self.handle_error(e, "Erro na busca")
     
     async def _get_keyvol_async(self, headers: dict) -> bool:
         """
@@ -189,20 +190,15 @@ class LycosDorker(BaseModule):
         # Configurar parâmetros para o HTTPClient
         kwargs = {
             'headers': headers,
+            'proxy': self.options.get('proxy') if self.options.get('proxy') else None,
             'timeout': self.options.get('timeout', 30),
             'follow_redirects': True,
         }
 
-        if self.options.get('proxy'):
-            kwargs['proxies'] = {
-                'http://': self.options.get('proxy'),
-                'https://': self.options.get('proxy')
-            }
-
         try:
             # Primeiro, obter o keyvol fazendo uma requisição inicial
             if not await self._get_keyvol_async(headers):
-                self.set_result("✗ Erro ao obter keyvol do Lycos")
+                self.handle_error(ValueError("Não foi possível obter keyvol"), "Erro ao obter keyvol do Lycos")
                 return []
                 
             # Iniciar com a primeira página
@@ -261,7 +257,7 @@ class LycosDorker(BaseModule):
             return unique_results
                 
         except Exception as e:
-            self.set_result(f"✗ Erro ao conectar ao Lycos: {str(e)}")
+            self.handle_error(e, "Erro ao conectar ao Lycos")
             return []
     
     

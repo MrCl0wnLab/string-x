@@ -26,6 +26,7 @@ import asyncio
 import backoff
 import urllib.parse
 from requests.exceptions import RequestException
+from httpx import ConnectError, ReadTimeout, ConnectTimeout, TimeoutException
 
 from config import setting
 from core.http_async import HTTPClient
@@ -326,7 +327,7 @@ class GoogleCSEDorker(BaseModule):
             response = await self.request.send_request([url], **kwargs)
             
             if not response or isinstance(response[0], Exception):
-                self.set_result(f"⚠️ Erro ao acessar {url}: {str(response[0]) if response else 'Sem resposta'}")
+                self.handle_error(response[0] if response else Exception("Sem resposta"), f"Erro ao acessar {url}")
                 return ""
                 
             response = response[0]
@@ -334,8 +335,8 @@ class GoogleCSEDorker(BaseModule):
             if response.status_code == 200:
                 return response.text
             else:
-                self.set_result(f"⚠️ Erro ao acessar {url}: {response.status_code}")
+                self.handle_error(Exception(f"Status code: {response.status_code}"), f"Erro ao acessar {url}")
                 return ""
         except Exception as e:
-            self.set_result(f"⚠️ Erro de requisição: {e}")
+            self.handle_error(e, "Erro de requisição")
             raise ValueError(e)

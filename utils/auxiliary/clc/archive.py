@@ -16,6 +16,7 @@ import asyncio
 import warnings
 import traceback
 from requests.exceptions import RequestException
+from httpx import ConnectError, ReadTimeout, ConnectTimeout, TimeoutException
 
 from core.http_async import HTTPClient
 from core.basemodule import BaseModule
@@ -97,22 +98,10 @@ class archive(BaseModule):
             self.set_result("\n".join(archived_urls))
                 
         except Exception as e:
-            error_msg = f"Erro na coleta de dados do Wayback Machine: {str(e)}"
-            self.log_error(error_msg)
-            self.log_debug(f"Exceção: {type(e).__name__}: {str(e)}")
-            
-            self.log_debug(traceback.format_exc())
+            self.handle_error(e, "Erro na coleta de dados do Wayback Machine")
             self.set_result("")
             return
     
-    def log_error(self, message):
-        """
-        Registra uma mensagem de erro.
-        
-        Args:
-            message (str): Mensagem de erro
-        """
-        print(f"[ARCHIVE-ERROR] {message}")
 
     def _query_archive(self, domain: str) -> list:
         """
@@ -182,6 +171,6 @@ class archive(BaseModule):
                 return []
                 
         except Exception as e:
-            self.log_debug(f"Erro na requisição: {type(e).__name__}: {str(e)}")
+            self.handle_error(e, "Erro na requisição ao Wayback Machine")
             raise ValueError(e)
             

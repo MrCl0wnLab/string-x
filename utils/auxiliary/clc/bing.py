@@ -22,7 +22,8 @@ from urllib.parse import urljoin, urlparse, quote_plus
 
 # Bibliotecas de terceiros
 from bs4 import BeautifulSoup
-from requests.exceptions import RequestException, ConnectionError, Timeout
+from requests.exceptions import RequestException
+from httpx import ConnectError, ReadTimeout, ConnectTimeout, TimeoutException
 
 # Módulos locais
 from core.format import Format
@@ -68,9 +69,10 @@ class BingDorker(BaseModule):
         self.options = {
             'data': str(),          # Dork para busca
             'delay': 2,             # Delay entre requisições (segundos)
-            'timeout': 15,          # Timeout para requisições            'proxy': str(),         # Proxies para requisições (opcional)
+            'timeout': 15,          # Timeout para requisições
+            'proxy': str(),         # Proxies para requisições (opcional)
             'debug': False,         # Modo de debug para mostrar informações detalhadas
-            'retry': 0,             # Número de tentativas de requisição
+            'retry': 3,             # Número de tentativas de requisição
             'retry_delay': 1,       # Atraso entre tentativas de requisição
         }
         
@@ -106,6 +108,8 @@ class BingDorker(BaseModule):
             if not dork:
                 self.set_result("⚠️ Dork não fornecido.")
                 return
+                
+            self.set_result(f"🔍 Buscando: {dork}")
 
             # Coletando resultados
             results = self._search_bing(dork)
@@ -117,8 +121,10 @@ class BingDorker(BaseModule):
             self.set_result("\n".join(results))
         except RequestException as e:
             self.set_result(f"✗ Erro na requisição: {str(e)}")
-        except ConnectionError as e:
+        except ConnectError as e:
             self.set_result(f"✗ Erro de conexão: {str(e)}")
+        except (ReadTimeout, ConnectTimeout, TimeoutException) as e:
+            self.set_result(f"✗ Timeout na requisição: {str(e)}")
         except ValueError as e:
             self.set_result(f"✗ Erro de validação: {str(e)}")
         except Exception as e:
@@ -195,7 +201,7 @@ class BingDorker(BaseModule):
                 
         except RequestException as e:
             self.set_result(f"✗ Erro ao conectar ao Bing: {str(e)}")
-            raise ValueError(e)
+            raise # Re-raise the original exception
         
     def _is_valid_url(self, url: str) -> bool:
         """

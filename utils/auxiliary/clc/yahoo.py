@@ -28,7 +28,8 @@ from urllib.parse import urljoin, urlparse, unquote, quote_plus
 
 # Bibliotecas de terceiros
 from bs4 import BeautifulSoup
-from requests.exceptions import RequestException, Timeout, ConnectionError
+from requests.exceptions import RequestException
+from httpx import ConnectError, ReadTimeout, ConnectTimeout, TimeoutException
 
 # Módulos locais
 from core.format import Format
@@ -67,9 +68,10 @@ class YahooDorker(BaseModule):
         self.options = {
             'data': str(),  # Dork para busca
             'delay': 2,     # Delay entre requisições (segundos)
-            'timeout': 15,  # Timeout para requisições            'proxy': str(),  # Proxies para requisições (opcional)
+            'timeout': 15,  # Timeout para requisições
+            'proxy': str(),  # Proxies para requisições (opcional)
             'debug': False,  # Modo de debug para mostrar informações detalhadas 
-            'retry': 0,              # Número de tentativas de requisição
+            'retry': 3,              # Número de tentativas de requisição
             'retry_delay': 1,        # Atraso entre tentativas de requisição   
         }
         
@@ -111,6 +113,7 @@ class YahooDorker(BaseModule):
                 return
 
             self.log_debug(f"Iniciando busca para dork: {dork}")
+            self.set_result(f"🔍 Buscando no Yahoo: {dork}")
             
             # Coletando resultados
             results = self._search(dork)
@@ -129,10 +132,10 @@ class YahooDorker(BaseModule):
         except RequestException as e:
             self.log_debug(f"Erro de requisição: {str(e)}")
             self.set_result(f"✗ Erro de comunicação com Yahoo: {str(e)}")
-        except ConnectionError as e:
+        except ConnectError as e:
             self.log_debug(f"Erro de conexão: {str(e)}")
             self.set_result(f"✗ Falha ao conectar com Yahoo: {str(e)}")
-        except Timeout as e:
+        except (ReadTimeout, ConnectTimeout, TimeoutException) as e:
             self.log_debug(f"Timeout: {str(e)}")
             self.set_result(f"✗ Timeout na consulta ao Yahoo: {str(e)}")
         except Exception as e:
@@ -153,8 +156,8 @@ class YahooDorker(BaseModule):
         Raises:
             ValueError: Se o dork for inválido ou a busca falhar
             RequestException: Se ocorrer erro na comunicação HTTP
-            ConnectionError: Se não for possível estabelecer conexão
-            Timeout: Se a requisição exceder o tempo limite
+            ConnectError: Se não for possível estabelecer conexão
+            ReadTimeout, ConnectTimeout, TimeoutException: Se a requisição exceder o tempo limite
         """
    
         # Lista para armazenar resultados
@@ -218,10 +221,10 @@ class YahooDorker(BaseModule):
             
             return sorted(list(set(results)))  # Garantir que não haja duplicatas
                 
-        except ConnectionError as e:
+        except ConnectError as e:
             self.log_debug(f"Erro de conexão: {str(e)}")
             raise
-        except Timeout as e:
+        except (ReadTimeout, ConnectTimeout, TimeoutException) as e:
             self.log_debug(f"Timeout: {str(e)}")
             raise
         except Exception as e:

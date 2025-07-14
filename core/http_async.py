@@ -11,7 +11,7 @@ from typing import Optional, Dict, Any, List, Tuple, Set, Union
 
 # Bibliotecas de terceiros
 import httpx
-from httpx import Response, HTTPError, ConnectError, TimeoutException
+from httpx import Response, HTTPError, ConnectError, TimeoutException, ReadTimeout, ConnectTimeout
 
 # Módulos locais
 from core.format import Format
@@ -32,7 +32,7 @@ class HTTPClient:
     # Parâmetros válidos para configurar o cliente httpx
     CLIENT_PARAMS = {
         'auth', 'params', 'headers', 'cookies', 'verify', 'cert', 
-        'http1', 'http2', 'proxies', 'mounts', 'timeout', 
+        'http1', 'http2', 'proxies', 'mounts', 'timeout','proxy', 
         'follow_redirects', 'limits', 'event_hooks', 'base_url',
         'transport', 'app', 'trust_env', 'default_encoding'
     }

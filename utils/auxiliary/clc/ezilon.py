@@ -23,6 +23,7 @@ import asyncio
 from bs4 import BeautifulSoup
 from core.format import Format
 from requests.exceptions import RequestException
+from httpx import ConnectError, ReadTimeout, ConnectTimeout, TimeoutException
 from urllib.parse import urljoin, urlparse, quote_plus, unquote
 
 from core.http_async import HTTPClient
@@ -110,7 +111,7 @@ class EzilonDorker(BaseModule):
 
             self.set_result("\n".join(results))
         except Exception as e:
-            self.set_result(f"✗ Erro na busca: {str(e)}")
+            self.handle_error(e, "Erro na busca")
     
     
     def _search_ezilon(self, dork: str) -> list:
@@ -197,7 +198,7 @@ class EzilonDorker(BaseModule):
             return unique_results
             
         except Exception as e:
-            self.set_result(f"✗ Erro ao conectar ao Ezilon: {str(e)}")
+            self.handle_error(e, "Erro ao conectar ao Ezilon")
             raise ValueError(e)
 
     async def _search_page_async(self, headers: dict, encoded_dork: str, page: int, kwargs: dict) -> list:

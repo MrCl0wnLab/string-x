@@ -23,7 +23,8 @@ import urllib.parse
 from typing import List, Dict, Any, Optional
 
 # Bibliotecas de terceiros
-from requests.exceptions import RequestException, Timeout, ConnectionError
+from requests.exceptions import RequestException
+from httpx import ConnectError, ReadTimeout, ConnectTimeout, TimeoutException
 
 # Módulos locais
 from core.http_async import HTTPClient
@@ -99,6 +100,9 @@ class CrtshCollector(BaseModule):
         
         # Realiza consulta ao crt.sh
         try:
+            # Mensagem de debug para o usuário
+            self.set_result(f"🔍 Consultando certificados para: {domain}")
+            
             self.log_debug("Iniciando consulta ao serviço crt.sh")
             
             # Verificar configurações
@@ -149,21 +153,15 @@ class CrtshCollector(BaseModule):
                 self.set_result(result_str)
                 
         except ValueError as e:
-            self.log_debug(f"Erro de validação: {str(e)}")
-            self.set_result(f"Erro de validação: {str(e)}")
+            self.handle_error(e, "Erro de validação")
         except RequestException as e:
-            self.log_debug(f"Erro de requisição HTTP: {str(e)}")
-            self.set_result(f"Erro de comunicação com crt.sh: {str(e)}")
-        except ConnectionError as e:
-            self.log_debug(f"Erro de conexão: {str(e)}")
-            self.set_result(f"Falha ao conectar com crt.sh: {str(e)}")
-        except Timeout as e:
-            self.log_debug(f"Timeout na requisição: {str(e)}")
-            self.set_result(f"Timeout na consulta ao crt.sh: {str(e)}")
+            self.handle_error(e, "Erro de comunicação com crt.sh")
+        except ConnectError as e:
+            self.handle_error(e, "Falha ao conectar com crt.sh")
+        except (ReadTimeout, ConnectTimeout, TimeoutException) as e:
+            self.handle_error(e, "Timeout na consulta ao crt.sh")
         except Exception as e:
-            self.log_debug(f"Erro não tratado: {type(e).__name__}: {str(e)}")
-            self.log_debug(traceback.format_exc())
-            self.set_result(f"Erro inesperado: {str(e)}")
+            self.handle_error(e, "Erro inesperado")
             
     @retry_operation
     def _query_crtsh(self, domain: str) -> List[Dict[str, Any]]:
@@ -197,17 +195,13 @@ class CrtshCollector(BaseModule):
         url = f"https://crt.sh/?q={encoded_domain}&output=json"
         self.log_debug(f"URL de consulta: {url}")
         
-        proxy = self.options.get('proxy') if self.options.get('proxy') else None
 
         kwargs = {
             'headers' : {
                 'User-Agent': UserAgentGenerator.get_desktop_user_agent(),
                 'Accept': 'application/json',
                 },
-            'proxies': {
-                'http://': proxy,
-                'https://': proxy
-                } if proxy else None,
+            'proxy': self.options.get('proxy') if self.options.get('proxy') else None,
             'timeout': self.options.get('timeout', 30),
             'follow_redirects': True,
         }
@@ -245,12 +239,10 @@ class CrtshCollector(BaseModule):
                 self.log_debug(f"Primeiros 200 caracteres da resposta: {response.text[:200]}...")
                 raise RequestException(error_msg)
                 
-        except (ConnectionError, Timeout) as e:
-            self.log_debug(f"Erro de conexão ou timeout: {str(e)}")
-            raise
+        except (ConnectError, ReadTimeout, ConnectTimeout, TimeoutException) as e:
+            self.handle_error(e, "Erro de conexão ou timeout", raise_error=True)
         except Exception as e:
-            self.log_debug(f"Exceção não tratada: {type(e).__name__}: {str(e)}")
-            self.log_debug(traceback.format_exc())
+            self.handle_error(e, "Erro ao consultar crt.sh")
             raise ValueError(f"Erro ao consultar crt.sh: {str(e)}")
     
     def _extract_subdomains(self, crt_data: List[Dict[str, Any]], domain: str) -> List[str]:
@@ -320,8 +312,8 @@ class CrtshCollector(BaseModule):
             return unique_domains
             
         except Exception as e:
-            error_msg = f"Erro ao extrair subdomínios: {str(e)}"
-            self.log_debug(error_msg)
-            self.log_debug(traceback.format_exc())
-            raise ValueError(error_msg)
+            self.handle_error(e, "Erro ao extrair subdomínios")
+            raise ValueError(f"Erro ao extrair subdomínios: {str(e)}")
+
+
 
