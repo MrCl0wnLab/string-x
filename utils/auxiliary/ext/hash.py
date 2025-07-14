@@ -41,6 +41,9 @@ class HashExtractor(BaseModule):
         Utiliza os dados fornecidos e busca por diferentes tipos de hashes
         usando padrões regex específicos para cada tipo.
         """
+        # Limpar resultados anteriores para evitar acúmulo
+        self._result[self._get_cls_name()].clear()
+        
         if not (target_value := self.options.get("data")):
             return
             
@@ -61,4 +64,4 @@ class HashExtractor(BaseModule):
                 regex = re.compile(patterns[hash_type], re.IGNORECASE)
                 matches = set(re.findall(regex, target_value))
                 for match in matches:
-                    self.set_result(f"{hash_type.upper()}: {match}")
+                    self.set_result(f"{hash_type.upper()}, {match}")

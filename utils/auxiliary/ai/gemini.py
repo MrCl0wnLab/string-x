@@ -75,6 +75,9 @@ class GeminiAI(BaseModule):
             HTTPError: Erro na comunicação com a API
             RequestError: Erro no processamento da requisição
         """
+        # Limpar resultados anteriores para evitar acúmulo
+        self._result[self._get_cls_name()].clear()
+        
         try:
             self.log_debug("Iniciando execução do módulo Gemini AI")
             

@@ -39,6 +39,9 @@ class CredentialExtractor(BaseModule):
         Utiliza os dados fornecidos e busca por diferentes tipos de credenciais
         e tokens usando padrões regex específicos.
         """
+        # Limpar resultados anteriores para evitar acúmulo
+        self._result[self._get_cls_name()].clear()
+        
         if not (target_value := self.options.get("data")):
             return
             

@@ -9,4 +9,4 @@ Constantes:
     MODULE_TYPE (str): Identificador do tipo de módulo como 'ai'
 """
 
-MODULE_TYPE = 'Inteligência artificial'
+MODULE_TYPE = 'Artificial intelligence'

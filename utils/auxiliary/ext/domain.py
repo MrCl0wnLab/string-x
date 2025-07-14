@@ -79,6 +79,9 @@ class AuxRegexDomain(BaseModule):
         3. Busca por domínios no texto com validação de TLD
         4. Armazenamento dos resultados únicos encontrados
         """
+        # Limpar resultados anteriores para evitar acúmulo
+        self._result[self._get_cls_name()].clear()
+        
         # Verifica se há dados para processar
         if (target_value := self.options.get("data")) and (regex_data := self.options.get("regex")): 
             regex_data = re.compile(regex_data, re.IGNORECASE)

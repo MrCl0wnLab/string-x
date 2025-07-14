@@ -56,6 +56,9 @@ class Phone(BaseModule):
         e extrair números de telefone brasileiros válidos. Os números encontrados
         são armazenados nos resultados do módulo.
         """
+        # Limpar resultados anteriores para evitar acúmulo
+        self._result[self._get_cls_name()].clear()
+        
         # Verifica se há dados para processar
         if (target_value := self.options.get("data")) and (regex_data := self.options.get("regex")): 
             regex_data = re.compile(regex_data, re.IGNORECASE)
