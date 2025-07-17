@@ -1,14 +1,12 @@
-"""
-Módulo de saída para OpenSearch.
-
-Este módulo implementa funcionalidade para salvar resultados processados
-no OpenSearch, permitindo indexação e busca de dados extraídos pelo String-X.
-Suporta tanto o cliente de baixo nível quanto o de alto nível da API OpenSearch.
-"""
 from datetime import datetime
 import json
 import uuid
+import time
 from typing import Dict, Any, Optional
+import socket
+import requests
+import warnings
+import urllib3
 
 from core.format import Format
 from core.basemodule import BaseModule
@@ -30,6 +28,7 @@ class OpenSearchOutput(BaseModule):
     - verify_certs: Verificar certificados SSL (padrão: False)
     - client_type: Tipo de cliente a ser usado ('low' ou 'high') (padrão: 'high')
     - data: Dados a serem enviados (obrigatório)
+    - suppress_warnings: Suprimir avisos de SSL inseguro (padrão: True)
     """
     
     def __init__(self):
@@ -51,23 +50,83 @@ class OpenSearchOutput(BaseModule):
             'host': 'localhost',
             'port': 9200,
             'index': 'strx-data',
-            'username': None,
+            'username': 'admin',
             'password': None,
-            'use_ssl': False,
+            'use_ssl': True,
             'verify_certs': False,
             'client_type': 'high',  # 'low' para cliente de baixo nível, 'high' para cliente de alto nível
             'data': str(),
             'debug': False,
-            'timeout': 30,
-            'retry': 0,
-            'retry_delay': 2,
+            'timeout': 60,
+            'retry': 3,
+            'retry_delay': 5,
+            'suppress_warnings': True,  # Opção para suprimir avisos de SSL
         }
+    
+    def check_server_availability(self, host, port, timeout=30):
+        """
+        Verifica se o servidor está disponível antes de tentar conectar
+        """
+        try:
+            # Primeiro tenta um socket simples para verificar se o servidor está online
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(timeout)
+            result = sock.connect_ex((host, port))
+            sock.close()
+            
+            if result != 0:
+                return False, f"Não foi possível conectar ao servidor {host}:{port}. O servidor está rodando?"
+            
+            # Se o socket conectou, tenta uma solicitação HTTP básica
+            protocol = "https" if self.options.get('use_ssl') else "http"
+            url = f"{protocol}://{host}:{port}"
+            
+            auth = None
+            if self.options.get('username') and self.options.get('password'):
+                auth = (self.options.get('username'), self.options.get('password'))
+            
+            # Suprimir avisos apenas durante esta solicitação
+            with warnings.catch_warnings():
+                if self.options.get('suppress_warnings', True):
+                    warnings.simplefilter('ignore', urllib3.exceptions.InsecureRequestWarning)
+                
+                response = requests.get(
+                    url, 
+                    auth=auth, 
+                    verify=self.options.get('verify_certs', False),
+                    timeout=timeout
+                )
+            
+            if response.status_code >= 200 and response.status_code < 300:
+                if self.options.get('debug', False):
+                    self.set_result(f"OpenSearch está rodando: {response.text}")
+                return True, "Servidor disponível"
+            else:
+                return False, f"Servidor respondeu com código de status {response.status_code}"
+                
+        except requests.exceptions.SSLError:
+            return False, "Erro de SSL. Tente configurar use_ssl=True e verify_certs=False"
+        except requests.exceptions.ConnectionError:
+            return False, f"Não foi possível estabelecer conexão com {host}:{port}"
+        except requests.exceptions.Timeout:
+            return False, f"Timeout ao conectar a {host}:{port}"
+        except Exception as e:
+            return False, f"Erro ao verificar disponibilidade: {str(e)}"
     
     def run(self):
         """
         Executa o salvamento no OpenSearch.
         """
         try:
+            # Limpar resultados anteriores para evitar acúmulo
+            self._result[self._get_cls_name()].clear()
+            # Suprimir avisos se configurado para isso
+            if self.options.get('suppress_warnings', True):
+                # Suprimir avisos de SSL inseguro do urllib3
+                urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+                # Suprimir avisos do OpenSearch
+                warnings.filterwarnings('ignore', message='Connecting to .* using SSL with verify_certs=False is insecure')
+            
             data = Format.clear_value(self.options.get('data', ''))
             if not data:
                 self.set_result("✗ Erro: Nenhum dado fornecido para enviar ao OpenSearch")
@@ -77,6 +136,8 @@ class OpenSearchOutput(BaseModule):
             try:
                 from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth
                 from opensearchpy.helpers import bulk
+                from opensearchpy.exceptions import ConnectionError as OSConnectionError
+                from opensearchpy.exceptions import AuthenticationException, AuthorizationException
             except ImportError:
                 self.set_result("✗ Erro: Biblioteca 'opensearch-py' não está instalada. "
                                 "Instale com: pip install opensearch-py")
@@ -91,6 +152,15 @@ class OpenSearchOutput(BaseModule):
             use_ssl = self.options.get('use_ssl', False)
             verify_certs = self.options.get('verify_certs', False)
             client_type = self.options.get('client_type', 'high')
+            timeout = self.options.get('timeout', 60)
+            retry = self.options.get('retry', 3)
+            retry_delay = self.options.get('retry_delay', 5)
+            
+            # Verificar disponibilidade do servidor antes de tentar conectar
+            #available, message = self.check_server_availability(host, port)
+            #if not available:
+            #    self.set_result(f"✗ Erro OpenSearch: {message}")
+            #    return
             
             # Configuração de autenticação
             auth = None
@@ -103,11 +173,18 @@ class OpenSearchOutput(BaseModule):
                 'use_ssl': use_ssl,
                 'verify_certs': verify_certs,
                 'connection_class': RequestsHttpConnection,
-                'timeout': self.options.get('timeout', 30)
+                'timeout': timeout,
+                'retry_on_timeout': True,
+                'max_retries': retry,
+                # Silenciar avisos do OpenSearch
+                'ssl_show_warn': not self.options.get('suppress_warnings', True)
             }
             
             if auth:
                 client_config['http_auth'] = auth
+            
+            if self.options.get('debug', False):
+                self.set_result(f"Configuração OpenSearch: {client_config}")
             
             # Inicializar o cliente OpenSearch
             client = OpenSearch(**client_config)
@@ -132,8 +209,22 @@ class OpenSearchOutput(BaseModule):
                 "data": json_data
             }
             
+            # Loop de tentativas para verificar se o índice existe
+            index_exists = False
+            for attempt in range(retry + 1):
+                try:
+                    index_exists = client.indices.exists(index=index)
+                    break
+                except Exception as e:
+                    if attempt < retry:
+                        if self.options.get('debug', False):
+                            self.set_result(f"Tentativa {attempt+1} falhou ao verificar índice: {str(e)}")
+                        time.sleep(retry_delay)
+                    else:
+                        raise e
+            
             # Verificar se o índice existe, senão criar
-            if not client.indices.exists(index=index):
+            if not index_exists:
                 # Configuração básica do índice
                 index_settings = {
                     "settings": {
@@ -153,28 +244,48 @@ class OpenSearchOutput(BaseModule):
                     }
                 }
                 
-                client.indices.create(index=index, body=index_settings)
+                for attempt in range(retry + 1):
+                    try:
+                        client.indices.create(index=index, body=index_settings)
+                        break
+                    except Exception as e:
+                        if attempt < retry:
+                            if self.options.get('debug', False):
+                                self.set_result(f"Tentativa {attempt+1} falhou ao criar índice: {str(e)}")
+                            time.sleep(retry_delay)
+                        else:
+                            raise e
             
             # Indexar documento com base no tipo de cliente
             if client_type.lower() == 'low':
-                # Usando o cliente de baixo nível
-                response = client.index(
-                    index=index,
-                    body=document,
-                    id=doc_id,
-                    refresh=True
-                )
-                
-                if self.options.get('debug', False):
-                    self.set_result(f"OpenSearch resposta (baixo nível): {response}")
-                    
-                if response['result'] == 'created':
-                    self.set_result(f"{data} ✓ Dados indexados com sucesso em OpenSearch (id: {doc_id})")
-                else:
-                    self.set_result(f"✗ Erro na indexação: {response}")
+                # Usando o cliente de baixo nível com retries
+                for attempt in range(retry + 1):
+                    try:
+                        response = client.index(
+                            index=index,
+                            body=document,
+                            id=doc_id,
+                            refresh=True
+                        )
+                        
+                        if self.options.get('debug', False):
+                            self.set_result(f"OpenSearch resposta (baixo nível): {response}")
+                            
+                        if response['result'] == 'created':
+                            self.set_result(f"{doc_id}, {data}")
+                        else:
+                            self.set_result(f"✗ Erro na indexação: {response}")
+                        break
+                    except Exception as e:
+                        if attempt < retry:
+                            if self.options.get('debug', False):
+                                self.set_result(f"Tentativa {attempt+1} falhou: {str(e)}")
+                            time.sleep(retry_delay)
+                        else:
+                            raise e
                 
             else:  # client_type == 'high'
-                # Usando o cliente de alto nível (bulk API)
+                # Usando o cliente de alto nível (bulk API) com retries
                 bulk_data = [
                     {
                         "_index": index,
@@ -183,15 +294,32 @@ class OpenSearchOutput(BaseModule):
                     }
                 ]
                 
-                success, failed = bulk(client, bulk_data, refresh=True)
-                
-                if self.options.get('debug', False):
-                    self.set_result(f"OpenSearch bulk resposta: {success} sucessos, {len(failed)} falhas")
-                
-                if success and not failed:
-                    self.set_result(f"{data} ✓ Dados indexados com sucesso em OpenSearch (id: {doc_id})")
-                else:
-                    self.set_result(f"✗ Erro na indexação: {failed}")
+                for attempt in range(retry + 1):
+                    try:
+                        success, failed = bulk(client, bulk_data, refresh=True)
+                        
+                        if self.options.get('debug', False):
+                            self.set_result(f"OpenSearch bulk resposta: {success} sucessos, {len(failed)} falhas")
+                        
+                        if success and not failed:
+                            self.set_result(f"{doc_id}, {data}")
+                        else:
+                            self.set_result(f"✗ Erro na indexação: {failed}")
+                        break
+                    except Exception as e:
+                        if attempt < retry:
+                            if self.options.get('debug', False):
+                                self.set_result(f"Tentativa {attempt+1} falhou: {str(e)}")
+                            time.sleep(retry_delay)
+                        else:
+                            raise e
         
+        except AuthenticationException:
+            self.set_result("✗ Erro OpenSearch: Falha de autenticação. Verifique seu nome de usuário e senha.")
+        except AuthorizationException:
+            self.set_result("✗ Erro OpenSearch: Falha de autorização. Usuário não tem permissão para esta operação.")
+        except OSConnectionError as e:
+            self.set_result(f"✗ Erro OpenSearch: Falha de conexão. {str(e)}. "
+                           f"Verifique se o OpenSearch está rodando em {self.options.get('host')}:{self.options.get('port')}.")
         except Exception as e:
             self.set_result(f"✗ Erro OpenSearch: {str(e)}")
