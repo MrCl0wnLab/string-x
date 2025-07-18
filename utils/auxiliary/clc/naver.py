@@ -93,6 +93,9 @@ class NaverDorker(BaseModule):
             if not dork:
                 self.set_result("⚠️ Dork não fornecido.")
                 return
+            
+            # Limpar resultados anteriores para evitar acúmulo
+            self._result[self._get_cls_name()].clear()
 
             # Coletando resultados
             results = self._search_naver(dork)

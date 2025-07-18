@@ -58,6 +58,9 @@ class SlackOutput(BaseModule):
             if not data:
                 return
             
+            # Limpar resultados anteriores para evitar acúmulo
+            self._result[self._get_cls_name()].clear()
+
             if not webhook_url:
                 self.set_result("✗ Erro: webhook_url é obrigatório")
                 return

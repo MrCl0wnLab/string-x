@@ -125,6 +125,9 @@ class JSONOutput(BaseModule):
         if not data or not isinstance(data, str):
             return
         
+        # Limpar resultados anteriores para evitar acúmulo
+        self._result[self._get_cls_name()].clear()
+
         # Limpa o dado
         data = data.strip()
         if not data:

@@ -127,6 +127,9 @@ class DnsInfo(BaseModule):
                 self.log_debug("Nenhum host especificado")
                 return
             
+            # Limpar resultados anteriores para evitar acúmulo
+            self._result[self._get_cls_name()].clear()
+            
             self.log_debug(f"Iniciando coleta de DNS para: {host}")
             
             records_to_check = self.options.get('records', ['A', 'MX', 'TXT', 'NS'])

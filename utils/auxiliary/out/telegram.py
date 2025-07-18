@@ -60,6 +60,9 @@ class TelegramOutput(BaseModule):
             if not data:
                 return
             
+            # Limpar resultados anteriores para evitar acúmulo
+            self._result[self._get_cls_name()].clear()
+
             if not bot_token or not chat_id:
                 self.set_result("✗ Erro: bot_token e chat_id são obrigatórios")
                 return

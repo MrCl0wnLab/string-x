@@ -85,6 +85,9 @@ class EmailVerifier(BaseModule):
                 self.log_debug("Nenhum email fornecido")
                 return
             
+            # Limpar resultados anteriores para evitar acúmulo
+            self._result[self._get_cls_name()].clear()
+
             self.log_debug(f"Verificando email: {email}")
             
             # Validação básica de sintaxe

@@ -69,6 +69,8 @@ class HTTPProbe(BaseModule):
             ConnectError: Erro ao conectar ao servidor
             TimeoutException: Timeout durante a conexão
         """
+        # Limpar resultados anteriores para evitar acúmulo
+        self._result[self._get_cls_name()].clear()
         target = self.options.get("data", "").strip()
         if not target:
             return

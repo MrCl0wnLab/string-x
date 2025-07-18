@@ -59,6 +59,9 @@ class MySqlOutput(BaseModule):
             if not data:
                 return
             
+            # Limpar resultados anteriores para evitar acúmulo
+            self._result[self._get_cls_name()].clear()
+
             # Configurações de conexão
             config = {
                 'host': self.options.get('host', 'localhost'),

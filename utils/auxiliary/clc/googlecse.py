@@ -80,15 +80,18 @@ class GoogleCSEDorker(BaseModule):
         Executa busca de dorks usando Google CSE.
         Método principal que coordena todo o processo de busca.
         """
-
+    
         # Obtém o dork da configuração e prepara para uso na URL
         dork = self.options.get('data').strip()
         dork = urllib.parse.quote_plus(dork)  # URL encoding para caracteres especiais
-
+        
         # Validação de entrada - verifica se o dork foi fornecido
         if not dork:
             self.set_result("⚠️ Dork não fornecido.")
             return
+        
+        # Limpar resultados anteriores para evitar acúmulo
+        self._result[self._get_cls_name()].clear()
 
         # Tenta obter informações de configuração de um CSE aleatório
         # Loop através dos CSE IDs até encontrar um que funcione

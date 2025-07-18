@@ -203,6 +203,8 @@ class IPInfo(BaseModule):
         if not ip or not self._is_valid_ip(ip) or self._is_private_ip(ip):
             return
         
+        # Limpar resultados anteriores para evitar acúmulo
+        self._result[self._get_cls_name()].clear()
 
         if data := self._query_ipinfo(ip):
             '''

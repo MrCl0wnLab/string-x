@@ -49,6 +49,9 @@ class XMLOutput(BaseModule):
         if not data:
             return
         
+        # Limpar resultados anteriores para evitar acúmulo
+        self._result[self._get_cls_name()].clear()
+
         file_path = self.options.get('file', 'output.xml')
         root_name = self.options.get('root_element', 'stringx_results')
         item_name = self.options.get('item_element', 'result')

@@ -73,6 +73,8 @@ class SSHConnector(BaseModule):
             subprocess.SubprocessError: Se ocorrer erro na execução do comando
             FileNotFoundError: Se o arquivo de chave privada não for encontrado
         """
+        # Limpar resultados anteriores para evitar acúmulo
+        self._result[self._get_cls_name()].clear()
         target = self.options.get("data", "").strip()
         if not target:
             self.log_debug("Nenhum host alvo especificado")

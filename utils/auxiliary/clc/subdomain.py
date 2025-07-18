@@ -63,6 +63,9 @@ class SubdomainEnum(BaseModule):
         domain = self.options.get("data", "").strip()
         if not domain:
             return
+        
+        # Limpar resultados anteriores para evitar acúmulo
+        self._result[self._get_cls_name()].clear()
             
         subdomains = set()
         methods = self.options.get('methods', ['crtsh'])

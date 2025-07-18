@@ -43,6 +43,8 @@ class IPExtractor(BaseModule):
         Utiliza os dados fornecidos e busca por endereços IPv4 e IPv6
         usando padrões regex específicos para cada tipo.
         """
+        # Limpar resultados anteriores para evitar acúmulo
+        self._result[self._get_cls_name()].clear()
         if not (target_value := self.options.get("data")):
             return
             

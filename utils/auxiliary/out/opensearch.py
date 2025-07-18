@@ -2,9 +2,10 @@ from datetime import datetime
 import json
 import uuid
 import time
+import sys
 from typing import Dict, Any, Optional
 import socket
-import requests
+import httpx
 import warnings
 import urllib3
 
@@ -50,7 +51,7 @@ class OpenSearchOutput(BaseModule):
             'host': 'localhost',
             'port': 9200,
             'index': 'strx-data',
-            'username': 'admin',
+            'username': None,
             'password': None,
             'use_ssl': True,
             'verify_certs': False,
@@ -90,25 +91,38 @@ class OpenSearchOutput(BaseModule):
                 if self.options.get('suppress_warnings', True):
                     warnings.simplefilter('ignore', urllib3.exceptions.InsecureRequestWarning)
                 
-                response = requests.get(
+                # Criando cliente httpx com configurações específicas
+                client = httpx.Client(verify=self.options.get('verify_certs', False), timeout=timeout)
+                response = client.get(
                     url, 
-                    auth=auth, 
-                    verify=self.options.get('verify_certs', False),
-                    timeout=timeout
+                    auth=auth
                 )
             
             if response.status_code >= 200 and response.status_code < 300:
                 if self.options.get('debug', False):
                     self.set_result(f"OpenSearch está rodando: {response.text}")
+                # Verificar se é realmente um servidor OpenSearch/Elasticsearch
+                try:
+                    resp_data = response.json()
+                    if not (resp_data.get("version") and resp_data.get("name")):
+                        self.set_result(f"Aviso: O servidor em {url} pode não ser um OpenSearch/Elasticsearch válido")
+                except:
+                    pass
+                    
                 return True, "Servidor disponível"
             else:
-                return False, f"Servidor respondeu com código de status {response.status_code}"
+                error_detail = ""
+                try:
+                    error_detail = f" - {response.text}"
+                except:
+                    pass
+                return False, f"Servidor respondeu com código de status {response.status_code}{error_detail}"
                 
-        except requests.exceptions.SSLError:
+        except httpx.SSLError:
             return False, "Erro de SSL. Tente configurar use_ssl=True e verify_certs=False"
-        except requests.exceptions.ConnectionError:
+        except httpx.ConnectError:
             return False, f"Não foi possível estabelecer conexão com {host}:{port}"
-        except requests.exceptions.Timeout:
+        except httpx.TimeoutException:
             return False, f"Timeout ao conectar a {host}:{port}"
         except Exception as e:
             return False, f"Erro ao verificar disponibilidade: {str(e)}"
@@ -132,15 +146,23 @@ class OpenSearchOutput(BaseModule):
                 self.set_result("✗ Erro: Nenhum dado fornecido para enviar ao OpenSearch")
                 return
             
-            # Verifica se opensearch-py está instalado
+            # Verifica se as bibliotecas necessárias estão instaladas
             try:
                 from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth
                 from opensearchpy.helpers import bulk
                 from opensearchpy.exceptions import ConnectionError as OSConnectionError
                 from opensearchpy.exceptions import AuthenticationException, AuthorizationException
-            except ImportError:
-                self.set_result("✗ Erro: Biblioteca 'opensearch-py' não está instalada. "
-                                "Instale com: pip install opensearch-py")
+                
+                # Verificar se httpx está instalado
+                if 'httpx' not in sys.modules:
+                    import httpx
+            except ImportError as e:
+                if "httpx" in str(e):
+                    self.set_result("✗ Erro: Biblioteca 'httpx' não está instalada. "
+                                    "Instale com: pip install httpx")
+                else:
+                    self.set_result("✗ Erro: Biblioteca 'opensearch-py' não está instalada. "
+                                    "Instale com: pip install opensearch-py")
                 return
             
             # Parâmetros de conexão
@@ -157,10 +179,12 @@ class OpenSearchOutput(BaseModule):
             retry_delay = self.options.get('retry_delay', 5)
             
             # Verificar disponibilidade do servidor antes de tentar conectar
-            #available, message = self.check_server_availability(host, port)
-            #if not available:
-            #    self.set_result(f"✗ Erro OpenSearch: {message}")
-            #    return
+            """
+            available, message = self.check_server_availability(host, port)
+            if not available:
+                self.set_result(f"✗ Erro OpenSearch: {message}")
+                return
+            """
             
             # Configuração de autenticação
             auth = None
@@ -244,17 +268,40 @@ class OpenSearchOutput(BaseModule):
                     }
                 }
                 
-                for attempt in range(retry + 1):
+                # Tentar verificar novamente se o índice já existe (pode ter sido criado por outro processo)
+                try:
+                    double_check = client.indices.exists(index=index)
+                    if double_check:
+                        if self.options.get('debug', False):
+                            self.set_result(f"Índice {index} já existe (verificação secundária)")
+                        index_exists = True
+                except Exception:
+                    pass
+                    
+                # Se ainda não existe, tentar criar
+                if not index_exists:
                     try:
-                        client.indices.create(index=index, body=index_settings)
-                        break
+                        create_response = client.indices.create(index=index, body=index_settings)
+                        if self.options.get('debug', False):
+                            self.set_result(f"Índice {index} criado com sucesso: {create_response}")
                     except Exception as e:
-                        if attempt < retry:
+                        error_message = str(e)
+                        
+                        # Se o índice já existe, não é um erro real
+                        if "resource_already_exists_exception" in error_message or "already exists" in error_message:
                             if self.options.get('debug', False):
-                                self.set_result(f"Tentativa {attempt+1} falhou ao criar índice: {str(e)}")
-                            time.sleep(retry_delay)
+                                self.set_result(f"Índice {index} já existe")
                         else:
-                            raise e
+                            self.set_result(f"✗ Erro ao criar índice: {error_message}")
+                            if self.options.get('debug', False):
+                                # Tentar obter mais detalhes do erro
+                                try:
+                                    # Verificar se há detalhes adicionais de erro
+                                    if hasattr(e, 'info') and isinstance(e.info, dict):
+                                        self.set_result(f"Detalhes do erro: {e.info}")
+                                except:
+                                    pass
+                            # Apenas log do erro, mas continuar tentando indexar no índice
             
             # Indexar documento com base no tipo de cliente
             if client_type.lower() == 'low':

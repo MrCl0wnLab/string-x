@@ -49,6 +49,9 @@ class CSVOutput(BaseModule):
         if not data:
             return
         
+        # Limpar resultados anteriores para evitar acúmulo
+        self._result[self._get_cls_name()].clear()
+
         filename = self.options.get('file', 'output.csv')
         # Obter caminho absoluto do diretório output do projeto
         project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))

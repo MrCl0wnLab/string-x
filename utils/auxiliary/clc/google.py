@@ -114,6 +114,8 @@ class GoogleDorker(BaseModule):
         Returns:
             None: Os resultados são armazenados internamente através do método set_result
         """
+        # Limpar resultados anteriores para evitar acúmulo
+        self._result[self._get_cls_name()].clear()
         try:
             dork = Format.clear_value(self.options.get('data').strip())
             

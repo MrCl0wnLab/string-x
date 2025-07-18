@@ -107,11 +107,16 @@ class YahooDorker(BaseModule):
         try:
             dork = Format.clear_value(self.options.get('data', '').strip())
             
+            # Validar o dork
             if not dork:
                 self.log_debug("Dork não fornecido")
                 self.set_result("⚠️ Dork não fornecido.")
                 return
+            
+            # Limpar resultados anteriores para evitar acúmulo
+            self._result[self._get_cls_name()].clear()
 
+            
             self.log_debug(f"Iniciando busca para dork: {dork}")
             self.set_result(f"🔍 Buscando no Yahoo: {dork}")
             

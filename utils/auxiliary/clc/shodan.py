@@ -76,6 +76,9 @@ class ShodanCollector(BaseModule):
             if not data:
                 return
             
+            # Limpar resultados anteriores para evitar acúmulo
+            self._result[self._get_cls_name()].clear()
+
             if not api_key:
                 self.set_result("✗ Erro: API key do Shodan é obrigatória")
                 return

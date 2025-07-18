@@ -98,6 +98,8 @@ class AuxRegexDocuments(BaseModule):
         3. Validação de dígitos verificadores (quando aplicável)
         4. Armazenamento dos resultados únicos encontrados
         """
+        # Limpar resultados anteriores para evitar acúmulo
+        self._result[self._get_cls_name()].clear()
         if not (target_value := self.options.get("data")):
             self.log_debug("Nenhum dado fornecido para extração")
             return

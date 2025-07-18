@@ -70,6 +70,9 @@ class GeoIPCollector(BaseModule):
             if not ip:
                 return
             
+            # Limpar resultados anteriores para evitar acúmulo
+            self._result[self._get_cls_name()].clear()
+
             # Validar IP
             if not self._is_valid_ip(ip):
                 self.set_result(f"✗ {ip}: IP inválido")

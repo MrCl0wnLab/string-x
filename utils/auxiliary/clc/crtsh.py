@@ -96,6 +96,9 @@ class CrtshCollector(BaseModule):
             self.log_debug("Nenhum domínio fornecido")
             return
         
+        # Limpar resultados anteriores para evitar acúmulo
+        self._result[self._get_cls_name()].clear()
+        
         self.log_debug(f"Iniciando coleta de certificados para domínio: {domain}")
         
         # Realiza consulta ao crt.sh

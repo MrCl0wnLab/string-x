@@ -79,6 +79,9 @@ class archive(BaseModule):
             self.log_debug("Nenhum domínio fornecido")
             return
         
+        # Limpar resultados anteriores para evitar acúmulo
+        self._result[self._get_cls_name()].clear()
+
         self.log_debug(f"Domínio alvo: {domain}")
         
         # Realiza consulta ao Wayback Machine

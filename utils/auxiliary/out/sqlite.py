@@ -55,6 +55,9 @@ class SqliteOutput(BaseModule):
             if not data:
                 return
             
+            # Limpar resultados anteriores para evitar acúmulo
+            self._result[self._get_cls_name()].clear()
+
             database_path = self.options.get('database', 'strx_results.db')
             table_name = self.options.get('table', 'results')
             

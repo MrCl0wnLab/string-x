@@ -90,6 +90,9 @@ class NetworkScanner(BaseModule):
             if not data:
                 return
             
+            # Limpar resultados anteriores para evitar acúmulo
+            self._result[self._get_cls_name()].clear()
+
             # Gerar lista de hosts
             hosts = self._parse_targets(data)
             if not hosts:
