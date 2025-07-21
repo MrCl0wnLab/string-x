@@ -188,6 +188,7 @@ if __name__ == '__main__':
         parser.add_argument('-examples', help="Lista módulos e exemplos de uso", action='store_true')
         parser.add_argument('-functions', '-funcs', help="Lista funções", action='store_true')
         parser.add_argument('-list', '-l', metavar="file", help="Arquivo com strings para execução", default=stdin_get_list())
+        parser.add_argument('-s', metavar="string", help="String única para execução", default=None)
         parser.add_argument('-str', '-st', metavar="cmd", help="String template de comando", default=None)
         parser.add_argument('-out', '-o', metavar="file", help="Arquivo output de valores da execução shell", default=setting.LOG_FILE_OUTPUT)
         parser.add_argument('-pipe', '-p', metavar="cmd", help="Comando que será executado depois de um pipe |", default=None)
@@ -198,7 +199,7 @@ if __name__ == '__main__':
         parser.add_argument('-of', help="Habilitar output de valores da execução de função", action='store_true', default=False)
         parser.add_argument('-filter', '-f', metavar="value", help="Valor para filtrar strings para execução", default=None, required=False)
         parser.add_argument('-sleep', metavar="<5>", help="Segundos de delay entre threads", default=None, required=False)
-        parser.add_argument('-module', metavar="<type:module>", help="Selectionar o tipo e module", default=str(), required=False)
+        parser.add_argument('-module', metavar="<type:module>", help="Selecionar o tipo e module, possível usar encadeamento type1:module1|type:module2", default=str(), required=False)
         parser.add_argument('-pm', help="Mostrar somente resultados de execução do module", action='store_true', default=False)
         parser.add_argument('-proxy', help="Setar um proxy para request", default=str(), required=False)
         parser.add_argument('-format', metavar="<format>", help=f"Formato de saída ({', '.join(setting.OUTPUT_FORMATS)})", default=setting.DEFAULT_OUTPUT_FORMAT, choices=setting.OUTPUT_FORMATS)
@@ -234,7 +235,9 @@ if __name__ == '__main__':
 
         # Verifica se o argumento -str foi fornecido quando não estamos em modo de ajuda
         if ARGS.str:
-            stdin_get_list()
+            # Se usamos o stdin, garantimos que tentamos ler dados de entrada
+            if not ARGS.s and not ARGS.list:
+                stdin_get_list()
         else:
             parser.error("o argumento -str/-st é obrigatório quando não estiver usando -types, -examples ou -functions")
             
@@ -242,11 +245,15 @@ if __name__ == '__main__':
         if ARGS.thread:
             THREAD.max_thread = int(ARGS.thread)
 
-        # Carrega a lista de strings alvo de um arquivo ou da entrada direta
+        # Carrega a lista de strings alvo de um arquivo, da entrada direta ou de uma string única
         if ARGS.list:
             target_list = open_file(ARGS.list) if os.path.isfile(str(ARGS.list)) else ARGS.list
+        elif ARGS.s:
+            # Usa o parâmetro -s para string única, colocando em uma lista
+            target_list = [ARGS.s.strip()]
+            CLI.console.log(f"[+] Usando string única: {ARGS.s}")
         else:
-            # Se não houver lista, exibe a ajuda e sai
+            # Se não houver lista ou string única, exibe a ajuda e sai
             CLI.console.print(f"{setting.BANNER_HELP}\n")
             exit(parser.parse_args('-h'))
 
@@ -259,10 +266,15 @@ if __name__ == '__main__':
 
         CMD.verbose = ARGS.verbose
 
-        main(
-            target_str_list=target_list,
-            template_str=ARGS.str
-        )
+        # Verifica se a lista de alvos não está vazia antes de chamar main
+        if target_list:
+            main(
+                target_str_list=target_list,
+                template_str=ARGS.str
+            )
+        else:
+            CLI.console.log("[!] Nenhuma string para processar. Use -l para um arquivo ou -s para string única.")
+            exit(1)
     except KeyboardInterrupt:
         pass
     except SystemError:

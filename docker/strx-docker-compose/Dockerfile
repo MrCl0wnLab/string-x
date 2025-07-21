@@ -29,12 +29,3 @@ ENTRYPOINT ["python3", "strx"]
 
 # Caso não passe argumentos use o -exemples
 CMD ["-examples"]
-
-# Nota: Para criar um link simbólico no sistema host (fora do Docker), use:
-# 
-# # Verificar o link atual
-# ls -la /usr/local/bin/strx
-# 
-# # Se necessário, recriar o link
-# sudo rm /usr/local/bin/strx
-# sudo ln -sf $HOME/Documentos/string-x/strx /usr/local/bin/strx

@@ -39,13 +39,16 @@ class MySqlOutput(BaseModule):
         self.options = {
             'host': 'localhost',
             'port': 3306,
-            'database': 'strx_results',
-            'username': str(),
+            'database': 'strx_db',
+            'username': 'strx_user',
             'password': str(),
             'table': 'results',
-            'data': str(),            'debug': False,  # Modo de debug para mostrar informações detalhadas
-            'retry': 0,              # Número de tentativas de requisição
-            'retry_delay': 1,        # Atraso entre tentativas de requisição
+            'data': str(),
+            'source': str(),       # Origem dos dados (opcional)
+            'metadata': str(),     # Metadados em formato JSON (opcional)
+            'debug': False,        # Modo de debug para mostrar informações detalhadas
+            'retry': 0,            # Número de tentativas de requisição
+            'retry_delay': 1,      # Atraso entre tentativas de requisição
         }
     
     def run(self):
@@ -66,13 +69,13 @@ class MySqlOutput(BaseModule):
             config = {
                 'host': self.options.get('host', 'localhost'),
                 'port': self.options.get('port', 3306),
-                'database': self.options.get('database', 'strx_results'),
-                'user': self.options.get('username', ''),
+                'database': self.options.get('database', 'strx_db'),
+                'user': self.options.get('username', 'strx_user'),
                 'password': self.options.get('password', '')
             }
             
-            if not config['user']:
-                self.set_result("✗ Erro: Username MySQL não fornecido")
+            if not config['password']:
+                self.set_result("✗ Erro: Senha MySQL não fornecida")
                 return
             
             table_name = self.options.get('table', 'results')
@@ -88,16 +91,28 @@ class MySqlOutput(BaseModule):
                     data TEXT NOT NULL,
                     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     module_type VARCHAR(50) DEFAULT 'unknown',
-                    processed_at DATETIME
+                    processed_at DATETIME,
+                    source VARCHAR(255),
+                    metadata TEXT
                 )
             ''')
             
             # Inserir dados
             timestamp = datetime.now()
-            cursor.execute(f'''
-                INSERT INTO {table_name} (data, processed_at, module_type)
-                VALUES (%s, %s, %s)
-            ''', (data, timestamp, self.meta.get('type', 'output')))
+            source = self.options.get('source', '')
+            metadata = self.options.get('metadata', '')
+            
+            # Inserir com campos adicionais se fornecidos
+            if source or metadata:
+                cursor.execute(f'''
+                    INSERT INTO {table_name} (data, processed_at, module_type, source, metadata)
+                    VALUES (%s, %s, %s, %s, %s)
+                ''', (data, timestamp, self.meta.get('type', 'output'), source, metadata))
+            else:
+                cursor.execute(f'''
+                    INSERT INTO {table_name} (data, processed_at, module_type)
+                    VALUES (%s, %s, %s)
+                ''', (data, timestamp, self.meta.get('type', 'output')))
             
             conn.commit()
             cursor.close()

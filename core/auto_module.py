@@ -22,6 +22,9 @@ class AutoModulo:
     Esta classe é utilizada para importar automaticamente um módulo e instanciar sua classe.
     Utiliza o nome do módulo e nome da classe para carregar dinamicamente o módulo e criar
     uma instância da classe.
+    
+    Suporta especificação de módulo único no formato 'tipo:nome' (ex: "ext:email").
+    Para encadeamento de módulos, use o caractere pipe '|' (ex: "ext:url|ext:domain|clc:dns").
 
     Attributes:
         _cli (StyleCli): Instância para interface CLI estilizada

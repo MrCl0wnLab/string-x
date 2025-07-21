@@ -186,25 +186,72 @@ class Command:
 
     def _exec_module(self, _type_module: str, data: str) -> AutoModulo | None:
         """
-        Executa um módulo automático com os dados fornecidos.
+        Executa um ou mais módulos automáticos com os dados fornecidos.
+        
+        Suporta encadeamento de módulos utilizando o caractere pipe (|).
+        Exemplo: 'ext:url|ext:domain|clc:dns'
         
         Args:
-            _type_module (str): Tipo do módulo no formato 'tipo:nome'
-            data (str): Dados a serem processados pelo módulo
+            _type_module (str): Tipo do(s) módulo(s) no formato 'tipo1:nome1|tipo2:nome2|...'
+            data (str): Dados iniciais a serem processados pelos módulos
             
         Returns:
-            AutoModulo | None: Instância do módulo executado ou None se houver erro
+            AutoModulo | None: Instância do último módulo executado ou None se houver erro
         """
         if not _type_module or ":" not in _type_module or data is None:
             return None
-        auto_load = AutoModulo(_type_module)
-        if obj_module := auto_load.load_module():
-            # Update current module name
-            self._current_module = _type_module
-            obj_module.options.update({'data': data, 'proxy': self._proxy, 'debug': self._debug, 'retry': self._retry})
-            obj_module.run()
-            return obj_module
-        return None
+            
+        # Verifica se há múltiplos módulos encadeados
+        if "|" in _type_module:
+            modules = _type_module.split("|")
+            current_data = data
+            last_module = None
+            
+            # Executa cada módulo na cadeia, passando o resultado para o próximo
+            for i, module_spec in enumerate(modules):
+                module_spec = module_spec.strip()  # Remove espaços em branco
+                if not module_spec or ":" not in module_spec:
+                    continue
+                    
+                self._cli.verbose(f"[+] Executando módulo {i+1}/{len(modules)}: {module_spec}", self.verbose)
+                auto_load = AutoModulo(module_spec)
+                if obj_module := auto_load.load_module():
+                    # Update current module name
+                    self._current_module = module_spec
+                    obj_module.options.update({
+                        'data': current_data, 
+                        'proxy': self._proxy, 
+                        'debug': self._debug, 
+                        'retry': self._retry
+                    })
+                    obj_module.run()
+                    
+                    # Obter resultados para passar ao próximo módulo
+                    if results := obj_module.get_result():
+                        # Prepara dados para o próximo módulo
+                        current_data = "\n".join(results)
+                    else:
+                        # Se não houver resultados, interrompe a cadeia
+                        self._cli.verbose(f"[!] Módulo {module_spec} não retornou resultados. Encadeamento interrompido.", self.verbose)
+                        return None
+                        
+                    last_module = obj_module
+                else:
+                    self._cli.verbose(f"[!] Falha ao carregar módulo: {module_spec}", self.verbose)
+                    return None
+            
+            # Retorna o último módulo processado
+            return last_module
+        else:
+            # Comportamento original para um único módulo
+            auto_load = AutoModulo(_type_module)
+            if obj_module := auto_load.load_module():
+                # Update current module name
+                self._current_module = _type_module
+                obj_module.options.update({'data': data, 'proxy': self._proxy, 'debug': self._debug, 'retry': self._retry})
+                obj_module.run()
+                return obj_module
+            return None
 
     def _exec_command(self, command: str, pipe_command: str) -> None:
         """
@@ -243,7 +290,19 @@ class Command:
                                 self._print_line_std(line_std)
                             if object_module := self._exec_module(self._type_module, line_std):
                                 if result_module := object_module.get_result():
+                                    # Formatar o resultado do módulo como texto
                                     result_module = "\n".join(result_module)
+                                    
+                                    # Determinar se o módulo é o último em uma cadeia
+                                    is_chain = "|" in self._type_module
+                                    if is_chain:
+                                        # No caso de cadeia de módulos, adiciona o nome dos módulos
+                                        modules = self._type_module.split("|")
+                                        chain_info = f"[Chain: {' → '.join(modules)}]"
+                                        if self.verbose:
+                                            self._cli.console.log(chain_info)
+                                    
+                                    # Imprimir o resultado final
                                     self._print_line_std(result_module)
 
             except FileNotFoundError as e:
@@ -317,7 +376,8 @@ class Command:
         """
         try:
             if target and command:
-                command_target = command.replace(r'{STRING}', target)
+                # Replace both {STRING} and {string} with the target value
+                command_target = re.sub(r'\{[sS][tT][rR][iI][nN][gG]\}', target, command)
                 command_target = self._format_function(command_target)
                 if command_target:
                     return command_target

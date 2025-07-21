@@ -46,9 +46,10 @@ Com arquitetura modular, oferece recursos avançados para OSINT, pentest e anál
 
 - 🚀 **Processamento Paralelo**: Sistema multi-threading configurável para execução de alta performance
 - 🧩 **Arquitetura Modular**: Estrutura extensível com módulos especializados (EXT, CLC, OUT, CON, AI)
-- 🔄 **Template Dinâmico**: Sistema de substituição com placeholder `{STRING}` para manipulação flexível
+- � **Encadeamento de Módulos**: Processamento sequencial com múltiplos módulos usando pipe (`|`)
+- �🔄 **Template Dinâmico**: Sistema de substituição com placeholder `{STRING}` para manipulação flexível
 - 🛠️ **+25 Funções Integradas**: Hash, encoding, requests, validação e geração de valores aleatórios
-- 📁 **Múltiplas Fontes**: Suporte para arquivos, stdin e encadeamento de pipes
+- 📁 **Múltiplas Fontes**: Suporte para strings únicas (`-s`), arquivos (`-l`), stdin e encadeamento de pipes
 - 🎯 **Filtragem Inteligente**: Sistema de filtros para processamento seletivo de strings
 - 💾 **Saída Flexível**: Formatação em TXT, CSV e JSON com timestamp automático
 - 🔌 **Integrações Externas**: APIs, bancos de dados e serviços de notificação
@@ -89,6 +90,11 @@ chmod +x strx
 # Lista funções
 ./strx -funcs
 
+# Testando com string única
+./strx -s "exemplo.com" -st "dig {STRING}"
+
+# Usando encadeamento de módulos
+./strx -l urls.txt -st "echo {STRING}" -module "ext:url|ext:domain|clc:dns" -pm
 ```
 
 ### Criando link simbólico (opcional) 
@@ -291,10 +297,10 @@ string-x/
 ### Interface da Aplicação
 
 ```bash
-usage: strx [-h] [-types] [-examples] [-functions] [-list file] [-str cmd] 
-            [-out file] [-pipe cmd] [-verbose] [-debug] [-thread <10>] [-pf] [-of] 
+usage: strx [-h] [-types] [-examples] [-functions] [-list file] [-s string] [-str cmd]
+            [-out file] [-pipe cmd] [-verbose] [-debug] [-thread <10>] [-pf] [-of]
             [-filter value] [-sleep <5>] [-module <type:module>] [-pm] [-proxy PROXY]
-            [-format <format>] [-upgrade] [-retry <0>]
+            [-format <format>] [-upgrade] [-retry <1>]
 
  
                                              _
@@ -335,6 +341,7 @@ options:
              -examples              Lista módulos e exemplos de uso
              -functions, -funcs     Lista funções
              -list, -l file         Arquivo com strings para execução
+             -s string              String única para execução
              -str, -st cmd          String template de comando
              -out, -o file          Arquivo output de valores da execução shell
              -pipe, -p cmd          Comando que será executado depois de um pipe |
@@ -345,13 +352,12 @@ options:
              -of                    Habilitar output de valores da execução de função
              -filter, -f value      Valor para filtrar strings para execução
              -sleep <5>             Segundos de delay entre threads
-             -module <type:module>  Selectionar o tipo e module
+             -module <type:module>  Selecionar o tipo e module, possível usar encadeamento type1:module1|type:module2
              -pm                    Mostrar somente resultados de execução do module
              -proxy PROXY           Setar um proxy para request
              -format <format>       Formato de saída (txt, csv, json)
              -upgrade               Atualizar String-X via Git
-             -retry, -r <0>         Quantidade de tentativas
-
+             -retry, -r <1>         Quantidade de tentativas
 
 ```
 
