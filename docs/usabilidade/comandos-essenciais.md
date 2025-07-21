@@ -26,7 +26,6 @@ Este guia fornece uma referência rápida aos comandos e parâmetros mais utiliz
 |-----------|-----------|---------|
 | `-t`, `--thread` | Número de threads para processamento paralelo | `-t 10` |
 | `-sleep` | Tempo de espera entre execuções (segundos) | `-sleep 2` |
-| `-timeout` | Tempo limite para execução do comando (segundos) | `-timeout 30` |
 | `-retry` | Número de tentativas em caso de falha | `-retry 3` |
 
 ## Comandos Informativos

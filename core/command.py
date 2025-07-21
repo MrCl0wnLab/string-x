@@ -70,6 +70,7 @@ class Command:
         self.output_format: str = "txt"
         self._debug: str = str()
         self._retry: str = str()
+        self._retry_delay: str = str()
 
         self._logging_config = {
             "version": 1,
@@ -222,7 +223,8 @@ class Command:
                         'data': current_data, 
                         'proxy': self._proxy, 
                         'debug': self._debug, 
-                        'retry': self._retry
+                        'retry': self._retry,
+                        'retry_delay': self._retry_delay
                     })
                     obj_module.run()
                     
@@ -411,6 +413,7 @@ class Command:
             self._proxy = args.proxy
             self._debug = args.debug
             self._retry = args.retry
+            self._retry_delay = args.retry_delay
             # Reset module and function information
             self._current_module = str()
             self._current_function = str()

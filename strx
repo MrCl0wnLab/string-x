@@ -205,6 +205,7 @@ if __name__ == '__main__':
         parser.add_argument('-format', metavar="<format>", help=f"Formato de saída ({', '.join(setting.OUTPUT_FORMATS)})", default=setting.DEFAULT_OUTPUT_FORMAT, choices=setting.OUTPUT_FORMATS)
         parser.add_argument('-upgrade', help="Atualizar String-X via Git", action='store_true')
         parser.add_argument('-retry', '-r', metavar=f"<{setting.RETRY_OPERATIONS}>", help="Quantidade de tentativas", default=setting.RETRY_OPERATIONS, required=False)
+        parser.add_argument('-retry-delay', '-rd', metavar=f"<{setting.RETRY_DELAY}>", help="Delay entre tentativas", default=setting.RETRY_DELAY, required=False)
         ARGS = parser.parse_args() 
 
         # Adicionar na lógica principal (linha ~200, antes de outros processamentos)

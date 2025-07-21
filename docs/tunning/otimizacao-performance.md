@@ -40,7 +40,7 @@ Para comandos ou módulos que dependem principalmente da rede:
 
 ```bash
 # Ideal para consultas DNS, HTTP, etc.
-./strx -l urls.txt -module "clc:http_probe" -pm -t 30 -timeout 5
+./strx -l urls.txt -module "clc:http_probe" -pm -t 30 
 ```
 
 #### Operações de CPU
@@ -49,7 +49,7 @@ Para comandos ou módulos que realizam processamento intensivo:
 
 ```bash
 # Ideal para processamento de regex, análise de texto, etc.
-./strx -l large_text.txt -module "ext:email|ext:url|ext:ip" -pm -t 4
+./strx -l large_text.txt -module "ext:dns|ext:ip" -pm -t 4
 ```
 
 #### Operações de I/O de Disco
@@ -66,13 +66,12 @@ Para comandos ou módulos que realizam muitas operações de arquivo:
 Parâmetros adicionais para otimizar o uso de threads:
 
 - **`-sleep`**: Adiciona um intervalo entre execuções para evitar sobrecarga
-- **`-timeout`**: Limita o tempo máximo de execução de cada operação
 - **`-retry`**: Configura novas tentativas para operações que falham
 - **`-retry-delay`**: Define o intervalo entre tentativas
 
 ```bash
 # Configuração otimizada para APIs com rate limiting
-./strx -l targets.txt -module "clc:shodan" -pm -t 10 -sleep 0.5 -retry 3 -retry-delay 2
+./strx -l targets.txt -module "clc:shodan" -pm -t 10 -sleep 0.5 -retry 3
 ```
 
 ## Otimização de Memória
@@ -102,7 +101,7 @@ Para resultados muito grandes, ajuste o buffer de saída:
 
 ```bash
 # Reduzir uso de memória em resultados grandes
-./strx -l domains.txt -module "clc:subdomain" -pm -buffer-size 10MB -o subdomains.txt
+./strx -l domains.txt -module "clc:subdomain" -pm -o subdomains.txt
 ```
 
 ### Otimização de Módulos Específicos
@@ -111,10 +110,10 @@ Alguns módulos possuem parâmetros específicos para otimização de memória:
 
 ```bash
 # Limitar resultados por consulta
-./strx -l keywords.txt -module "clc:google" -pm -limit 100
+./strx -l keywords.txt -module "clc:google" -pm
 
 # Paginar resultados
-./strx -l targets.txt -module "clc:shodan" -pm -page-size 100 -max-pages 5
+./strx -l targets.txt -module "clc:yahoo" -pm
 ```
 
 ## Otimização de I/O
@@ -136,13 +135,12 @@ shuf -n 100 large_file.txt | ./strx -st "comando {STRING}"
 Escolha o formato de saída mais eficiente para seu caso de uso:
 
 - Use `txt` para saída mínima e rápida
-- Use `jsonl` para dados estruturados com processamento linha a linha
 - Use `csv` para compatibilidade com ferramentas de análise
 - Evite `json` ou `xml` completos para grandes volumes de dados
 
 ```bash
 # Formato otimizado para processamento linha a linha
-./strx -l urls.txt -module "clc:http_probe" -pm -format jsonl -o results.jsonl
+./strx -l urls.txt -module "clc:http_probe" -pm -format json -o results.json
 ```
 
 ### Compressão de Saída
@@ -165,10 +163,7 @@ Para operações que dependem de rede, a otimização da conectividade é essenc
 
 ```bash
 # Limitar número de conexões simultâneas
-./strx -l urls.txt -module "clc:http_probe" -pm -max-connections 50
-
-# Configurar tempo de conexão
-./strx -l apis.txt -st "curl -m 5 {STRING}" -timeout 10
+./strx -l urls.txt -module "clc:http_probe" -pm
 ```
 
 ### Uso de Proxy
@@ -178,9 +173,6 @@ Um proxy pode melhorar a performance em certos cenários:
 ```bash
 # Proxy único
 ./strx -l urls.txt -st "curl {STRING}" -proxy "http://proxy:8080"
-
-# Rotação de proxies
-./strx -l urls.txt -st "curl {STRING}" -proxy-file proxies.txt -proxy-rotate
 ```
 
 ### Cache de DNS
@@ -189,7 +181,7 @@ Para operações com muitas consultas DNS:
 
 ```bash
 # Cache de DNS
-./strx -l domains.txt -st "dig +short {STRING}" -dns-cache
+./strx -l domains.txt -st "dig +short {STRING}"
 ```
 
 ## Otimização para Hardware Específico
@@ -198,21 +190,21 @@ Para operações com muitas consultas DNS:
 
 ```bash
 # Configurações para sistemas com memória limitada
-./strx -l urls.txt -st "comando {STRING}" -t 3 -low-memory -buffer-size 5MB
+./strx -l urls.txt -st "comando {STRING}" -t 3
 ```
 
 ### Sistemas com Muitos Núcleos
 
 ```bash
 # Maximizar uso em sistemas multicore
-./strx -l targets.txt -st "comando {STRING}" -t 32 -batch-size 1000
+./strx -l targets.txt -st "comando {STRING}" -t 32
 ```
 
 ### Sistemas em Rede
 
 ```bash
 # Otimizar para operação em rede com alta latência
-./strx -l apis.txt -st "curl {STRING}" -t 50 -timeout 30 -retry 5
+./strx -l apis.txt -st "curl {STRING}" -t 50 -retry 5
 ```
 
 ## Técnicas Avançadas de Otimização
@@ -226,14 +218,6 @@ Reduza o volume de dados o mais cedo possível no pipeline:
 cat huge_list.txt | grep -E '\.com$|\.org$' | ./strx -st "comando {STRING}"
 ```
 
-### Otimização de Expressões Regulares
-
-Para módulos que usam regex intensivamente:
-
-```bash
-# Uso de regex otimizadas
-./strx -l text.txt -module "ext:custom" -pm -regex-mode optimized
-```
 
 ### Pipeline de Processamento Eficiente
 
@@ -241,19 +225,7 @@ Organize operações em ordem de eficiência crescente:
 
 ```bash
 # Fluxo de processamento eficiente
-./strx -l domains.txt -module "ext:domain|clc:dns|clc:http_probe" -pm
-```
-
-## Benchmarking e Profiling
-
-### Medição de Performance
-
-```bash
-# Medição básica de tempo
-time ./strx -l sample.txt -st "comando {STRING}"
-
-# Profiling detalhado
-./strx -profile -l sample.txt -st "comando {STRING}"
+./strx -l domains.txt -module "ext:domain|clc:http_probe" -pm
 ```
 
 ### Comparação de Configurações
@@ -280,8 +252,8 @@ done
 ```bash
 # Otimização para milhões de domínios
 ./strx -l domains_huge.txt -module "ext:domain|clc:dns" -pm \
-  -t 30 -timeout 5 -retry 2 -batch-size 1000 \
-  -format jsonl -o results.jsonl
+  -t 30 -retry 2 \
+  -format json -o results.json
 ```
 
 ### 2. Varredura Rápida de Portas
@@ -289,7 +261,7 @@ done
 ```bash
 # Otimização para scan de portas
 ./strx -l ips.txt -st "nmap -T4 -p- {STRING}" \
-  -t 20 -timeout 300 -p "grep -E 'open|filtered'" \
+  -t 20 -p "grep -E 'open|filtered'" \
   -o open_ports.txt
 ```
 
@@ -298,7 +270,7 @@ done
 ```bash
 # Otimização para coleta OSINT
 ./strx -l targets.txt -module "clc:subdomain|clc:crtsh|clc:virustotal" -pm \
-  -t 15 -sleep 1 -timeout 60 -format json \
+  -t 15 -sleep 1 -format json \
   -o osint_results.json
 ```
 
@@ -308,7 +280,7 @@ done
 # Otimização para análise de texto em massa
 ./strx -l text_files.txt -st "cat {STRING}" -t 8 \
   -module "ext:email|ext:url|ext:ip|ext:hash" -pm \
-  -buffer-size 20MB -format csv -o extracted_data.csv
+  -format csv -o extracted_data.csv
 ```
 
 ## Limites e Considerações
@@ -320,7 +292,7 @@ Respeite os limites de taxa (rate limits) de APIs externas:
 ```bash
 # Configuração consciente de limites de API
 ./strx -l targets.txt -module "clc:shodan" -pm \
-  -rate-limit 1 -sleep 1.2 -api-key "YOUR_KEY"
+  -sleep 1.2 
 ```
 
 ### Impacto em Sistemas Alvo
@@ -330,17 +302,7 @@ Considere o impacto das suas operações em sistemas alvo:
 ```bash
 # Varredura gentil
 ./strx -l websites.txt -st "curl -s -o /dev/null -w '%{http_code}' {STRING}" \
-  -t 5 -sleep 2 -user-agent "BotName/1.0 (respectful scanner)"
-```
-
-### Uso Responsável de Recursos
-
-Configure limites de recursos para evitar sobrecarga do sistema:
-
-```bash
-# Limitar uso de recursos
-./strx -l large_list.txt -st "comando {STRING}" \
-  -max-cpu 70 -max-memory 80 -auto-throttle
+  -t 5 -sleep 2
 ```
 
 ## Estratégias de Otimização por Caso de Uso
@@ -349,8 +311,8 @@ Configure limites de recursos para evitar sobrecarga do sistema:
 
 ```bash
 # Configuração otimizada para testes de penetração
-./strx -l targets.txt -module "ext:url|clc:http_probe|ext:ip" -pm \
-  -t 20 -timeout 10 -retry 2 -format json \
+./strx -l targets.txt -module "ext:url|clc:http_probe|ext:domain" -pm \
+  -t 20 -retry 2 -format json \
   -o pentest_targets.json
 ```
 
@@ -359,8 +321,8 @@ Configure limites de recursos para evitar sobrecarga do sistema:
 ```bash
 # Configuração otimizada para monitoramento
 ./strx -l assets.txt -st "comando {STRING}" \
-  -t 5 -sleep 1 -timeout 30 -retry 3 \
-  -timestamp -append -o monitoring_log.txt
+  -t 5 -sleep 1 -retry 3 \
+  -o monitoring_log.txt
 ```
 
 ### Para Busca Forense
@@ -368,7 +330,7 @@ Configure limites de recursos para evitar sobrecarga do sistema:
 ```bash
 # Configuração otimizada para forense digital
 ./strx -l evidence.txt -module "ext:email|ext:hash|ext:credential" -pm \
-  -t 8 -low-memory -format csv -timestamp \
+  -t 8 -format csv -timestamp \
   -o forensic_findings.csv
 ```
 

@@ -144,7 +144,7 @@ Para mais informações sobre encadeamento de módulos, consulte [Encadeamento d
 
 ```bash
 # Varredura com controle de tempo e threads
-./strx -l alvos.txt -st "nmap -T4 -p 80,443,8080 {STRING}" -t 20 -sleep 0.5 -timeout 120 -o scan_results.txt
+./strx -l alvos.txt -st "nmap -T4 -p 80,443,8080 {STRING}" -t 20 -sleep 0.5 -o scan_results.txt
 ```
 
 ### 2. Processos resilientes com retry

@@ -146,62 +146,6 @@ echo "[+] Os resultados estão disponíveis em $(pwd)"
 
 ## Scripts Python
 
-### Biblioteca String-X
-
-Para automação avançada, você pode usar o String-X como uma biblioteca Python:
-
-```python
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-import os
-import sys
-import json
-from datetime import datetime
-from strx.api import StringX  # Importe a API do String-X
-
-def main():
-    # Configuração
-    target_list = "targets.txt"
-    output_dir = f"results_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-    
-    # Inicializar
-    os.makedirs(output_dir, exist_ok=True)
-    strx = StringX()
-    
-    # Carregar alvos
-    with open(target_list, 'r') as f:
-        targets = [line.strip() for line in f if line.strip()]
-    
-    print(f"[+] Processando {len(targets)} alvos")
-    
-    # Processar com módulos
-    results = strx.process_list(
-        targets,
-        modules=["ext:domain", "clc:dns"],
-        threads=10,
-        timeout=5
-    )
-    
-    # Salvar resultados
-    with open(f"{output_dir}/results.json", 'w') as f:
-        json.dump(results, f, indent=2)
-    
-    # Análise
-    success_count = sum(1 for r in results if r.get('status') == 'success')
-    error_count = sum(1 for r in results if r.get('status') == 'error')
-    
-    # Relatório
-    print(f"[+] Processamento concluído")
-    print(f"- Total: {len(targets)}")
-    print(f"- Sucesso: {success_count}")
-    print(f"- Erros: {error_count}")
-    print(f"- Resultados salvos em {output_dir}/results.json")
-
-if __name__ == "__main__":
-    main()
-```
-
 ### Processamento Avançado
 
 Script Python para processamento e análise avançada:
@@ -578,7 +522,6 @@ TARGET_FILE="targets.txt"
 OUTPUT_DIR="vuln_scan_$(date +%Y%m%d)"
 SEVERITY="high,critical"
 THREADS=10
-TIMEOUT=30
 
 # Preparação
 mkdir -p "$OUTPUT_DIR"
@@ -602,7 +545,7 @@ echo "[+] Fase 3: Fingerprinting de tecnologias"
 
 # Fase 4: Verificação de vulnerabilidades comuns
 echo "[+] Fase 4: Verificação de vulnerabilidades"
-./strx -l "$OUTPUT_DIR/live_urls.txt" -st "nuclei -target {STRING} -severity $SEVERITY -silent" -t "$THREADS" -timeout "$TIMEOUT" -o "$OUTPUT_DIR/vulnerabilities.txt"
+./strx -l "$OUTPUT_DIR/live_urls.txt" -st "nuclei -target {STRING} -severity $SEVERITY -silent" -t "$THREADS" -o "$OUTPUT_DIR/vulnerabilities.txt"
 
 # Fase 5: Análise e categorização
 echo "[+] Fase 5: Análise de resultados"
@@ -739,7 +682,6 @@ else
     echo "Arquivo config.env não encontrado. Usando valores padrão." >&2
     # Valores padrão
     THREADS=5
-    TIMEOUT=10
     OUTPUT_DIR="results"
     TARGET_FILE="targets.txt"
 fi
@@ -748,7 +690,6 @@ fi
 while getopts "t:o:d:f:" opt; do
     case $opt in
         t) THREADS="$OPTARG" ;;
-        o) TIMEOUT="$OPTARG" ;;
         d) OUTPUT_DIR="$OPTARG" ;;
         f) TARGET_FILE="$OPTARG" ;;
         *) echo "Opção inválida: -$OPTARG" >&2; exit 1 ;;
@@ -757,12 +698,11 @@ done
 
 echo "Usando configuração:"
 echo "- Threads: $THREADS"
-echo "- Timeout: $TIMEOUT"
 echo "- Output: $OUTPUT_DIR"
 echo "- Targets: $TARGET_FILE"
 
 # Executar com configurações
-./strx -l "$TARGET_FILE" -st "comando {STRING}" -t "$THREADS" -timeout "$TIMEOUT" -o "$OUTPUT_DIR/output.txt"
+./strx -l "$TARGET_FILE" -st "comando {STRING}" -t "$THREADS" -o "$OUTPUT_DIR/output.txt"
 ```
 
 ## Automação em Ambientes Específicos
