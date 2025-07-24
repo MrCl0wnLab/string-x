@@ -106,6 +106,39 @@ Neste exemplo:
 1. Primeiro extrai URLs do texto
 2. Em seguida, extrai domínios dessas URLs
 3. Por fim, coleta informações DNS desses domínios
+
+#### Usando o comando -pmc (Print Module Chain)
+
+O parâmetro `-pmc` permite visualizar os resultados de cada módulo na cadeia separadamente, processando cada módulo com os dados de entrada originais, em vez de passar resultados entre módulos:
+
+```bash
+./strx -l urls.txt -st "echo {STRING}" -module "ext:url|ext:domain|clc:dns" -pmc
+```
+
+Com `-pmc` ativado:
+- Cada módulo processa os dados de entrada originais (não os resultados do módulo anterior)
+- Os resultados de cada módulo são impressos separadamente
+- Cada módulo é identificado com um cabeçalho claro (`[Módulo 1/3: ext:url]`)
+- Cada resultado é exibido em sua própria linha, evitando concatenações
+
+Este parâmetro é especialmente útil para:
+- Processar os dados originais com múltiplos módulos independentemente
+- Obter resultados de análise paralela sem encadeamento
+- Comparar os resultados de diferentes módulos para o mesmo conjunto de dados
+- Evitar que erros em um módulo interrompam a execução da cadeia completa
+
+#### Exemplo prático com -pmc
+
+```bash
+# Coletar informações completas de domínios com visualização de cada etapa
+./strx -s "exemplo.com" -st "echo {STRING}" -module "ext:domain|clc:whois|clc:dns|clc:crtsh" -pmc
+
+# Combinar com verbose para debug completo
+./strx -l targets.txt -st "echo {STRING}" -module "ext:url|ext:domain|clc:subdomain" -pmc -v
+
+# Análise de dorking com resultados intermediários
+./strx -l dorks.txt -st "echo {STRING}" -module "clc:google|ext:domain|clc:dns" -pmc
+```
 ```
 
 ### Criando link simbólico (opcional) 
@@ -297,6 +330,7 @@ string-x/
 | `-f, --filter` | Filtro para seleção de strings | `-f ".gov.br"` |
 | `-module` | Seleção de módulo específico | `-module "ext:email"` |
 | `-pm` | Mostrar apenas resultados do módulo | `-pm` |
+| `-pmc` | Mostrar resultados de cada módulo em uma cadeia separadamente | `-pmc` |
 | `-pf` | Mostrar apenas resultados de funções | `-pf` |
 | `-of` | Salvar resultados de funções em arquivo | `-of` |
 | `-sleep` | Delay entre threads (segundos) | `-sleep 2` |

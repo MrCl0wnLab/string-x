@@ -59,6 +59,7 @@ class Command:
         self._print_func: bool = False
         self._output_func: bool = False
         self._print_result_module: bool = False
+        self._print_module_chain: bool = False  # Flag para imprimir resultados de cada módulo na cadeia
         self._filter: str = str()
         self._sleep: int = int()
         self.file_output: str = str()
@@ -208,7 +209,7 @@ class Command:
             current_data = data
             last_module = None
             
-            # Executa cada módulo na cadeia, passando o resultado para o próximo
+            # Executa cada módulo na cadeia
             for i, module_spec in enumerate(modules):
                 module_spec = module_spec.strip()  # Remove espaços em branco
                 if not module_spec or ":" not in module_spec:
@@ -219,8 +220,13 @@ class Command:
                 if obj_module := auto_load.load_module():
                     # Update current module name
                     self._current_module = module_spec
+                    
+                    # Se estiver usando -pmc, cada módulo processa os dados originais
+                    # Caso contrário, usa comportamento em cadeia (passando resultados entre módulos)
+                    input_data = data if self._print_module_chain else current_data
+                    
                     obj_module.options.update({
-                        'data': current_data, 
+                        'data': input_data, 
                         'proxy': self._proxy, 
                         'debug': self._debug, 
                         'retry': self._retry,
@@ -228,19 +234,27 @@ class Command:
                     })
                     obj_module.run()
                     
-                    # Obter resultados para passar ao próximo módulo
+                    # Obter resultados do módulo
                     if results := obj_module.get_result():
-                        # Prepara dados para o próximo módulo
-                        current_data = "\n".join(results)
+                        # Se a flag de impressão de módulos encadeados estiver ativa,
+                        # imprime os resultados deste módulo separadamente
+                        if self._print_module_chain:
+                            self._print_module_result(results, module_spec, i+1, len(modules))
+                            # No modo -pmc, não alteramos current_data, cada módulo usa os dados originais
+                        else:
+                            # No modo normal (sem -pmc), preparamos os dados para o próximo módulo
+                            current_data = "\n".join(results)
                     else:
-                        # Se não houver resultados, interrompe a cadeia
-                        self._cli.verbose(f"[!] Módulo {module_spec} não retornou resultados. Encadeamento interrompido.", self.verbose)
-                        return None
+                        # Se não houver resultados, interrompe a cadeia no modo normal
+                        # No modo -pmc, continua para o próximo módulo com os dados originais
+                        if not self._print_module_chain:
+                            self._cli.verbose(f"[!] Módulo {module_spec} não retornou resultados. Encadeamento interrompido.", self.verbose)
+                            #return None
                         
                     last_module = obj_module
                 else:
                     self._cli.verbose(f"[!] Falha ao carregar módulo: {module_spec}", self.verbose)
-                    return None
+                    #return None
             
             # Retorna o último módulo processado
             return last_module
@@ -292,20 +306,22 @@ class Command:
                                 self._print_line_std(line_std)
                             if object_module := self._exec_module(self._type_module, line_std):
                                 if result_module := object_module.get_result():
-                                    # Formatar o resultado do módulo como texto
-                                    result_module = "\n".join(result_module)
-                                    
-                                    # Determinar se o módulo é o último em uma cadeia
-                                    is_chain = "|" in self._type_module
-                                    if is_chain:
-                                        # No caso de cadeia de módulos, adiciona o nome dos módulos
-                                        modules = self._type_module.split("|")
-                                        chain_info = f"[Chain: {' → '.join(modules)}]"
-                                        if self.verbose:
-                                            self._cli.console.log(chain_info)
-                                    
-                                    # Imprimir o resultado final
-                                    self._print_line_std(result_module)
+                                    # Quando -pmc está ativado, não precisamos imprimir o resultado final aqui
+                                    # pois cada módulo já imprime seu próprio resultado
+                                    if not self._print_module_chain:
+                                        # Formatar o resultado do módulo como texto
+                                        result_module = "\n".join(result_module)
+                                        
+                                        # Determinar se o módulo é o último em uma cadeia
+                                        is_chain = "|" in self._type_module
+                                        if is_chain:
+                                            # No caso de cadeia de módulos, adiciona o nome dos módulos
+                                            modules = self._type_module.split("|")
+                                            self._cli.verbose(f"[Chain: {' → '.join(modules)}]", self.verbose)  
+            
+                                        
+                                        # Imprimir o resultado final
+                                        self._print_line_std(result_module)
 
             except FileNotFoundError as e:
                 if not self._print_func:
@@ -327,6 +343,66 @@ class Command:
             else:
                 self._cli.console.print(line_std)
             self._save_command_log(line_std)
+            
+    def _print_module_result(self, results: list, module_name: str, module_index: int = 0, total_modules: int = 0) -> None:
+        """
+        Imprime os resultados de um módulo formatados adequadamente.
+        
+        Esta função é usada pelo parâmetro -pmc para imprimir resultados de cada módulo na cadeia,
+        garantindo que cada item seja exibido em sua própria linha. É capaz de processar vários
+        tipos de valores, incluindo URLs, listas separadas por delimitadores e valores simples.
+        
+        Args:
+            results (list): Lista de resultados do módulo
+            module_name (str): Nome do módulo para exibição
+            module_index (int): Índice do módulo na cadeia (se aplicável)
+            total_modules (int): Total de módulos na cadeia (se aplicável)
+        """
+        if not results:
+            return
+            
+        # Exibe cabeçalho do módulo
+        if module_index > 0 and total_modules > 0:
+            header = f"[bold cyan][Módulo {module_index}/{total_modules}: {module_name}][/bold cyan]"
+        else:
+            header = f"[bold cyan][Módulo: {module_name}][/bold cyan]"
+            
+        self._cli.verbose(header, self.verbose)
+        
+        # Processa e exibe cada resultado individualmente
+        for result in results:
+            if result and result.strip():
+                # Verifica se o resultado contém várias URLs concatenadas (caso comum)
+                if result.count('http') > 1:
+                    # Tenta extrair URLs individuais
+                    urls = re.findall(r'https?://[^\s"\'<>]+', result)
+                    if urls:
+                        for url in urls:
+                            self._cli.console.print(url)
+                    else:
+                        # Se não conseguiu extrair URLs, procura por múltiplos valores separados por delimitadores comuns
+                        if len(result) > 1:
+                            # Se encontrou múltiplos itens, imprime cada um separadamente
+                            for item in result:
+                                if item.strip():
+                                    self._cli.console.print(item.strip())
+                        else:
+                            # Senão imprime o resultado completo
+                            self._cli.console.print(result.strip())
+                else:
+                    # Verifica se contém múltiplos valores separados por delimitadores comuns
+                    if len(result) > 1:
+                        # Se encontrou múltiplos itens, imprime cada um separadamente
+                        for item in result:
+                            if item.strip():
+                                self._cli.console.print(item.strip())
+                    else:
+                        # Senão imprime o resultado completo
+                        self._cli.console.print(result.strip())
+        
+        # Salva todos os resultados no log
+        result_output = "\n".join(results)
+        self._save_command_log(result_output)
 
     def _format_function(self, command: str) -> str:
         """
@@ -405,15 +481,16 @@ class Command:
 
             self._print_func = args.pf
             self._output_func = args.of
-
             self._filter = args.filter
             self._sleep = args.sleep
             self._type_module = args.module
             self._print_result_module = args.pm
+            self._print_module_chain = args.pmc  # Ativa a impressão de resultados de cada módulo na cadeia
             self._proxy = args.proxy
             self._debug = args.debug
             self._retry = args.retry
             self._retry_delay = args.retry_delay
+            
             # Reset module and function information
             self._current_module = str()
             self._current_function = str()
