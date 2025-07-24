@@ -92,6 +92,7 @@ chmod +x strx
 
 # Testando com string única
 ./strx -s "exemplo.com" -st "dig {STRING}"
+```
 
 # Usando encadeamento de módulos
 ### Encadeamento de Módulos
@@ -112,7 +113,9 @@ Neste exemplo:
 O parâmetro `-pmc` permite visualizar os resultados de cada módulo na cadeia separadamente, processando cada módulo com os dados de entrada originais, em vez de passar resultados entre módulos:
 
 ```bash
-./strx -l urls.txt -st "echo {STRING}" -module "ext:url|ext:domain|clc:dns" -pmc
+./strx -l urls.txt -st "echo {STRING}" -module "ext:url|ext:domain|clc:dns" -pmc -pm
+
+./strx -l dorks.txt -st "echo {STRING}" -module "clc:google|clc:yahoo|clc:bing" -pmc -pm
 ```
 
 Com `-pmc` ativado:
