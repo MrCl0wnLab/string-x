@@ -30,7 +30,7 @@ def retry_operation(func):
                     set_result(f"⚠️ Tentativa {attempts}/{max_attempts} falhou. Tentando novamente em {delay}s...")
                 if attempts < max_attempts:
                     await asyncio.sleep(delay)
-        if set_result:
+        if set_result and debug_mode:
             set_result(f"⚠️ Todas as {max_attempts} tentativas falharam: {str(last_error)}")
         # Don't raise exceptions that would be unhandled and cause the tool to exit
         if last_error:
@@ -48,7 +48,7 @@ def retry_operation(func):
                 result = func(*args, **kwargs)
                 if result is not None:
                     return result
-                if set_result:
+                if set_result and debug_mode:
                     set_result(f"⚠️ Função retornou None. Tentativa {attempts+1}/{max_attempts}")
                 attempts += 1
                 if attempts < max_attempts:
@@ -60,7 +60,7 @@ def retry_operation(func):
                     set_result(f"⚠️ Tentativa {attempts}/{max_attempts} falhou. Tentando novamente em {delay}s...")
                 if attempts < max_attempts:
                     time.sleep(delay)
-        if set_result:
+        if set_result and debug_mode:
             set_result(f"⚠️ Todas as {max_attempts} tentativas falharam: {str(last_error)}")
         # Don't raise exceptions that would be unhandled and cause the tool to exit
         if last_error:

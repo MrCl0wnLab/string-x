@@ -56,8 +56,7 @@ class GoogleCSEDorker(BaseModule):
             'author': 'MrCl0wn',
             'version': '1.0',
             'description': 'Realiza buscas avançadas usando Google Custom Search Engine',
-            'type': 'collector'
-        ,
+            'type': 'collector',
             'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:googlecse" -pm'
         }
         # Opções configuráveis do módulo
@@ -65,7 +64,8 @@ class GoogleCSEDorker(BaseModule):
             'data': str(),  # Dork para busca
             'delay': 3,     # Delay entre requisições (segundos)
             'timeout': 20,  # Timeout para requisições
-            'max_pages': 15,  # Número máximo de resultados por CSE            'proxy': str(),  # Proxies para requisições
+            'max_pages': 15,  # Número máximo de resultados por CSE            
+            'proxy': str(),  # Proxies para requisições
             'retry': 0,              # Número de tentativas de requisição
             'retry_delay': 1,        # Atraso entre tentativas de requisição
             'debug': False,  # Modo de debug para mostrar informações detalhadas
@@ -104,6 +104,7 @@ class GoogleCSEDorker(BaseModule):
 
         # Executa a busca propriamente dita com o CSE selecionado
         if results := self._search(dork, cse_id, info_js):
+            results = list(set(results))  # Remove duplicatas
             self.set_result("\n".join(results))
    
     def _search(self, dork: str, cse_id: str, info_js: dict) -> list:
@@ -275,8 +276,8 @@ class GoogleCSEDorker(BaseModule):
                 return False
         
         # Filtrar URLs muito curtas (provavelmente inválidas ou incompletas)
-        if len(url) < 15:
-            return False
+        #if len(url) < 15:
+        #    return False
         
         return True
     

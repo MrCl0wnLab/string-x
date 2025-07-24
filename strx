@@ -201,6 +201,7 @@ if __name__ == '__main__':
         parser.add_argument('-sleep', metavar="<5>", help="Segundos de delay entre threads", default=None, required=False)
         parser.add_argument('-module', metavar="<type:module>", help="Selecionar o tipo e module, possível usar encadeamento type1:module1|type:module2", default=str(), required=False)
         parser.add_argument('-pm', help="Mostrar somente resultados de execução do module", action='store_true', default=False)
+        parser.add_argument('-pmc', help="Mostrar resultados de cada módulo no encadeamento separadamente (para coletores, preserva o input original)", action='store_true', default=False)
         parser.add_argument('-proxy', help="Setar um proxy para request", default=str(), required=False)
         parser.add_argument('-format', metavar="<format>", help=f"Formato de saída ({', '.join(setting.OUTPUT_FORMATS)})", default=setting.DEFAULT_OUTPUT_FORMAT, choices=setting.OUTPUT_FORMATS)
         parser.add_argument('-upgrade', help="Atualizar String-X via Git", action='store_true')
@@ -208,7 +209,7 @@ if __name__ == '__main__':
         parser.add_argument('-retry-delay', '-rd', metavar=f"<{setting.RETRY_DELAY}>", help="Delay entre tentativas", default=setting.RETRY_DELAY, required=False)
         ARGS = parser.parse_args() 
 
-        # Adicionar na lógica principal (linha ~200, antes de outros processamentos)
+        # Upgrade do String-X
         if ARGS.upgrade:
             CLI.console.print(f"{setting.BANNER_HELP}\n")
             upgrade_manager = UpgradeManager()

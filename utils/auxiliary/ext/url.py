@@ -56,7 +56,5 @@ class AuxRegexURL(BaseModule):
         # Verifica se há dados para processar
         if (target_value := self.options.get("data")) and (regex_data := self.options.get("regex")): 
             regex_data = re.compile(regex_data, re.IGNORECASE)
-            if regex_result_list := set(re.findall(regex_data, target_value)):
-                for value_regex in regex_result_list:
-                    if value_regex:
-                        self.set_result(value_regex)
+            if regex_result_list := list(set(re.findall(regex_data, target_value))):
+                return self.set_result("\n".join(regex_result_list))

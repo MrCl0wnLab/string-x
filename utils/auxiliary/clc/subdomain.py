@@ -86,8 +86,8 @@ class SubdomainEnum(BaseModule):
                 continue
         
         for subdomain in sorted(subdomains):
-            self.set_result(subdomain)
-    
+            self.set_result("\n".join(subdomain))
+
     @retry_operation
     def _crtsh_search(self, domain: str) -> set:
         """Busca subdomínios no crt.sh"""
@@ -165,7 +165,7 @@ class SubdomainEnum(BaseModule):
             
             return {sub for sub in subdomains if domain in sub}
         except Exception as e:
-            self.set_result(f"✗ Erro ao conectar ao CertSpotter: {str(e)}")
+            self.log_debug(f"✗ Erro ao conectar ao CertSpotter: {str(e)}")
             raise ValueError(e)
         
     @retry_operation
@@ -201,5 +201,5 @@ class SubdomainEnum(BaseModule):
             
             return subdomains
         except Exception as e:
-            self.set_result(f"✗ Erro ao conectar ao HackerTarget: {str(e)}")
+            self.log_debug(f"✗ Erro ao conectar ao HackerTarget: {str(e)}")
             raise ValueError(e)

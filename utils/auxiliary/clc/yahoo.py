@@ -110,7 +110,6 @@ class YahooDorker(BaseModule):
             # Validar o dork
             if not dork:
                 self.log_debug("Dork não fornecido")
-                self.set_result("⚠️ Dork não fornecido.")
                 return
             
             # Limpar resultados anteriores para evitar acúmulo
@@ -118,14 +117,12 @@ class YahooDorker(BaseModule):
 
             
             self.log_debug(f"Iniciando busca para dork: {dork}")
-            self.set_result(f"🔍 Buscando no Yahoo: {dork}")
             
             # Coletando resultados
             results = self._search(dork)
             
             if not results:
                 self.log_debug("Nenhum resultado encontrado")
-                self.set_result(f"⚠️ Nenhum resultado encontrado para: {dork}")
                 return
 
             self.log_debug(f"Encontrados {len(results)} resultados")
@@ -133,19 +130,14 @@ class YahooDorker(BaseModule):
             
         except ValueError as e:
             self.log_debug(f"Erro de validação: {str(e)}")
-            self.set_result(f"✗ Erro no dork: {str(e)}")
         except RequestException as e:
             self.log_debug(f"Erro de requisição: {str(e)}")
-            self.set_result(f"✗ Erro de comunicação com Yahoo: {str(e)}")
         except ConnectError as e:
             self.log_debug(f"Erro de conexão: {str(e)}")
-            self.set_result(f"✗ Falha ao conectar com Yahoo: {str(e)}")
         except (ReadTimeout, ConnectTimeout, TimeoutException) as e:
             self.log_debug(f"Timeout: {str(e)}")
-            self.set_result(f"✗ Timeout na consulta ao Yahoo: {str(e)}")
         except Exception as e:
             self.log_debug(f"Erro inesperado: {type(e).__name__}: {str(e)}")
-            self.set_result(f"✗ Erro na busca: {str(e)}")
     
     @retry_operation
     def _search(self, dork: str) -> List[str]:

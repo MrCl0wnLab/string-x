@@ -94,7 +94,18 @@ chmod +x strx
 ./strx -s "exemplo.com" -st "dig {STRING}"
 
 # Usando encadeamento de módulos
+### Encadeamento de Módulos
+
+O String-X suporta o encadeamento de múltiplos módulos usando o caractere pipe (`|`):
+
+```bash
 ./strx -l urls.txt -st "echo {STRING}" -module "ext:url|ext:domain|clc:dns" -pm
+```
+
+Neste exemplo:
+1. Primeiro extrai URLs do texto
+2. Em seguida, extrai domínios dessas URLs
+3. Por fim, coleta informações DNS desses domínios
 ```
 
 ### Criando link simbólico (opcional) 
@@ -354,6 +365,7 @@ options:
              -sleep <5>             Segundos de delay entre threads
              -module <type:module>  Selecionar o tipo e module, possível usar encadeamento type1:module1|type:module2
              -pm                    Mostrar somente resultados de execução do module
+             -pmc                   Mostrar resultados de cada módulo no encadeamento separadamente
              -proxy PROXY           Setar um proxy para request
              -format <format>       Formato de saída (txt, csv, json)
              -upgrade               Atualizar String-X via Git

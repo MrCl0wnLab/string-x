@@ -132,16 +132,16 @@ class GoogleDorker(BaseModule):
                         results.extend(self._first_search_google(dork))
                         
             if not results:
-                self.set_result(f"⚠️ Nenhum resultado encontrado para: {dork}")
+                self.log_debug(f"⚠️ Nenhum resultado encontrado para: {dork}")
                 return
 
             self.set_result("\n".join(results))
         except RequestException as e:
-            self.set_result(f"✗ Erro na requisição: {str(e)}")
+            self.log_debug(f"✗ Erro na requisição: {str(e)}")
         except ValueError as e:
-            self.set_result(f"✗ Erro de valor: {str(e)}")
+            self.log_debug(f"✗ Erro de valor: {str(e)}")
         except Exception as e:
-            self.set_result(f"✗ Erro na busca: {str(e)}")
+            self.log_debug(f"✗ Erro na busca: {str(e)}")
     
     def _first_search_google(self, dork: str) -> List[str]:
         """
@@ -192,17 +192,19 @@ class GoogleDorker(BaseModule):
                 # Adicionar URLs únicas
                 for url in page_results:
                     results.append(url)
-
+                return results
+            return None
         except RequestException as e:
             if debug_mode:
-                self.set_result(f"⚠️ Erro de requisição com {config['host']}: {str(e)}")
+                self.log_debug(f"⚠️ Erro de requisição com {config['host']}: {str(e)}")
         except ValueError as e:
             if debug_mode:
-                self.set_result(f"⚠️ Erro de processamento com {config['host']}: {str(e)}")
+                self.log_debug(f"⚠️ Erro de processamento com {config['host']}: {str(e)}")
         except Exception as e:
             if debug_mode:
-                self.set_result(f"⚠️ Erro com {config['host']}: {str(e)}")
-        return results
+                self.log_debug(f"⚠️ Erro com {config['host']}: {str(e)}")
+        return None
+        
     
     def _generate_sei_value(self) -> str:
         """
@@ -353,11 +355,11 @@ class GoogleDorker(BaseModule):
             return response.text
         except RequestException as e:
             if debug_mode:
-                self.set_result(f"⚠️ Erro na requisição para {config['host']}: {str(e)}")
+                self.log_debug(f"⚠️ Erro na requisição para {config['host']}: {str(e)}")
             raise
         except Exception as e:
             if debug_mode:
-                self.set_result(f"⚠️ Erro inesperado na requisição para {config['host']}: {str(e)}")
+                self.log_debug(f"⚠️ Erro inesperado na requisição para {config['host']}: {str(e)}")
             raise ValueError(f"Erro no processamento da requisição: {str(e)}")
         
     def _is_valid_url(self, url: str) -> bool:

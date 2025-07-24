@@ -112,27 +112,26 @@ class BingDorker(BaseModule):
             # Limpar resultados anteriores para evitar acúmulo
             self._result[self._get_cls_name()].clear()
                 
-            self.set_result(f"🔍 Buscando: {dork}")
 
             # Coletando resultados
             results = self._search_bing(dork)
             
             if not results:
-                self.set_result(f"⚠️ Nenhum resultado encontrado para: {dork}")
+                self.log_debug(f"⚠️ Nenhum resultado encontrado para: {dork}")
                 return
 
             self.set_result("\n".join(results))
         except RequestException as e:
-            self.set_result(f"✗ Erro na requisição: {str(e)}")
+            self.log_debug(f"✗ Erro na requisição: {str(e)}")
         except ConnectError as e:
-            self.set_result(f"✗ Erro de conexão: {str(e)}")
+            self.log_debug(f"✗ Erro de conexão: {str(e)}")
         except (ReadTimeout, ConnectTimeout, TimeoutException) as e:
-            self.set_result(f"✗ Timeout na requisição: {str(e)}")
+            self.log_debug(f"✗ Timeout na requisição: {str(e)}")
         except ValueError as e:
-            self.set_result(f"✗ Erro de validação: {str(e)}")
+            self.log_debug(f"✗ Erro de validação: {str(e)}")
         except Exception as e:
-            self.set_result(f"✗ Erro na busca: {str(e)}")
-    
+            self.log_debug(f"✗ Erro na busca: {str(e)}")
+
 
     @retry_operation
     def _search_bing(self, dork: str) -> List[str]:
@@ -203,7 +202,7 @@ class BingDorker(BaseModule):
             return results
                 
         except RequestException as e:
-            self.set_result(f"✗ Erro ao conectar ao Bing: {str(e)}")
+            self.log_debug(f"✗ Erro ao conectar ao Bing: {str(e)}")
             raise # Re-raise the original exception
         
     def _is_valid_url(self, url: str) -> bool:
@@ -269,7 +268,7 @@ class BingDorker(BaseModule):
         
         return url
     
-    def _extract_urls_from_html(self, html_content: str, base_url: Optional[str] = None) -> Set[str]:
+    def _extract_urls_from_html(self, html_content: str, base_url: Optional[str] = None) -> List[str]:
         """
         Extrai URLs de um conteúdo HTML.
         
@@ -282,9 +281,9 @@ class BingDorker(BaseModule):
             base_url (Optional[str]): URL base para normalizar URLs relativas
             
         Returns:
-            Set[str]: Conjunto de URLs únicas extraídas do HTML
+            List[str]: Lista de URLs extraídas do HTML
         """
-        urls = set()
+        urls = []
         soup = BeautifulSoup(html_content, 'html.parser')
         
         # 1. Extrair URLs de elementos com atributos comuns de URL
@@ -314,20 +313,20 @@ class BingDorker(BaseModule):
                 for tag in soup.find_all(tag_name, attrs={attr: True}):
                     url = tag[attr]
                     if self._is_valid_url(url):
-                        urls.add(self._normalize_url(url, base_url))
+                        urls.append(self._normalize_url(url, base_url))
 
         for attr in potential_url_attrs:
             for tag in soup.find_all(attrs={attr: True}):
                 url = tag[attr]
                 if self._is_valid_url(url):
-                    urls.add(self._normalize_url(url, base_url))
+                    urls.append(self._normalize_url(url, base_url))
         
         # 7. Extrair URLs de texto comum
         for text in soup.stripped_strings:
             url_matches = re.findall(r'http[s]?://[^\s\'"<>()]+', text)
             for url in url_matches:
                 if self._is_valid_url(url):
-                    urls.add(self._normalize_url(url, base_url))
+                    urls.append(self._normalize_url(url, base_url))
         
         # 8. Extrair URLs de tags <cite>
         for cite_tag in soup.find_all('cite'):
@@ -335,13 +334,13 @@ class BingDorker(BaseModule):
                 url_text = cite_tag.get_text(strip=True)
                 # Verificar se o texto parece uma URL
                 if self._is_valid_url(url_text):
-                    urls.add(self._normalize_url(url_text, base_url))
+                    urls.append(self._normalize_url(url_text, base_url))
                         
         # Extrair URLs de hover-url=
         cite_urls = re.findall(r'hover-url="([^"]*)"', html_content)
         for url in cite_urls:
             if self._is_valid_url(url):
-                urls.add(self._normalize_url(url, base_url))
+                urls.append(self._normalize_url(url, base_url))
     
         return urls
 
@@ -368,5 +367,5 @@ class BingDorker(BaseModule):
             return results
                 
         except Exception as e:
-            self.set_result(f"✗ Erro ao analisar resultados: {str(e)}")
+            self.log_debug(f"✗ Erro ao analisar resultados: {str(e)}")
             return []

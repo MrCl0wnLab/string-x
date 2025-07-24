@@ -101,7 +101,7 @@ class NaverDorker(BaseModule):
             results = self._search_naver(dork)
             
             if not results:
-                self.set_result(f"⚠️ Nenhum resultado encontrado para: {dork}")
+                self.log_debug(f"⚠️ Nenhum resultado encontrado para: {dork}")
                 return
 
             self.set_result("\n".join(results))

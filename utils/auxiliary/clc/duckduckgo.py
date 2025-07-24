@@ -105,10 +105,10 @@ class DuckDuckGoDorker(BaseModule):
             results = self._search_duckduckgo(dork)
             
             if not results:
-                self.set_result(f"⚠️ Nenhum resultado encontrado para: {dork}")
+                self.log_debug(f"⚠️ Nenhum resultado encontrado para: {dork}")
                 return
 
-            self.set_result("\n".join(results))
+            return self.set_result("\n".join(results))
         except Exception as e:
             self.handle_error(e, "Erro na busca")
     
