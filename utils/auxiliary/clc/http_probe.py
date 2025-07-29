@@ -67,7 +67,7 @@ class HttpProbe(BaseModule):
             'debug': False,           # Modo de debug
             'proxy': None,            # Proxy para requisições
             'retry': 3,               # Número de tentativas
-            'retry_delay': 1,         # Atraso entre tentativas (segundos)
+            'retry_delay': None,         # Atraso entre tentativas (segundos)
         }
         
         # Cabeçalhos de segurança importantes para verificação

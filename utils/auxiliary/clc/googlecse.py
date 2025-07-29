@@ -66,8 +66,8 @@ class GoogleCSEDorker(BaseModule):
             'timeout': 20,  # Timeout para requisições
             'max_pages': 15,  # Número máximo de resultados por CSE            
             'proxy': str(),  # Proxies para requisições
-            'retry': 0,              # Número de tentativas de requisição
-            'retry_delay': 1,        # Atraso entre tentativas de requisição
+            'retry': None,              # Número de tentativas de requisição
+            'retry_delay': None,        # Atraso entre tentativas de requisição
             'debug': False,  # Modo de debug para mostrar informações detalhadas
         }
         
@@ -80,7 +80,7 @@ class GoogleCSEDorker(BaseModule):
         Executa busca de dorks usando Google CSE.
         Método principal que coordena todo o processo de busca.
         """
-    
+        
         # Obtém o dork da configuração e prepara para uso na URL
         dork = self.options.get('data').strip()
         dork = urllib.parse.quote_plus(dork)  # URL encoding para caracteres especiais

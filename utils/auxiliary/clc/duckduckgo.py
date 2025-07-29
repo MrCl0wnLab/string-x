@@ -66,7 +66,7 @@ class DuckDuckGoDorker(BaseModule):
             'max_results': 30,  # Número máximo de resultados            'proxy': str(),  # Proxies para requisições (opcional)
             'debug': False,  # Modo de debug para mostrar informações detalhadas
             'retry': 0,              # Número de tentativas de requisição
-            'retry_delay': 1,        # Atraso entre tentativas de requisição    
+            'retry_delay': None,        # Atraso entre tentativas de requisição    
         }
         
         # URLs de busca do DuckDuckGo com diferentes estratégias

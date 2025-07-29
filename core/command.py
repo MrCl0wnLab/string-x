@@ -264,7 +264,14 @@ class Command:
             if obj_module := auto_load.load_module():
                 # Update current module name
                 self._current_module = _type_module
-                obj_module.options.update({'data': data, 'proxy': self._proxy, 'debug': self._debug, 'retry': self._retry})
+                #obj_module.options.update({'data': data, 'proxy': self._proxy, 'debug': self._debug, 'retry': self._retry})
+                obj_module.options.update({
+                        'data': data, 
+                        'proxy': self._proxy, 
+                        'debug': self._debug, 
+                        'retry': self._retry,
+                        'retry_delay': self._retry_delay
+                    })
                 obj_module.run()
                 return obj_module
             return None

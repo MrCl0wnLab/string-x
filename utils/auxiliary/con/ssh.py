@@ -52,7 +52,7 @@ class SSHConnector(BaseModule):
             'command': 'whoami', # Comando a ser executado
             'timeout': 10,       # Timeout para conexão e execução            'debug': False,      # Modo de debug para mostrar informações detalhadas  
             'retry': 0,          # Número de tentativas de conexão
-            'retry_delay': 1,    # Atraso entre tentativas de conexão
+            'retry_delay': None,    # Atraso entre tentativas de conexão
         }
     
 

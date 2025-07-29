@@ -58,7 +58,7 @@ class archive(BaseModule):
             'timeout': 30,           # Timeout para requisições
             'proxy': str(),          # Proxies para requisições
             'debug': False,          # Modo de debug para mostrar informações detalhadas            'retry': 0,              # Número de tentativas de requisição
-            'retry_delay': 1,        # Atraso entre tentativas de requisição
+            'retry_delay': None,        # Atraso entre tentativas de requisição
         }
 
 

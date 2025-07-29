@@ -57,7 +57,7 @@ class VirusTotalCollector(BaseModule):
             'api_key': str(),  # API key do VirusTotal
             'resource_type': 'auto',  # auto, url, ip, domain, file
             'include_details': True,            'retry': 0,              # Número de tentativas de requisição
-            'retry_delay': 1,        # Atraso entre tentativas de requisição
+            'retry_delay': None,        # Atraso entre tentativas de requisição
         }
     
     def run(self):

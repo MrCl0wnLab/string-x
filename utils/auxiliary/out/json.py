@@ -44,7 +44,7 @@ class JSONOutput(BaseModule):
             'pretty': True,
             'debug': True,  # Modo de debug para mostrar informações detalhadas 
             'retry': 0,     # Número de tentativas de requisição
-            'retry_delay': 1,  # Atraso entre tentativas de requisição
+            'retry_delay': None,  # Atraso entre tentativas de requisição
             'batch_size': 50,  # Número de itens a coletar antes de salvar
         }
         

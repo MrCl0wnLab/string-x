@@ -56,7 +56,7 @@ class EmailVerifier(BaseModule):
             'check_smtp': False,  # Verificar servidor SMTP (pode ser detectado como spam)
             'timeout': 10,      # Timeout para operações            'debug': False,     # Modo de debug para mostrar informações detalhadas 
             'retry': 0,         # Número de tentativas de requisição
-            'retry_delay': 1,   # Atraso entre tentativas de requisição
+            'retry_delay': None,   # Atraso entre tentativas de requisição
         }
     
 

@@ -79,7 +79,7 @@ class GoogleDorker(BaseModule):
             'example': './strx -l dorks.txt -st "echo {STRING}" -module "clc:google" -pm',  # Exemplo de uso do módulo
             'proxy': str(),
             'retry': None,             # Número de tentativas de requisição
-            'retry_delay': 1,       # Atraso entre tentativas de requisição
+            'retry_delay': None,       # Atraso entre tentativas de requisição
         }
 
         self.pagination = []  # Contador de páginas para navegação

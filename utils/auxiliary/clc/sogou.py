@@ -69,7 +69,7 @@ class SogouDorker(BaseModule):
             'max_pages': 5,  # Número máximo de páginas para buscar            'proxy': str(),  # Proxies para requisições (opcional)
             'debug': False,  # Modo de debug para mostrar informações detalhadas
             'retry': 0,              # Número de tentativas de requisição
-            'retry_delay': 1,        # Atraso entre tentativas de requisição   
+            'retry_delay': None,        # Atraso entre tentativas de requisição   
         }
         
         # Base URL do Sogou

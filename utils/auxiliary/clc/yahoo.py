@@ -72,7 +72,7 @@ class YahooDorker(BaseModule):
             'proxy': str(),  # Proxies para requisições (opcional)
             'debug': False,  # Modo de debug para mostrar informações detalhadas 
             'retry': 3,              # Número de tentativas de requisição
-            'retry_delay': 1,        # Atraso entre tentativas de requisição   
+            'retry_delay': None,        # Atraso entre tentativas de requisição   
         }
         
         self.search_url_templates = [

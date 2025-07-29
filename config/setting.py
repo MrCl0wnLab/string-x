@@ -32,7 +32,7 @@ REQUEST_USER_AGENT = 'String-X/1.0'
 
 # RETRY
 RETRY_OPERATIONS = 1  # Default retry operations
-RETRY_DELAY = 2  # Default delay in seconds between retries
+RETRY_DELAY = 1  # Default delay in seconds between retries
 
 # DEGUB
 DEBUG = False  # Default debug mode is off

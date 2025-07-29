@@ -61,7 +61,7 @@ class ShodanCollector(BaseModule):
             'limit': 100,            'debug': False,  # Modo de debug para mostrar informações detalhadas
             'proxy': str(),  # Proxies para requisições (opcional)
             'retry': 0,              # Número de tentativas de requisição
-            'retry_delay': 1,        # Atraso entre tentativas de requisição  
+            'retry_delay': None,        # Atraso entre tentativas de requisição  
         }
     
     def run(self):

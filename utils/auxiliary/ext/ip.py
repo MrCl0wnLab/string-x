@@ -33,7 +33,7 @@ class IPExtractor(BaseModule):
             'ipv6': True,
             'private': True,  # Incluir IPs privados            'debug': False,  # Modo de debug para mostrar informações detalhadas
             'retry': 0,              # Número de tentativas de requisição
-            'retry_delay': 1,        # Atraso entre tentativas de requisição 
+            'retry_delay': None,        # Atraso entre tentativas de requisição 
         }
     
     def run(self):
