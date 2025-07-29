@@ -161,11 +161,8 @@ class DnsInfo(BaseModule):
                 self.set_result(f"Nenhum registro DNS encontrado para {host}")
                 
         except ValueError as ve:
-            self.log_debug(f"Erro de validação: {str(ve)}")
-            self.set_result(f"⚠️ Erro de validação: {str(ve)}")
+            self.handle_error(ve, "Erro de validação DNS")
         except subprocess.SubprocessError as se:
-            self.log_debug(f"Erro na execução do comando dig: {str(se)}")
-            self.set_result(f"⚠️ Erro na execução do comando dig: {str(se)}")
+            self.handle_error(se, "Erro execução dig")
         except Exception as e:
-            self.log_debug(f"Erro inesperado: {type(e).__name__}: {str(e)}")
-            self.set_result(f"⚠️ Erro inesperado: {str(e)}")
+            self.handle_error(e, "Erro DNS")

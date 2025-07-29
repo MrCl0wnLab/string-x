@@ -127,13 +127,13 @@ class NetworkScanner(BaseModule):
                 self.set_result("ℹ️ Nenhum host ativo encontrado")
                 
         except ValueError as e:
-            self.set_result(f"✗ Erro de validação: {str(e)}")
+            self.handle_error(e, "Erro validação NetScan")
         except ConnectionError as e:
-            self.set_result(f"✗ Erro de conexão: {str(e)}")
+            self.handle_error(e, "Erro conexão NetScan")
         except TimeoutError as e:
-            self.set_result(f"✗ Timeout no escaneamento: {str(e)}")
+            self.handle_error(e, "Timeout NetScan")
         except Exception as e:
-            self.set_result(f"✗ Erro no escaneamento: {str(e)}")
+            self.handle_error(e, "Erro NetScan")
     
     def _parse_targets(self, data: str) -> List[str]:
         """

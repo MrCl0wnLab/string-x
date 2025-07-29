@@ -695,38 +695,38 @@ echo 'filetype:pdf' | ./strx -st "echo {STRING}" -module "clc:yahoo" -pm
 
 
 ### 输出模块(OUT)
-用于结果输出和集成的模块：
+用于结果格式化和输出的模块：
 
 | 模块        | 描述                                 | CLI示例 |
 |---------------|-------------------------------------------|-------------|
-| `sqlite`      | 将数据保存到SQLite数据库               | `-module "out:sqlite"` |
-| `mysql`       | 将数据保存到MySQL数据库                | `-module "out:mysql"` |
-| `telegram`    | 通过Telegram Bot发送结果         | `-module "out:telegram"` |
-| `slack`       | 通过Slack Webhook发送结果        | `-module "out:slack"` |
 | `json`        | 将结果保存为JSON                  | `-module "out:json"` |
 | `csv`         | 将结果保存为CSV                   | `-module "out:csv"` |
 | `xml`         | 将结果保存为XML                   | `-module "out:xml"` |
-| `opensearch`  | 在Open Search中索引结果          | `-module "out:opensearch"` |
 
 ```bash
-# 示例：保存到SQLite
-./strx -l data.txt -st "process {STRING}" -module "out:sqlite" -pm
+# 示例：保存到JSON
+./strx -l data.txt -st "process {STRING}" -module "out:json" -pm
 ```
 
 
 ### 连接模块(CON)
-用于专业化连接和探测的模块：
+用于外部服务连接和结果集成的模块：
 
 | 模块        | 描述                                 | CLI示例 |
 |---------------|-------------------------------------------|-------------|
-| `ssh`         | SSH连接和远程执行             | `-module "con:ssh"` |
-| `ftp`         | FTP连接和列表/下载           | `-module "con:ftp"` |
-| `http_probe`  | HTTP/HTTPS探测，头部分析   | `-module "con:http_probe"` |
+| `sqlite`      | 将数据保存到SQLite数据库               | `-module "con:sqlite"` |
+| `mysql`       | 将数据保存到MySQL数据库                | `-module "con:mysql"` |
+| `telegram`    | 通过Telegram Bot发送结果         | `-module "con:telegram"` |
+| `slack`       | 通过Slack Webhook发送结果        | `-module "con:slack"` |
+| `opensearch`  | 在Open Search中索引结果          | `-module "con:opensearch"` |
+| `ftp`         | 通过FTP连接和传输                | `-module "con:ftp"` |
+| `ssh`         | 通过SSH执行命令                 | `-module "con:ssh"` |
 
 ```bash
-# 示例：探测HTTP服务器
-./strx -l urls.txt -st "{STRING}" -module "con:http_probe" -pm
+# 示例：保存到SQLite
+./strx -l data.txt -st "process {STRING}" -module "con:sqlite" -pm
 ```
+
 
 ### 人工智能模块(AI)
 用于人工智能提示的模块：

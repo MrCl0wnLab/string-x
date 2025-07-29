@@ -35,7 +35,7 @@ class TelegramOutput(BaseModule):
             'description': 'Envia dados via Telegram Bot',
             'type': 'output'
         ,
-            'example': './strx -l results.txt -st "echo {STRING}" -module "out:telegram" -pm'
+            'example': './strx -l results.txt -st "echo {STRING}" -module "con:telegram" -pm'
         }
         
         self.options = {

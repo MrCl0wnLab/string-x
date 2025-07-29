@@ -198,41 +198,43 @@ class IPInfo(BaseModule):
         Args:
             **kwargs: Argumentos adicionais a serem mesclados com self.options
         """
+        try:
+            ip = self.options.get("data", "").strip()
+            if not ip or not self._is_valid_ip(ip) or self._is_private_ip(ip):
+                return
+            
+            # Limpar resultados anteriores para evitar acúmulo
+            self._result[self._get_cls_name()].clear()
 
-        ip = self.options.get("data", "").strip()
-        if not ip or not self._is_valid_ip(ip) or self._is_private_ip(ip):
-            return
-        
-        # Limpar resultados anteriores para evitar acúmulo
-        self._result[self._get_cls_name()].clear()
-
-        if data := self._query_ipinfo(ip):
-            '''
-            {
-                "ip": "8.8.8.8",
-                "hostname": "dns.google",
-                "city": "Mountain View",
-                "region": "California",
-                "country": "US",
-                "loc": "37.4056,-122.0775",
-                "org": "AS15169 Google LLC",
-                "postal": "94043",
-                "timezone": "America/Los_Angeles",
-                "readme": "https://ipinfo.io/missingauth",
-                "anycast": true
-            }
-            '''
-            result = {
-                "IP": data.get("ip", "N/A"),
-                "Hostname": data.get("hostname", "N/A"),
-                "City": data.get("city", "N/A"),
-                "Region": data.get("region", "N/A"),
-                "Country": data.get("country", "N/A"),
-                "Location": data.get("loc", "N/A"),
-                "Organization": data.get("org", "N/A"),
-                "Postal Code": data.get("postal", "N/A"),
-                "Timezone": data.get("timezone", "N/A"),
-                "Anycast": data.get("anycast", False)
-            }
-            self.set_result(json.dumps(result))
+            if data := self._query_ipinfo(ip):
+                '''
+                {
+                    "ip": "8.8.8.8",
+                    "hostname": "dns.google",
+                    "city": "Mountain View",
+                    "region": "California",
+                    "country": "US",
+                    "loc": "37.4056,-122.0775",
+                    "org": "AS15169 Google LLC",
+                    "postal": "94043",
+                    "timezone": "America/Los_Angeles",
+                    "readme": "https://ipinfo.io/missingauth",
+                    "anycast": true
+                }
+                '''
+                result = {
+                    "IP": data.get("ip", "N/A"),
+                    "Hostname": data.get("hostname", "N/A"),
+                    "City": data.get("city", "N/A"),
+                    "Region": data.get("region", "N/A"),
+                    "Country": data.get("country", "N/A"),
+                    "Location": data.get("loc", "N/A"),
+                    "Organization": data.get("org", "N/A"),
+                    "Postal Code": data.get("postal", "N/A"),
+                    "Timezone": data.get("timezone", "N/A"),
+                    "Anycast": data.get("anycast", False)
+                }
+                self.set_result(json.dumps(result))
+        except Exception as e:
+            self.handle_error(e, "Erro IPInfo")
         return str()

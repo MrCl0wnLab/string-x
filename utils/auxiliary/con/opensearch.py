@@ -44,7 +44,7 @@ class OpenSearchOutput(BaseModule):
             'version': '1.0',
             'description': 'Salva dados no OpenSearch para indexação e busca',
             'type': 'output',
-            'example': './strx -l domains.txt -st "echo {STRING}" -module "out:opensearch" -pm'
+            'example': './strx -l domains.txt -st "echo {STRING}" -module "con:opensearch" -pm'
         }
         
         self.options = {

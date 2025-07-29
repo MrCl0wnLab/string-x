@@ -97,7 +97,7 @@ class ShodanCollector(BaseModule):
                 self.set_result(result)
                 
         except Exception as e:
-            self.set_result(f"✗ Erro Shodan: {str(e)}")
+            self.handle_error(e, "Erro Shodan")
     
     async def _query_host_async(self, ip: str, api_key: str) -> str:
         """Consulta informações de um host específico."""

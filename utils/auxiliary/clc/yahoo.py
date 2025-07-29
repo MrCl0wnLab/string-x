@@ -129,15 +129,15 @@ class YahooDorker(BaseModule):
             self.set_result("\n".join(results))
             
         except ValueError as e:
-            self.log_debug(f"Erro de validação: {str(e)}")
+            self.handle_error(e, "Erro validação Yahoo")
         except RequestException as e:
-            self.log_debug(f"Erro de requisição: {str(e)}")
+            self.handle_error(e, "Erro requisição Yahoo")
         except ConnectError as e:
-            self.log_debug(f"Erro de conexão: {str(e)}")
+            self.handle_error(e, "Erro conexão Yahoo")
         except (ReadTimeout, ConnectTimeout, TimeoutException) as e:
-            self.log_debug(f"Timeout: {str(e)}")
+            self.handle_error(e, "Timeout Yahoo")
         except Exception as e:
-            self.log_debug(f"Erro inesperado: {type(e).__name__}: {str(e)}")
+            self.handle_error(e, "Erro Yahoo")
     
     @retry_operation
     def _search(self, dork: str) -> List[str]:

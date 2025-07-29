@@ -349,8 +349,7 @@ class HttpProbe(BaseModule):
                 self.set_result(f"❓ Sem resposta de {target}")
             
         except Exception as e:
-            self.log_debug(f"Erro inesperado: {type(e).__name__}: {str(e)}")
-            self.set_result(f"⚠️ Erro: {str(e)}")
+            self.handle_error(e, "Erro HTTPProbe")
     
     def run(self) -> None:
         """

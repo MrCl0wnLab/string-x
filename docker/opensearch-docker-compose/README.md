@@ -95,9 +95,9 @@ docker-compose down -v
 
 ## Usando o Módulo OpenSearch
 
-O String-X inclui um módulo `out:opensearch` que permite enviar dados diretamente para o OpenSearch. Este módulo facilita a indexação de resultados para posterior análise e busca.
+O String-X inclui um módulo `con:opensearch` que permite enviar dados diretamente para o OpenSearch. Este módulo facilita a indexação de resultados para posterior análise e busca.
 
-- `out:opensearch`: `utils/auxiliary/out/mysql.py`
+- `con:opensearch`: `utils/auxiliary/con/opensearch.py`
 
 ### Instalação de dependências
 
@@ -110,7 +110,7 @@ pip install opensearch-py httpx
 
 ### Configuração do módulo
 
-O módulo `out:opensearch` suporta as seguintes opções:
+O módulo `con:opensearch` suporta as seguintes opções:
 
 | Opção | Descrição | Valor Padrão |
 |-------|-----------|--------------|
@@ -134,21 +134,21 @@ O módulo `out:opensearch` suporta as seguintes opções:
 
 ```bash
 # Extrair URLs de um arquivo e salvá-las no OpenSearch
-./strx -l arquivo.txt -st "echo {STRING}" -module "out:opensearch" -pm 
+./strx -l arquivo.txt -st "echo {STRING}" -module "con:opensearch" -pm 
 ```
 
 **Exemplo 2**: Salvar resultados de busca do Google
 
 ```bash
 # Realizar busca e salvar resultados
-./strx -l dorks.txt -st "echo {STRING}" -module "out:opensearch" -pm
+./strx -l dorks.txt -st "echo {STRING}" -module "con:opensearch" -pm
 ```
 
 **Exemplo 3**: Usando modo debug para verificar detalhes
 
 ```bash
 # Modo debug para ver detalhes da operação
-./strx -l domains.txt -st "echo {STRING}" -module "out:opensearch" -pm
+./strx -l domains.txt -st "echo {STRING}" -module "con:opensearch" -pm
 ```
 
 ## Exemplos Práticos
@@ -157,7 +157,7 @@ O módulo `out:opensearch` suporta as seguintes opções:
 
 ```bash
 # Coletar subdomínios, validar e salvar no OpenSearch
-./strx -l targets.txt -st "echo {STRING}" -module "out:opensearch" -pm 
+./strx -l targets.txt -st "echo {STRING}" -module "con:opensearch" -pm 
 ```
 
 ### Busca e visualização de dados
@@ -239,7 +239,7 @@ docker logs opensearch-node1
 
 ### Erro de conexão no módulo
 
-Se o módulo `out:opensearch` apresentar erros de conexão:
+Se o módulo `con:opensearch` apresentar erros de conexão:
 
 1. Verifique se o OpenSearch está rodando: `docker ps | grep opensearch`
 2. Teste conexão básica: `curl -k -u 'admin:Str1ngX_p4ss!' https://localhost:9200`

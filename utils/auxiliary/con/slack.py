@@ -34,7 +34,7 @@ class SlackOutput(BaseModule):
             'description': 'Envia dados via Slack Webhook',
             'type': 'output'
         ,
-            'example': './strx -l alerts.txt -st "echo {STRING}" -module "out:slack" -pm'
+            'example': './strx -l alerts.txt -st "echo {STRING}" -module "con:slack" -pm'
         }
         
         self.options = {

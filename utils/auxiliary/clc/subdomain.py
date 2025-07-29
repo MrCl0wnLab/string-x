@@ -60,33 +60,36 @@ class SubdomainEnum(BaseModule):
         
         Utiliza múltiplas fontes para encontrar subdomínios do domínio especificado.
         """
-        domain = self.options.get("data", "").strip()
-        if not domain:
-            return
-        
-        # Limpar resultados anteriores para evitar acúmulo
-        self._result[self._get_cls_name()].clear()
+        try:
+            domain = self.options.get("data", "").strip()
+            if not domain:
+                return
             
-        subdomains = set()
-        methods = self.options.get('methods', ['crtsh'])
-        
-        for method in methods:
-            try:
-                if method == 'crtsh':
-                    subs = self._crtsh_search(domain)
-                elif method == 'certspotter':
-                    subs = self._certspotter_search(domain)
-                elif method == 'hackertarget':
-                    subs = self._hackertarget_search(domain)
-                else:
+            # Limpar resultados anteriores para evitar acúmulo
+            self._result[self._get_cls_name()].clear()
+                
+            subdomains = set()
+            methods = self.options.get('methods', ['crtsh'])
+            
+            for method in methods:
+                try:
+                    if method == 'crtsh':
+                        subs = self._crtsh_search(domain)
+                    elif method == 'certspotter':
+                        subs = self._certspotter_search(domain)
+                    elif method == 'hackertarget':
+                        subs = self._hackertarget_search(domain)
+                    else:
+                        continue
+                        
+                    subdomains.update(subs)
+                except Exception:
                     continue
-                    
-                subdomains.update(subs)
-            except Exception:
-                continue
-        
-        for subdomain in sorted(subdomains):
-            self.set_result("\n".join(subdomain))
+            
+            for subdomain in sorted(subdomains):
+                self.set_result("\n".join(subdomain))
+        except Exception as e:
+            self.handle_error(e, "Erro Subdomain")
 
     @retry_operation
     def _crtsh_search(self, domain: str) -> set:

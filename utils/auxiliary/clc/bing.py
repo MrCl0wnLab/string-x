@@ -122,15 +122,15 @@ class BingDorker(BaseModule):
 
             self.set_result("\n".join(results))
         except RequestException as e:
-            self.log_debug(f"✗ Erro na requisição: {str(e)}")
+            self.handle_error(e, "Erro requisição Bing")
         except ConnectError as e:
-            self.log_debug(f"✗ Erro de conexão: {str(e)}")
+            self.handle_error(e, "Erro conexão Bing")
         except (ReadTimeout, ConnectTimeout, TimeoutException) as e:
-            self.log_debug(f"✗ Timeout na requisição: {str(e)}")
+            self.handle_error(e, "Timeout Bing")
         except ValueError as e:
-            self.log_debug(f"✗ Erro de validação: {str(e)}")
+            self.handle_error(e, "Erro validação Bing")
         except Exception as e:
-            self.log_debug(f"✗ Erro na busca: {str(e)}")
+            self.handle_error(e, "Erro Bing")
 
 
     @retry_operation

@@ -504,6 +504,7 @@ Módulos para recolección de información externa, APIs y análisis:
 | `geoip`       | Geolocalización de IPs                     | `-module "clc:geoip"` |
 | `google`      | Realizar búsquedas con dorks en Google     | `-module "clc:google"` |
 | `googlecse`   | Realizar búsquedas con dorks usando Google CSE | `-module "clc:googlecse"` |
+| `http_probe`  | Sondeo HTTP/HTTPS, análisis de headers     | `-module "clc:http_probe"` |
 | `ipinfo`      | Escáner de puertos IP/host                 | `-module "clc:ipinfo"` |
 | `lycos`       | Realizar búsquedas con dorks en Lycos      | `-module "clc:lycos"` |
 | `naver`       | Realizar búsquedas con dorks en Naver (Coreano) | `-module "clc:naver"` |
@@ -526,6 +527,9 @@ Módulos para recolección de información externa, APIs y análisis:
 ./strx -l dorks.txt -st "echo {STRING}" -module "clc:yahoo" -pm
 ./strx -l dorks.txt -st "echo {STRING}" -module "clc:duckduckgo" -pm
 
+# Ejemplo: Sondear y analizar servidores web
+./strx -l urls.txt -st "echo {STRING}" -module "clc:http_probe" -pm
+
 # Ejemplos con dorking específico
 echo 'site:fbi.gov filetype:pdf' | ./strx -st "echo {STRING}" -module "clc:google" -pm
 echo 'site:github.com inurl:admin' | ./strx -st "echo {STRING}" -module "clc:googlecse" -pm
@@ -535,37 +539,37 @@ echo 'filetype:pdf' | ./strx -st "echo {STRING}" -module "clc:yahoo" -pm
 ```
 
 ### Módulos Output (OUT)
-Módulos para salida e integración de resultados:
+Módulos para formateo y salida de resultados:
 
 | Módulo        | Descripción                                 | Ejemplo CLI |
 |---------------|---------------------------------------------|-------------|
-| `sqlite`      | Guardar datos en base SQLite               | `-module "out:sqlite"` |
-| `mysql`       | Guardar datos en base MySQL                | `-module "out:mysql"` |
-| `telegram`    | Enviar resultados vía Telegram Bot         | `-module "out:telegram"` |
-| `slack`       | Enviar resultados vía Slack Webhook        | `-module "out:slack"` |
 | `json`        | Guardar resultados en JSON                 | `-module "out:json"` |
 | `csv`         | Guardar resultados en CSV                  | `-module "out:csv"` |
 | `xml`         | Guardar resultados en XML                  | `-module "out:xml"` |
-| `opensearch`  | Indexar resultados en Open Search          | `-module "out:opensearch"` |
 
 ```bash
-# Ejemplo: Guardar en SQLite
-./strx -l data.txt -st "process {STRING}" -module "out:sqlite" -pm
+# Ejemplo: Guardar en JSON
+./strx -l data.txt -st "process {STRING}" -module "out:json" -pm
 ```
 
 ### Módulos Connection (CON)
-Módulos para conexiones y sondeo especializado:
+Módulos para conexiones con servicios externos e integración de resultados:
 
 | Módulo        | Descripción                                 | Ejemplo CLI |
 |---------------|---------------------------------------------|-------------|
-| `ssh`         | Conexión SSH y ejecución remota            | `-module "con:ssh"` |
-| `ftp`         | Conexión FTP y listado/descarga            | `-module "con:ftp"` |
-| `http_probe`  | Sondeo HTTP/HTTPS, análisis de headers     | `-module "con:http_probe"` |
+| `sqlite`      | Guardar datos en base SQLite               | `-module "con:sqlite"` |
+| `mysql`       | Guardar datos en base MySQL                | `-module "con:mysql"` |
+| `telegram`    | Enviar resultados vía Telegram Bot         | `-module "con:telegram"` |
+| `slack`       | Enviar resultados vía Slack Webhook        | `-module "con:slack"` |
+| `opensearch`  | Indexar resultados en Open Search          | `-module "con:opensearch"` |
+| `ftp`         | Conexión y transferencia vía FTP           | `-module "con:ftp"` |
+| `ssh`         | Ejecutar comandos vía SSH                  | `-module "con:ssh"` |
 
 ```bash
-# Ejemplo: Sondear servidores HTTP
-./strx -l urls.txt -st "{STRING}" -module "con:http_probe" -pm
+# Ejemplo: Guardar en SQLite
+./strx -l data.txt -st "process {STRING}" -module "con:sqlite" -pm
 ```
+
 
 ### Módulos de Inteligencia Artificial (AI)
 Módulos para prompts de IA:

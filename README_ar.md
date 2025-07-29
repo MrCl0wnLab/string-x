@@ -695,38 +695,39 @@ echo 'filetype:pdf' | ./strx -st "echo {STRING}" -module "clc:yahoo" -pm
 
 
 ### وحدات الإخراج (OUT)
-وحدات لإخراج النتائج والتكامل:
+وحدات لتنسيق وإخراج النتائج:
 
 | الوحدة        | الوصف                                 | مثال CLI |
 |---------------|-------------------------------------------|-------------|
-| `sqlite`      | حفظ البيانات في قاعدة بيانات SQLite               | `-module "out:sqlite"` |
-| `mysql`       | حفظ البيانات في قاعدة بيانات MySQL                | `-module "out:mysql"` |
-| `telegram`    | إرسال النتائج عبر Telegram Bot         | `-module "out:telegram"` |
-| `slack`       | إرسال النتائج عبر Slack Webhook        | `-module "out:slack"` |
 | `json`        | حفظ النتائج بتنسيق JSON                  | `-module "out:json"` |
 | `csv`         | حفظ النتائج بتنسيق CSV                   | `-module "out:csv"` |
 | `xml`         | حفظ النتائج بتنسيق XML                   | `-module "out:xml"` |
-| `opensearch`  | فهرسة النتائج في Open Search          | `-module "out:opensearch"` |
 
 ```bash
-# مثال: الحفظ في SQLite
-./strx -l data.txt -st "process {STRING}" -module "out:sqlite" -pm
+# مثال: الحفظ في JSON
+./strx -l data.txt -st "process {STRING}" -module "out:json" -pm
 ```
 
 
 ### وحدات الاتصال (CON)
-وحدات للاتصالات والسبر المتخصص:
+وحدات للاتصال بالخدمات الخارجية وتكامل النتائج:
 
 | الوحدة        | الوصف                                 | مثال CLI |
 |---------------|-------------------------------------------|-------------|
-| `ssh`         | اتصال SSH وتنفيذ عن بُعد             | `-module "con:ssh"` |
-| `ftp`         | اتصال FTP وقائمة/تحميل           | `-module "con:ftp"` |
-| `http_probe`  | سبر HTTP/HTTPS، تحليل الرؤوس   | `-module "con:http_probe"` |
+| `sqlite`      | حفظ البيانات في قاعدة بيانات SQLite               | `-module "con:sqlite"` |
+| `mysql`       | حفظ البيانات في قاعدة بيانات MySQL                | `-module "con:mysql"` |
+| `telegram`    | إرسال النتائج عبر Telegram Bot         | `-module "con:telegram"` |
+| `slack`       | إرسال النتائج عبر Slack Webhook        | `-module "con:slack"` |
+| `opensearch`  | فهرسة النتائج في Open Search          | `-module "con:opensearch"` |
+| `http_probe`  | إجراء فحوصات HTTP على المضيفين      | `-module "con:http_probe"` |
+| `ftp`         | اتصال ونقل عبر FTP                   | `-module "con:ftp"` |
+| `ssh`         | تنفيذ الأوامر عبر SSH                | `-module "con:ssh"` |
 
 ```bash
-# مثال: سبر خوادم HTTP
-./strx -l urls.txt -st "{STRING}" -module "con:http_probe" -pm
+# مثال: الحفظ في SQLite
+./strx -l data.txt -st "process {STRING}" -module "con:sqlite" -pm
 ```
+
 
 ### وحدات الذكاء الاصطناعي (AI)
 وحدات للمطالبات للذكاء الاصطناعي:

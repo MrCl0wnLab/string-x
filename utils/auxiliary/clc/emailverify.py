@@ -138,14 +138,11 @@ class EmailVerifier(BaseModule):
             self.log_debug(f"Erro de resolução DNS: {str(e)}")
             self.set_result(f"✗ Erro na resolução DNS: {str(e)}")
         except smtplib.SMTPException as e:
-            self.log_debug(f"Erro SMTP: {str(e)}")
-            self.set_result(f"✗ Erro na verificação SMTP: {str(e)}")
+            self.handle_error(e, "Erro SMTP EmailVerify")
         except subprocess.SubprocessError as e:
-            self.log_debug(f"Erro no subprocess: {str(e)}")
-            self.set_result(f"✗ Erro na execução de comandos: {str(e)}")
+            self.handle_error(e, "Erro subprocess EmailVerify")
         except Exception as e:
-            self.log_debug(f"Erro inesperado: {type(e).__name__}: {str(e)}")
-            self.set_result(f"✗ Erro na verificação: {str(e)}")
+            self.handle_error(e, "Erro EmailVerify")
     
     def _is_valid_email_syntax(self, email: str) -> bool:
         """

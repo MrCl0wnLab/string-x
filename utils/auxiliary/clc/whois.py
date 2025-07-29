@@ -113,19 +113,4 @@ class WhoisInfo(BaseModule):
                 self.set_result("Nenhuma informação WHOIS disponível para este domínio")
                 
         except Exception as e:
-            if "command failed" in str(e).lower():
-                error_msg = f"Falha no comando WHOIS: {str(e)}"
-                self.log_debug(error_msg)
-                self.set_result(f"Erro na consulta WHOIS: {error_msg}")
-            elif "failed parsing" in str(e).lower():
-                error_msg = f"Falha ao interpretar saída WHOIS: {str(e)}"
-                self.log_debug(error_msg)
-                self.set_result(f"Erro ao processar resposta WHOIS: {error_msg}")
-            elif "timed out" in str(e).lower() or "timeout" in str(e).lower():
-                error_msg = f"Timeout na consulta WHOIS: {str(e)}"
-                self.log_debug(error_msg)
-                self.set_result(f"Timeout na consulta WHOIS para: {domain}")
-            else:
-                error_msg = f"Erro inesperado: {type(e).__name__}: {str(e)}"
-                self.log_debug(error_msg)
-                self.set_result(f"Falha na consulta WHOIS: {error_msg}")
+            self.handle_error(e, "Erro WHOIS")

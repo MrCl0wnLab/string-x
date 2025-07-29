@@ -34,7 +34,7 @@ class SqliteOutput(BaseModule):
             'description': 'Salva dados em banco SQLite',
             'type': 'output'
         ,
-            'example': './strx -l domains.txt -st "echo {STRING}" -module "out:sqlite" -pm'
+            'example': './strx -l domains.txt -st "echo {STRING}" -module "con:sqlite" -pm'
         }
         
         self.options = {

@@ -33,7 +33,7 @@ class MySqlOutput(BaseModule):
             'description': 'Salva dados em banco MySQL',
             'type': 'output'
         ,
-            'example': './strx -l data.txt -st "echo {STRING}" -module "out:mysql" -pm'
+            'example': './strx -l data.txt -st "echo {STRING}" -module "con:mysql" -pm'
         }
         
         self.options = {

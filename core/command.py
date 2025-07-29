@@ -69,9 +69,9 @@ class Command:
         self._type_module: str = str()
         self._proxy : str = str()
         self.output_format: str = "txt"
-        self._debug: str = str()
-        self._retry: str = str()
-        self._retry_delay: str = str()
+        self._debug: bool = False
+        self._retry: int = int()
+        self._retry_delay: int = int()
 
         self._logging_config = {
             "version": 1,
@@ -264,7 +264,6 @@ class Command:
             if obj_module := auto_load.load_module():
                 # Update current module name
                 self._current_module = _type_module
-                #obj_module.options.update({'data': data, 'proxy': self._proxy, 'debug': self._debug, 'retry': self._retry})
                 obj_module.options.update({
                         'data': data, 
                         'proxy': self._proxy, 
@@ -492,11 +491,11 @@ class Command:
             self._sleep = args.sleep
             self._type_module = args.module
             self._print_result_module = args.pm
-            self._print_module_chain = args.pmc  # Ativa a impressão de resultados de cada módulo na cadeia
+            self._print_module_chain = args.pmc
             self._proxy = args.proxy
             self._debug = args.debug
-            self._retry = args.retry
-            self._retry_delay = args.retry_delay
+            self._retry = int(args.retry)
+            self._retry_delay = int(args.retry_delay)
             
             # Reset module and function information
             self._current_module = str()

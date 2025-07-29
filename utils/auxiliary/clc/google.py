@@ -137,11 +137,11 @@ class GoogleDorker(BaseModule):
 
             self.set_result("\n".join(results))
         except RequestException as e:
-            self.log_debug(f"✗ Erro na requisição: {str(e)}")
+            self.handle_error(e, "Erro requisição Google")
         except ValueError as e:
-            self.log_debug(f"✗ Erro de valor: {str(e)}")
+            self.handle_error(e, "Erro valor Google")
         except Exception as e:
-            self.log_debug(f"✗ Erro na busca: {str(e)}")
+            self.handle_error(e, "Erro Google")
     
     def _first_search_google(self, dork: str) -> List[str]:
         """

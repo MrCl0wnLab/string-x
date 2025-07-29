@@ -86,7 +86,7 @@ Para mais informações sobre encadeamento de módulos, consulte [Encadeamento d
 
 ```bash
 # Salvar resultados no MySQL
-./strx -l subdomains.txt -st "nmap -sV {STRING}" -module "out:mysql" -pm \
+./strx -l subdomains.txt -st "nmap -sV {STRING}" -module "con:mysql" -pm \
   -host localhost -port 3306 -username user -password pass -database recon -table nmap_results
 ```
 
@@ -221,6 +221,6 @@ Para mais informações sobre encadeamento de módulos, consulte [Encadeamento d
 # Coleta de dados, processamento e armazenamento em banco
 ./strx -s "empresa.com" -module "clc:google" -pm -limit 100 -o google_results.txt
 ./strx -l google_results.txt -module "ext:url|ext:domain" -pm -o processed_domains.txt
-./strx -l processed_domains.txt -module "out:mysql" -pm \
+./strx -l processed_domains.txt -module "con:mysql" -pm \
   -host localhost -username user -password pass -database osint -table domains
 ```

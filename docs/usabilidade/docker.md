@@ -99,7 +99,7 @@ O Docker Compose configura automaticamente a integração com MySQL:
 
 ```bash
 # Coletar dados e armazenar diretamente no MySQL
-docker-compose exec strx -l /data/dominios.txt -module "clc:subdomain|out:mysql" -pm
+docker-compose exec strx -l /data/dominios.txt -module "clc:subdomain|con:mysql" -pm
 ```
 
 Acesse o PHPMyAdmin em `http://localhost:8080` para visualizar os resultados armazenados.
@@ -235,7 +235,7 @@ CMD ["/start.sh"]
 Arquivo `crontab`:
 ```
 # Executar coleta diária às 03:00
-0 3 * * * /usr/local/bin/strx -l /data/alvos.txt -module "clc:subdomain|out:mysql" -pm >> /data/logs/coleta_diaria.log 2>&1
+0 3 * * * /usr/local/bin/strx -l /data/alvos.txt -module "clc:subdomain|con:mysql" -pm >> /data/logs/coleta_diaria.log 2>&1
 ```
 
 Arquivo `start.sh`:
@@ -271,7 +271,7 @@ docker run -d --name strx-mysql --network strx-network \
 
 # Executar String-X na mesma rede
 docker run --rm --network strx-network \
-  osintbrazuca/string-x:latest -l alvos.txt -module "clc:subdomain|out:mysql" -pm \
+  osintbrazuca/string-x:latest -l alvos.txt -module "clc:subdomain|con:mysql" -pm \
   -host strx-mysql -port 3306 -username root -password password -database strx
 ```
 

@@ -59,7 +59,7 @@ O módulo MySQL já está configurado para funcionar com esta configuração. Po
 Exemplo de uso:
 
 ```bash
-./strx -l data.txt -st "echo {STRING}" -module "out:mysql" -pm
+./strx -l data.txt -st "echo {STRING}" -module "con:mysql" -pm
 ```
 
 ## Segurança
@@ -84,4 +84,4 @@ O script de inicialização `init/init.sql` cria uma única tabela simplificada:
   - `source`: Origem dos dados
   - `metadata`: Metadados adicionais em formato JSON
 
-Esta estrutura é compatível com o módulo `out:mysql` existente no String-X.
+Esta estrutura é compatível com o módulo `con:mysql` existente no String-X.

@@ -100,7 +100,7 @@ class GeoIPCollector(BaseModule):
             self.set_result(f"✗ {ip}: Não foi possível obter geolocalização")
             
         except Exception as e:
-            self.set_result(f"✗ Erro na geolocalização: {str(e)}")
+            self.handle_error(e, "Erro GeoIP")
     
     def _is_valid_ip(self, ip: str) -> bool:
         """Valida se é um IP válido."""

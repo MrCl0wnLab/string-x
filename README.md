@@ -718,6 +718,7 @@ Módulos para coleta de informações externas, APIs e análise:
 | `geoip`       | Geolocalização de IPs                     | `-module "clc:geoip"` |
 | `google`      | Realiza buscas com dorks no Google        | `-module "clc:google"` |
 | `googlecse`   | Realiza buscas com dorks usando Google CSE| `-module "clc:googlecse"` |
+| `http_probe`  | Sondagem HTTP/HTTPS, análise de headers   | `-module "clc:http_probe"` |
 | `ipinfo`      | Scanner de portas IP/host                 | `-module "clc:ipinfo"` |
 | `lycos`       | Realiza buscas com dorks no Lycos         | `-module "clc:lycos"` |
 | `naver`       | Realiza buscas com dorks no Naver (Coreano)| `-module "clc:naver"` |
@@ -738,6 +739,9 @@ Módulos para coleta de informações externas, APIs e análise:
 ./strx -l dorks.txt -st "echo {STRING}" -module "clc:google" -pm
 ./strx -l dorks.txt -st "echo {STRING}" -module "clc:googlecse" -pm
 ./strx -l dorks.txt -st "echo {STRING}" -module "clc:yahoo" -pm
+
+# Exemplo: Sondar e analisar servidores web
+./strx -l urls.txt -st "echo {STRING}" -module "clc:http_probe" -pm
 ./strx -l dorks.txt -st "echo {STRING}" -module "clc:duckduckgo" -pm
 
 # Exemplos com dorking específico
@@ -750,38 +754,37 @@ echo 'filetype:pdf' | ./strx -st "echo {STRING}" -module "clc:yahoo" -pm
 
 
 ### Módulos Output (OUT)
-Módulos para saída e integração de resultados:
+Módulos para saída e formatação de resultados:
 
 | Módulo        | Descrição                                 | Exemplo CLI |
 |---------------|-------------------------------------------|-------------|
-| `sqlite`      | Salva dados em banco SQLite               | `-module "out:sqlite"` |
-| `mysql`       | Salva dados em banco MySQL                | `-module "out:mysql"` |
-| `telegram`    | Envia resultados via Telegram Bot         | `-module "out:telegram"` |
-| `slack`       | Envia resultados via Slack Webhook        | `-module "out:slack"` |
 | `json`        | Salva resultados em JSON                  | `-module "out:json"` |
 | `csv`         | Salva resultados em CSV                   | `-module "out:csv"` |
 | `xml`         | Salva resultados em XML                   | `-module "out:xml"` |
-| `opensearch`  | Indexa resultados em Open Search          | `-module "out:opensearch"` |
 
 ```bash
-# Exemplo: Salvar em SQLite
-./strx -l data.txt -st "process {STRING}" -module "out:sqlite" -pm
+# Exemplo: Salvar em JSON
+./strx -l data.txt -st "process {STRING}" -module "out:json" -pm
 ```
 
-
-### Módulos Connection (CON)
-Módulos para conexões e sondagens especializadas:
+### Módulos de Conexão (CON)
+Módulos para conexão com serviços externos e integração de resultados:
 
 | Módulo        | Descrição                                 | Exemplo CLI |
 |---------------|-------------------------------------------|-------------|
-| `ssh`         | Conexão SSH e execução remota             | `-module "con:ssh"` |
-| `ftp`         | Conexão FTP e listagem/download           | `-module "con:ftp"` |
-| `http_probe`  | Sondagem HTTP/HTTPS, análise de headers   | `-module "con:http_probe"` |
+| `sqlite`      | Salva dados em banco SQLite               | `-module "con:sqlite"` |
+| `mysql`       | Salva dados em banco MySQL                | `-module "con:mysql"` |
+| `telegram`    | Envia resultados via Telegram Bot         | `-module "con:telegram"` |
+| `slack`       | Envia resultados via Slack Webhook        | `-module "con:slack"` |
+| `opensearch`  | Indexa resultados em Open Search          | `-module "con:opensearch"` |
+| `ftp`         | Conexão e transferência via FTP           | `-module "con:ftp"` |
+| `ssh`         | Executa comandos via SSH                  | `-module "con:ssh"` |
 
 ```bash
-# Exemplo: Sondar servidores HTTP
-./strx -l urls.txt -st "{STRING}" -module "con:http_probe" -pm
+# Exemplo: Salvar em SQLite
+./strx -l data.txt -st "process {STRING}" -module "con:sqlite" -pm
 ```
+
 
 ### Módulos Inteligência artificial  (AI)
 Módulos para de prompts para Inteligência artificial:
