@@ -130,7 +130,7 @@ class SubdomainEnum(BaseModule):
             return {sub.strip() for sub in subdomains if sub.strip() and domain in sub}
         
         except Exception as e:
-            self.set_result(f"✗ Erro ao conectar ao crt.sh: {str(e)}")
+            self.handle_error(e, "Erro ao conectar ao crt.sh")
             raise ValueError(e)
         
     @retry_operation

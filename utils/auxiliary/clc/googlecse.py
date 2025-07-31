@@ -155,6 +155,7 @@ class GoogleCSEDorker(BaseModule):
                 await asyncio.sleep(self.options.get('delay', 3))
         
         except Exception as e:
+            self.handle_error(e, "Erro ao realizar busca no Google CSE")
             return []
         return results
     
@@ -233,7 +234,8 @@ class GoogleCSEDorker(BaseModule):
                             results.append(urllib.parse.unquote((url.strip())))
             return list(set(results))  # Remove duplicatas
             
-        except Exception:
+        except Exception as e:
+            self.handle_error(e, "Erro ao extrair URLs do HTML")
             return results
     
     def _is_valid_url(self, url: str) -> bool:

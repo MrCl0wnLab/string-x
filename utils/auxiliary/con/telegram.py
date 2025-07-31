@@ -96,4 +96,4 @@ class TelegramOutput(BaseModule):
                     self.set_result(f"✗ Erro Telegram: {result.get('description', 'Erro desconhecido')}")
                     
         except Exception as e:
-            self.set_result(f"✗ Erro Telegram: {str(e)}")
+            self.handle_error(e, "Erro ao enviar mensagem para Telegram")

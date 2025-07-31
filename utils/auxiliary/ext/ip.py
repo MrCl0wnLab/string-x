@@ -74,5 +74,6 @@ class IPExtractor(BaseModule):
         """Verifica se é IP privado."""
         try:
             return ipaddress.IPv4Address(ip).is_private
-        except:
+        except Exception as e:
+            self.handle_error(e, "Erro ao verificar se IP é privado")
             return False

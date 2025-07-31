@@ -101,4 +101,4 @@ class SlackOutput(BaseModule):
                     self.set_result(f"✗ Erro Slack: Status {response.status}")
                     
         except Exception as e:
-            self.set_result(f"✗ Erro Slack: {str(e)}")
+            self.handle_error(e, "Erro ao enviar mensagem para Slack")

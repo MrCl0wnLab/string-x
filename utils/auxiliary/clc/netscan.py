@@ -59,7 +59,8 @@ class NetworkScanner(BaseModule):
             'ports': '22,23,53,80,443,993,995',
             'threads': 50,
             'timeout': 3,
-            'service_detection': False,            'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'service_detection': False,            
+            'debug': False,  # Modo de debug para mostrar informações detalhadas
             'retry': 0,              # Número de tentativas de requisição
             'retry_delay': None,        # Atraso entre tentativas de requisição
         }
@@ -181,7 +182,8 @@ class NetworkScanner(BaseModule):
         except ValueError:
             # Se falhar na validação de IP, lançar erro
             raise ValueError(f"Endereço IP inválido: {data}")
-        except Exception:
+        except Exception as e:
+            self.handle_error(e, "Erro ao analisar targets de rede")
             # Se falhar por outro motivo, tentar como hostname
             hosts = [data]
         
@@ -215,7 +217,8 @@ class NetworkScanner(BaseModule):
                     with self.lock:
                         self.results.append(f"✅ {host} - Host ativo")
                         
-            except Exception:
+            except Exception as e:
+                self.handle_error(e, f"Erro ao fazer ping em {host}")
                 pass
         
         # Executar threads
@@ -257,7 +260,8 @@ class NetworkScanner(BaseModule):
                     with self.lock:
                         self.results.append(f"🔓 {host}:{port} - Porta aberta")
                         
-            except Exception:
+            except Exception as e:
+                self.handle_error(e, f"Erro ao escanear porta {port} em {host}")
                 pass
         
         # Executar threads
@@ -304,7 +308,8 @@ class NetworkScanner(BaseModule):
                 else:
                     sock.close()
                         
-            except Exception:
+            except Exception as e:
+                self.handle_error(e, f"Erro ao escanear UDP porta {port} em {host}")
                 pass
         
         # Executar threads
@@ -348,7 +353,8 @@ class NetworkScanner(BaseModule):
                 else:
                     return f"Unknown ({banner[:30]})"
                     
-        except Exception:
+        except Exception as e:
+            self.handle_error(e, "Erro ao identificar serviço")
             pass
         
         # Fallback para serviços conhecidos

@@ -152,5 +152,4 @@ class SSHConnector(BaseModule):
             self.log_debug(f"Erro de validação: {str(e)}")
             self.set_result(f"SSH Error - {host}:{port}: parâmetro inválido: {str(e)}")
         except Exception as e:
-            self.log_debug(f"Erro inesperado: {type(e).__name__}: {str(e)}")
-            self.set_result(f"SSH Error - {host}:{port}: {str(e)}")
+            self.handle_error(e, "Erro inesperado na conexão SSH")

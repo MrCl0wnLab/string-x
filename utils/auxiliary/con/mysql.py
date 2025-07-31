@@ -121,6 +121,6 @@ class MySqlOutput(BaseModule):
             self.set_result(f"✓ Dados salvos em MySQL: {config['database']}.{table_name}")
             
         except ImportError:
-            self.set_result("✗ Erro: mysql-connector-python não instalado (pip install mysql-connector-python)")
+            self.handle_error(ImportError("mysql-connector-python não instalado"), "Erro de importação MySQL")
         except Exception as e:
-            self.set_result(f"✗ Erro MySQL: {str(e)}")
+            self.handle_error(e, "Erro ao salvar dados no MySQL")

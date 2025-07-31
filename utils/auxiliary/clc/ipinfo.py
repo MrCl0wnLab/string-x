@@ -120,7 +120,8 @@ class IPInfo(BaseModule):
                              '172.31.', '192.168.', '127.', '169.254.')):
                 return True
             return False
-        except Exception:
+        except Exception as e:
+            self.handle_error(e, "Erro ao verificar se IP é privado")
             return False
     
     async def _query_ipinfo_async(self, ip: str) -> dict:
@@ -172,7 +173,7 @@ class IPInfo(BaseModule):
                 return None
             
         except Exception as e:
-            self.set_result(f"✗ {ip}: Erro ao consultar API: {str(e)}")
+            self.handle_error(e, "Erro ao consultar API IPInfo")
             return None
     
     def _query_ipinfo(self, ip: str) -> dict:

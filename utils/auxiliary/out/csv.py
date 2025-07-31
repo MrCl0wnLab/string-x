@@ -94,4 +94,4 @@ class CSVOutput(BaseModule):
             #self.set_result(f"Data saved to {file_path}")
             
         except Exception as e:
-            self.set_result(f"Error saving to CSV: {str(e)}")
+            self.handle_error(e, "Erro ao salvar dados em CSV")

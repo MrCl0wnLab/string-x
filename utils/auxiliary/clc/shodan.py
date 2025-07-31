@@ -145,11 +145,11 @@ class ShodanCollector(BaseModule):
                 return result
                 
         except ValueError:
-            return "✗ Erro: IP inválido"
+            self.handle_error(e,"Erro: IP inválido")
         except Exception as e:
             if hasattr(e, 'status_code') and e.status_code == 404:
-                return f"ℹ️ Host {ip}: Nenhuma informação disponível"
-            return f"✗ Erro na consulta: {str(e)}"
+                return self.handle_error(e,f"ℹ️ Host {ip}: Nenhuma informação disponível")
+            return  self.handle_error(e,"Erro na consulta")
     
     def _query_host(self, ip: str, api_key: str) -> str:
         """Consulta informações de um host específico (wrapper para método assíncrono)."""
@@ -195,7 +195,7 @@ class ShodanCollector(BaseModule):
                 return result
                 
         except Exception as e:
-            return f"✗ Erro na busca: {str(e)}"
+            self.handle_error(e,"✗ Erro na busca")
             
     def _query_search(self, query: str, api_key: str) -> str:
         """Realiza busca por query no Shodan (wrapper para método assíncrono)."""
@@ -239,7 +239,7 @@ class ShodanCollector(BaseModule):
                 return result
                 
         except Exception as e:
-            return f"✗ Erro na contagem: {str(e)}"
+            self.handle_error(e,"Erro na contagem")
             
     def _query_count(self, query: str, api_key: str) -> str:
         """Conta resultados para uma query (wrapper para método assíncrono)."""

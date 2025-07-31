@@ -112,7 +112,7 @@ class JSONOutput(BaseModule):
                 _COLLECTED_DATA.clear()
                 
             except Exception as e:
-                self.log_debug(f"Error in final save: {str(e)}")
+                self.handle_error(e, "Erro ao salvar dados coletados em JSON")
     
     def run(self):
         """
@@ -179,13 +179,9 @@ class JSONOutput(BaseModule):
             self.log_debug(f"Intermediary save: {len(entries)} items to {file_path}")
             
             # NÃO limpa os dados aqui, apenas no final do programa
-            
-            # Reporta sucesso
-            self.set_result(f"Saved {len(entries)} items to {file_path}")
+    
             return True
             
         except Exception as e:
-            error_msg = f"Error in intermediary save: {str(e)}"
-            self.log_debug(error_msg)
-            self.set_result(error_msg)
+            self.handle_error(e, "Erro ao salvar dados intermediários em JSON")
             return False

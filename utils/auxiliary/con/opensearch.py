@@ -125,6 +125,7 @@ class OpenSearchOutput(BaseModule):
         except httpx.TimeoutException:
             return False, f"Timeout ao conectar a {host}:{port}"
         except Exception as e:
+            self.handle_error(e, "Erro ao verificar disponibilidade do OpenSearch")
             return False, f"Erro ao verificar disponibilidade: {str(e)}"
     
     def run(self):
@@ -240,6 +241,7 @@ class OpenSearchOutput(BaseModule):
                     index_exists = client.indices.exists(index=index)
                     break
                 except Exception as e:
+                    self.handle_error(e, "Erro ao verificar índice OpenSearch")
                     if attempt < retry:
                         if self.options.get('debug', False):
                             self.set_result(f"Tentativa {attempt+1} falhou ao verificar índice: {str(e)}")
@@ -275,7 +277,8 @@ class OpenSearchOutput(BaseModule):
                         if self.options.get('debug', False):
                             self.set_result(f"Índice {index} já existe (verificação secundária)")
                         index_exists = True
-                except Exception:
+                except Exception as e:
+                    self.handle_error(e, "Erro na verificação secundária do índice")
                     pass
                     
                 # Se ainda não existe, tentar criar
@@ -285,6 +288,7 @@ class OpenSearchOutput(BaseModule):
                         if self.options.get('debug', False):
                             self.set_result(f"Índice {index} criado com sucesso: {create_response}")
                     except Exception as e:
+                        self.handle_error(e, "Erro ao criar índice no OpenSearch")
                         error_message = str(e)
                         
                         # Se o índice já existe, não é um erro real
@@ -324,9 +328,8 @@ class OpenSearchOutput(BaseModule):
                             self.set_result(f"✗ Erro na indexação: {response}")
                         break
                     except Exception as e:
+                        self.handle_error(e, "Erro ao indexar documento no OpenSearch")
                         if attempt < retry:
-                            if self.options.get('debug', False):
-                                self.set_result(f"Tentativa {attempt+1} falhou: {str(e)}")
                             time.sleep(retry_delay)
                         else:
                             raise e
@@ -354,19 +357,17 @@ class OpenSearchOutput(BaseModule):
                             self.set_result(f"✗ Erro na indexação: {failed}")
                         break
                     except Exception as e:
+                        self.handle_error(e, "Erro ao indexar em bulk no OpenSearch")
                         if attempt < retry:
-                            if self.options.get('debug', False):
-                                self.set_result(f"Tentativa {attempt+1} falhou: {str(e)}")
                             time.sleep(retry_delay)
                         else:
                             raise e
         
         except AuthenticationException:
-            self.set_result("✗ Erro OpenSearch: Falha de autenticação. Verifique seu nome de usuário e senha.")
+            self.handle_error(AuthenticationException("Falha de autenticação"), "Erro OpenSearch de autenticação")
         except AuthorizationException:
-            self.set_result("✗ Erro OpenSearch: Falha de autorização. Usuário não tem permissão para esta operação.")
+            self.handle_error(AuthorizationException("Falha de autorização"), "Erro OpenSearch de autorização")
         except OSConnectionError as e:
-            self.set_result(f"✗ Erro OpenSearch: Falha de conexão. {str(e)}. "
-                           f"Verifique se o OpenSearch está rodando em {self.options.get('host')}:{self.options.get('port')}.")
+            self.handle_error(e, "Erro OpenSearch de conexão")
         except Exception as e:
-            self.set_result(f"✗ Erro OpenSearch: {str(e)}")
+            self.handle_error(e, "Erro geral do OpenSearch")

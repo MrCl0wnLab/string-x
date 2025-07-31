@@ -95,14 +95,14 @@ class DnsInfo(BaseModule):
                 self.log_debug(f"Nenhum registro {record_type} encontrado para {host}")
                 return []
                 
-        except subprocess.TimeoutExpired:
-            self.log_debug(f"Timeout na consulta DNS para {host} ({record_type})")
+        except subprocess.TimeoutExpired as te:
+            self.handle_error(te, f"Timeout na consulta DNS para {host} ({record_type})")
             return []
-        except subprocess.SubprocessError as e:
-            self.log_debug(f"Erro no comando dig: {str(e)}")
+        except subprocess.SubprocessError as se:
+            self.handle_error(se, "Erro no comando dig")
             return []
         except Exception as e:
-            self.log_debug(f"Erro na consulta DNS: {type(e).__name__}: {str(e)}")
+            self.handle_error(e, "Erro na consulta DNS")
             return []
     
     def run(self) -> None:

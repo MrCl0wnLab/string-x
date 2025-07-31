@@ -96,12 +96,10 @@ class OpenAI(BaseModule):
             
             if not data:
                 self.log_debug("Erro: prompt vazio - requisição abortada")
-                self.set_result("✗ Erro: Nenhum dado de prompt fornecido")
                 return
                 
             if not api_key:
                 self.log_debug("Erro: chave API não fornecida - requisição abortada")
-                self.set_result("✗ Erro: A chave API OpenAI é necessária")
                 return
             
             self.log_debug(f"Prompt válido recebido com {len(data)} caracteres")
@@ -120,17 +118,13 @@ class OpenAI(BaseModule):
                 self.set_result(result)
             else:
                 self.log_debug("Alerta: resposta vazia recebida da API OpenAI")
-                self.set_result("✗ Erro: Resposta vazia recebida da API OpenAI")
                 
         except ValueError as e:
-            self.log_debug(f"Erro de validação nos parâmetros da requisição: {str(e)}")
-            self.set_result(f"✗ Erro de validação: {str(e)}")
+            self.handle_error(e, "Erro de validação nos parâmetros da requisição")
         except HTTPError as e:
-            self.log_debug(f"Erro HTTP na comunicação com a API OpenAI: {str(e)}")
-            self.set_result(f"✗ Erro de comunicação com a API OpenAI: {str(e)}")
+            self.handle_error(e, "Erro HTTP na comunicação com a API OpenAI")
         except Exception as e:
-            self.log_debug(f"Erro inesperado durante execução: {type(e).__name__}: {str(e)}")
-            self.set_result(f"✗ Erro da API OpenAI: {str(e)}")
+            self.handle_error(e, "Erro inesperado na execução OpenAI")
     
     def _query_openai(self, prompt: str, api_key: str, model: str, 
                      temperature: float = 0.7, max_tokens: int = 1000, 
@@ -216,9 +210,7 @@ class OpenAI(BaseModule):
             self.log_debug(f"Resposta da API recebida - Status HTTP: {response.status_code}")
             
             if response.status_code != 200:
-                self.log_debug(f"Erro na resposta da API: código {response.status_code}")
-                self.log_debug(f"Corpo da resposta de erro: {response.text[:150]}...")
-                return f"✗ Erro de API: {response.status_code} - {response.text}"
+                return self.log_debug(f"Corpo da resposta de erro: {response.text[:150]}...")
             
             result = response.json()
             self.log_debug("Resposta JSON decodificada com sucesso")
@@ -248,17 +240,13 @@ class OpenAI(BaseModule):
             return f"✗ Formato de Resposta da API Inesperado: {json.dumps(result)[:100]}..."
             
         except HTTPError as e:
-            self.log_debug(f"Erro HTTP durante a comunicação com a API: {str(e)}")
-            return f"✗ Erro de comunicação com a API: {str(e)}"
+            return self.handle_error(e, "Erro HTTP durante a comunicação com a API")
         except TimeoutException as e:
-            self.log_debug(f"Timeout na requisição após 60 segundos: {str(e)}")
-            return f"✗ Timeout durante a requisição: {str(e)}"
+            return self.handle_error(e, "Timeout na requisição após 60 segundos")
         except ValueError as e:
-            self.log_debug(f"Erro de validação nos parâmetros da requisição: {str(e)}")
-            return f"✗ Erro de validação: {str(e)}"
+            return self.handle_error(e, "Erro de validação nos parâmetros da requisição")
         except Exception as e:
-            self.log_debug(f"Erro inesperado durante processamento: {type(e).__name__}: {str(e)}")
-            return f"✗ Erro de Requisição: {str(e)}"
+            return self.handle_error(e, "Erro inesperado no processamento OpenAI")
     
     def set_system_prompt(self, prompt: str) -> None:
         """

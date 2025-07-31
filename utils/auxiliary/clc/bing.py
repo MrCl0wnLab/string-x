@@ -197,6 +197,7 @@ class BingDorker(BaseModule):
                     time.sleep(self.options.get('delay', 2) + random.uniform(0.5, 1.5))
                     
                 except Exception as e:
+                    self.handle_error(e, "Erro ao processar resultados do Bing")
                     # Continuar para o próximo formato em caso de erro
                     continue
             return results
@@ -367,5 +368,5 @@ class BingDorker(BaseModule):
             return results
                 
         except Exception as e:
-            self.log_debug(f"✗ Erro ao analisar resultados: {str(e)}")
+            self.handle_error(e, "Erro ao analisar resultados do Bing")
             return []

@@ -139,10 +139,10 @@ class FTPConnector(BaseModule):
                         self.log_debug("Diretório vazio")
                         result += "Directory is empty\n"
                 except ftplib.error_perm as e:
-                    self.log_debug(f"Erro de permissão ao listar arquivos: {e}")
+                    self.handle_error(e, f"Erro de permissão ao listar arquivos")
                     result += f"Could not list files: Permission denied\n"
                 except Exception as e:
-                    self.log_debug(f"Erro ao listar arquivos: {e}")
+                    self.handle_error(e, "Erro ao listar arquivos FTP")
                     result += f"Could not list files: {str(e)}\n"
             
             # Obter diretório atual
@@ -160,17 +160,12 @@ class FTPConnector(BaseModule):
             self.set_result(result)
             
         except ftplib.error_perm as e:
-            self.log_debug(f"Erro de permissão: {e}")
-            self.set_result(f"FTP Permission Error - {host}:{port}: {str(e)}")
+            self.handle_error(e, f"Erro de permissão FTP - {host}:{port}")
         except socket.timeout as e:
-            self.log_debug(f"Timeout: {e}")
-            self.set_result(f"FTP Timeout - {host}:{port}: operação excedeu {timeout} segundos")
+            self.handle_error(e, f"FTP Timeout - {host}:{port}: operação excedeu {timeout} segundos")
         except socket.error as e:
-            self.log_debug(f"Erro de socket: {e}")
-            self.set_result(f"FTP Connection Error - {host}:{port}: {str(e)}")
+            self.handle_error(e, f"Erro de conexão FTP - {host}:{port}")
         except ValueError as e:
-            self.log_debug(f"Erro de validação: {e}")
-            self.set_result(f"FTP Parameter Error - {host}:{port}: {str(e)}")
+            self.handle_error(e, f"Erro de parâmetro FTP - {host}:{port}")
         except Exception as e:
-            self.log_debug(f"Erro inesperado: {type(e).__name__}: {e}")
-            self.set_result(f"FTP Error - {host}:{port}: {str(e)}")
+            self.handle_error(e, "Erro inesperado na conexão FTP")

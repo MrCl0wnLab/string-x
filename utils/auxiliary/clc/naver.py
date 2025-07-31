@@ -179,6 +179,7 @@ class NaverDorker(BaseModule):
                     await asyncio.sleep(self.options.get('delay', 2) + random.uniform(0.5, 1.5))
                     
                 except Exception as e:
+                    self.handle_error(e, "Erro ao processar página do Naver")
                     # Continuar para próxima página em caso de erro
                     continue
             
@@ -245,7 +246,7 @@ class NaverDorker(BaseModule):
                 return self._extract_urls_from_response(response.text)
             
         except Exception as e:
-            pass
+            self.handle_error(e,"Erro ao buscar página")
         
         return []
 
@@ -304,6 +305,7 @@ class NaverDorker(BaseModule):
                                 urls.append(decoded_url)
             
         except Exception as e:
+            self.handle_error(e, "Erro ao extrair URLs da resposta do Naver")
             # Fallback para regex em caso de erro
             try:
                 pattern = r'href=["\']([^"\']*https?://[^"\']+)["\']'
@@ -355,7 +357,8 @@ class NaverDorker(BaseModule):
             if encoded_url.startswith('//'):
                 return 'https:' + encoded_url
             
-        except Exception:
+        except Exception as e:
+            self.handle_error(e, "Erro ao decodificar URL do Naver")
             pass
         
         return None

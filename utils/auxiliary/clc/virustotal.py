@@ -181,7 +181,7 @@ class VirusTotalCollector(BaseModule):
                 return f"✗ Erro HTTP {response.status_code}"
                 
         except Exception as e:
-            return f"✗ Erro na consulta: {str(e)}"
+            return self.handle_error(e, "Erro na consulta de URL VirusTotal")
             
     def _query_url(self, url: str, api_key: str) -> str:
         """Consulta análise de URL (wrapper para método assíncrono)."""
@@ -232,7 +232,7 @@ class VirusTotalCollector(BaseModule):
                 return f"✗ Erro HTTP {response.status_code}"
                 
         except Exception as e:
-            return f"✗ Erro na consulta: {str(e)}"
+            return self.handle_error(e, "Erro na consulta de IP VirusTotal")
             
     def _query_ip(self, ip: str, api_key: str) -> str:
         """Consulta análise de IP (wrapper para método assíncrono)."""
@@ -295,7 +295,7 @@ class VirusTotalCollector(BaseModule):
                 return f"✗ Erro HTTP {response.status_code}"
                 
         except Exception as e:
-            return f"✗ Erro na consulta: {str(e)}"
+            return self.handle_error(e, "Erro na consulta de domínio VirusTotal")
             
     def _query_domain(self, domain: str, api_key: str) -> str:
         """Consulta análise de domínio (wrapper para método assíncrono)."""
@@ -359,7 +359,7 @@ class VirusTotalCollector(BaseModule):
                 return f"✗ Erro HTTP {response.status_code}"
                 
         except Exception as e:
-            return f"✗ Erro na consulta: {str(e)}"
+            return self.handle_error(e, "Erro na consulta de arquivo VirusTotal")
             
     def _query_file(self, file_hash: str, api_key: str) -> str:
         """Consulta análise de arquivo por hash (wrapper para método assíncrono)."""

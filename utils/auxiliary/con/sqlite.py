@@ -89,6 +89,6 @@ class SqliteOutput(BaseModule):
             self.set_result(f"{data} ✓ Dados salvos em SQLite: {database_path}")
             
         except ImportError:
-            self.set_result("✗ Erro: sqlite3 não disponível")
+            self.handle_error(ImportError("sqlite3 não disponível"), "Erro de importação SQLite")
         except Exception as e:
-            self.set_result(f"✗ Erro SQLite: {str(e)}")
+            self.handle_error(e, "Erro ao salvar dados no SQLite")

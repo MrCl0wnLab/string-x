@@ -139,7 +139,7 @@ class HttpProbe(BaseModule):
             title = soup.title.string if soup.title else ""
             return title.strip() if title else ""
         except Exception as e:
-            self.log_debug(f"Erro ao extrair título: {str(e)}")
+            self.handle_error(e, "Erro ao extrair título da página")
             return ""
     
     @retry_operation
@@ -200,11 +200,9 @@ class HttpProbe(BaseModule):
             
             return result
         except httpx.HTTPError as e:
-            self.log_debug(f"Erro HTTP: {str(e)}")
             result['error'] = f"Erro HTTP: {str(e)}"
             return result
         except Exception as e:
-            self.log_debug(f"Erro: {str(e)}")
             result['error'] = f"Erro: {str(e)}"
             return result
     
@@ -252,7 +250,7 @@ class HttpProbe(BaseModule):
                     result = await task
                     results.append(result)
                 except Exception as e:
-                    self.log_debug(f"Erro ao verificar URL: {str(e)}")
+                    self.handle_error(e, "Erro ao verificar URL")
         
         return results
         

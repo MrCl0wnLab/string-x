@@ -158,7 +158,7 @@ class BaseModule:
         else:
             user_error_msg = f"Erro ({error_type}): {error_msg}"
             
-        self.set_result(user_error_msg)
+        self.log_debug(user_error_msg)
         
         # Registra traceback para erros não esperados
         if not isinstance(e, (ValueError, RequestException, ConnectError, 
