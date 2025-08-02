@@ -63,6 +63,7 @@ class SubdomainEnum(BaseModule):
         try:
             domain = self.options.get("data", "").strip()
             if not domain:
+                self.log_debug("⚠️ Domínio não fornecido.")
                 return
             
             # Limpar resultados anteriores para evitar acúmulo

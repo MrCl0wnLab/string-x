@@ -89,6 +89,7 @@ class NetworkScanner(BaseModule):
             scan_type = self.options.get('scan_type', 'ping')
             
             if not data:
+                self.log_debug("⚠️ Nenhum dado fornecido para escaneamento.")
                 return
             
             # Limpar resultados anteriores para evitar acúmulo

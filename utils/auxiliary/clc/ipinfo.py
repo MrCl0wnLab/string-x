@@ -202,6 +202,7 @@ class IPInfo(BaseModule):
         try:
             ip = self.options.get("data", "").strip()
             if not ip or not self._is_valid_ip(ip) or self._is_private_ip(ip):
+                self.log_debug("⚠️ Endereço IP inválido ou privado.")
                 return
             
             # Limpar resultados anteriores para evitar acúmulo

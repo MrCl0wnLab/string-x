@@ -60,6 +60,7 @@ class MySqlOutput(BaseModule):
             
             data = Format.clear_value(self.options.get('data', ''))
             if not data:
+                self.log_debug("⚠️ Nenhum dado fornecido para salvar no MySQL.")
                 return
             
             # Limpar resultados anteriores para evitar acúmulo

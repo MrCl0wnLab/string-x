@@ -106,7 +106,7 @@ class BingDorker(BaseModule):
             dork = Format.clear_value(self.options.get('data', '').strip())
             
             if not dork:
-                self.set_result("⚠️ Dork não fornecido.")
+                self.log_debug("⚠️ Dork não fornecido.")
                 return
             
             # Limpar resultados anteriores para evitar acúmulo

@@ -96,9 +96,9 @@ class SlackOutput(BaseModule):
             
             with urllib.request.urlopen(req, timeout=10) as response:
                 if response.status == 200:
-                    self.set_result("✓ Mensagem enviada via Slack")
+                    self.log_debug("✓ Mensagem enviada via Slack")
                 else:
-                    self.set_result(f"✗ Erro Slack: Status {response.status}")
+                    self.log_debug(f"✗ Erro Slack: Status {response.status}")
                     
         except Exception as e:
             self.handle_error(e, "Erro ao enviar mensagem para Slack")

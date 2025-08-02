@@ -144,7 +144,7 @@ class OpenSearchOutput(BaseModule):
             
             data = Format.clear_value(self.options.get('data', ''))
             if not data:
-                self.set_result("✗ Erro: Nenhum dado fornecido para enviar ao OpenSearch")
+                self.log_debug("✗ Erro: Nenhum dado fornecido para enviar ao OpenSearch")
                 return
             
             # Verifica se as bibliotecas necessárias estão instaladas
@@ -159,10 +159,10 @@ class OpenSearchOutput(BaseModule):
                     import httpx
             except ImportError as e:
                 if "httpx" in str(e):
-                    self.set_result("✗ Erro: Biblioteca 'httpx' não está instalada. "
+                    self.log_debug("✗ Erro: Biblioteca 'httpx' não está instalada. "
                                     "Instale com: pip install httpx")
                 else:
-                    self.set_result("✗ Erro: Biblioteca 'opensearch-py' não está instalada. "
+                    self.log_debug("✗ Erro: Biblioteca 'opensearch-py' não está instalada. "
                                     "Instale com: pip install opensearch-py")
                 return
             
@@ -243,8 +243,7 @@ class OpenSearchOutput(BaseModule):
                 except Exception as e:
                     self.handle_error(e, "Erro ao verificar índice OpenSearch")
                     if attempt < retry:
-                        if self.options.get('debug', False):
-                            self.set_result(f"Tentativa {attempt+1} falhou ao verificar índice: {str(e)}")
+                        self.log_debug(f"Tentativa {attempt+1} falhou ao verificar índice: {str(e)}")
                         time.sleep(retry_delay)
                     else:
                         raise e
@@ -274,8 +273,7 @@ class OpenSearchOutput(BaseModule):
                 try:
                     double_check = client.indices.exists(index=index)
                     if double_check:
-                        if self.options.get('debug', False):
-                            self.set_result(f"Índice {index} já existe (verificação secundária)")
+                        self.log_debug(f"Índice {index} já existe (verificação secundária)")
                         index_exists = True
                 except Exception as e:
                     self.handle_error(e, "Erro na verificação secundária do índice")
@@ -285,24 +283,22 @@ class OpenSearchOutput(BaseModule):
                 if not index_exists:
                     try:
                         create_response = client.indices.create(index=index, body=index_settings)
-                        if self.options.get('debug', False):
-                            self.set_result(f"Índice {index} criado com sucesso: {create_response}")
+                        self.log_debug(f"Índice {index} criado com sucesso: {create_response}")
                     except Exception as e:
                         self.handle_error(e, "Erro ao criar índice no OpenSearch")
                         error_message = str(e)
                         
                         # Se o índice já existe, não é um erro real
                         if "resource_already_exists_exception" in error_message or "already exists" in error_message:
-                            if self.options.get('debug', False):
-                                self.set_result(f"Índice {index} já existe")
+                            self.log_debug(f"Índice {index} já existe")
                         else:
-                            self.set_result(f"✗ Erro ao criar índice: {error_message}")
+                            self.log_debug(f"✗ Erro ao criar índice: {error_message}")
                             if self.options.get('debug', False):
                                 # Tentar obter mais detalhes do erro
                                 try:
                                     # Verificar se há detalhes adicionais de erro
                                     if hasattr(e, 'info') and isinstance(e.info, dict):
-                                        self.set_result(f"Detalhes do erro: {e.info}")
+                                        self.log_debug(f"Detalhes do erro: {e.info}")
                                 except:
                                     pass
                             # Apenas log do erro, mas continuar tentando indexar no índice
@@ -349,12 +345,12 @@ class OpenSearchOutput(BaseModule):
                         success, failed = bulk(client, bulk_data, refresh=True)
                         
                         if self.options.get('debug', False):
-                            self.set_result(f"OpenSearch bulk resposta: {success} sucessos, {len(failed)} falhas")
+                            self.log_debug(f"OpenSearch bulk resposta: {success} sucessos, {len(failed)} falhas")
                         
                         if success and not failed:
-                            self.set_result(f"{doc_id}, {data}")
+                            self.log_debug(f"{doc_id}, {data}")
                         else:
-                            self.set_result(f"✗ Erro na indexação: {failed}")
+                            self.log_debug(f"✗ Erro na indexação: {failed}")
                         break
                     except Exception as e:
                         self.handle_error(e, "Erro ao indexar em bulk no OpenSearch")
