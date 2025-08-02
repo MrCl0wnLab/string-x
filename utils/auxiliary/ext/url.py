@@ -5,6 +5,8 @@ Este módulo implementa funcionalidade para extrair URLs de textos usando
 expressões regulares. Faz parte do sistema de módulos auxiliares do String-X.
 """
 import re
+import time
+import random
 from core.basemodule import BaseModule
 
 class AuxRegexURL(BaseModule):
@@ -38,7 +40,7 @@ class AuxRegexURL(BaseModule):
             "regex": r'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+(?:/[-\w%/.]*)*(?:\?[-\w%&=.]*)?',
             "example": "./strx -l webpages.txt -st \"{STRING}\" -module \"ext:url\" -pm",
             'debug': False,  # Modo de debug para mostrar informações detalhadas 
-            'retry': 0,              # Número de tentativas de requisição
+            'retry': 1,              # Número de tentativas de requisição
             'retry_delay': None,        # Atraso entre tentativas de requisição
         }
     
@@ -52,9 +54,14 @@ class AuxRegexURL(BaseModule):
         """
         # Limpar resultados anteriores para evitar acúmulo
         self._result[self._get_cls_name()].clear()
-        
+        result = []
         # Verifica se há dados para processar
         if (target_value := self.options.get("data")) and (regex_data := self.options.get("regex")): 
             regex_data = re.compile(regex_data, re.IGNORECASE)
-            if regex_result_list := list(set(re.findall(regex_data, target_value))):
-                return self.set_result("\n".join(regex_result_list))
+            if regex_result_list := re.findall(regex_data, target_value):
+                for url in regex_result_list:
+                    result.append(url)
+                if result:
+                    result = sorted(list(set(result)))  # Remove duplicatas
+                    return self.set_result("\n".join(result))
+

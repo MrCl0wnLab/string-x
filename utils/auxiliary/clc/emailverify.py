@@ -132,11 +132,9 @@ class EmailVerifier(BaseModule):
             self.set_result(result)
             
         except ValueError as e:
-            self.log_debug(f"Erro de validação: {str(e)}")
-            self.set_result(f"✗ Formato de email inválido: {str(e)}")
+            self.handle_error(f"Erro de validação: {str(e)}")
         except socket.gaierror as e:
-            self.log_debug(f"Erro de resolução DNS: {str(e)}")
-            self.set_result(f"✗ Erro na resolução DNS: {str(e)}")
+            self.handle_error(f"Erro de resolução DNS: {str(e)}")
         except smtplib.SMTPException as e:
             self.handle_error(e, "Erro SMTP EmailVerify")
         except subprocess.SubprocessError as e:

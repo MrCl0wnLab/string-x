@@ -118,9 +118,7 @@ class AuxRegexMac(BaseModule):
             self.log_debug(f"Encontrados {len(results)} endereços MAC únicos")
             # Como results já é um set(), converter para lista ordenada
             unique_macs = sorted(list(results))
-            for mac_address in unique_macs:
-                if mac_address:  # Verificar se não é string vazia
-                    self.set_result(mac_address)
+            self.set_result("\n".join(unique_macs))
         else:
             self.log_debug("Nenhum endereço MAC encontrado")
 

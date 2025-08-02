@@ -345,9 +345,10 @@ class Command:
         """
         if line_std:
             if self.verbose:
-                self._cli.console.log(line_std)
-            else:
+                self._cli.console.log('RESULT')
                 self._cli.console.print(line_std)
+            else:
+                self._cli.console.print(line_std, end='\n')
             self._save_command_log(line_std)
             
     def _print_module_result(self, results: list, module_name: str, module_index: int = 0, total_modules: int = 0) -> None:
@@ -364,9 +365,10 @@ class Command:
             module_index (int): Índice do módulo na cadeia (se aplicável)
             total_modules (int): Total de módulos na cadeia (se aplicável)
         """
+
         if not results:
             return
-            
+
         # Exibe cabeçalho do módulo
         if module_index > 0 and total_modules > 0:
             header = f"[bold cyan][Módulo {module_index}/{total_modules}: {module_name}][/bold cyan]"
@@ -378,37 +380,11 @@ class Command:
         # Processa e exibe cada resultado individualmente
         for result in results:
             if result and result.strip():
-                # Verifica se o resultado contém várias URLs concatenadas (caso comum)
-                if result.count('http') > 1:
-                    # Tenta extrair URLs individuais
-                    urls = re.findall(r'https?://[^\s"\'<>]+', result)
-                    if urls:
-                        for url in urls:
-                            self._cli.console.print(url)
-                    else:
-                        # Se não conseguiu extrair URLs, procura por múltiplos valores separados por delimitadores comuns
-                        if len(result) > 1:
-                            # Se encontrou múltiplos itens, imprime cada um separadamente
-                            for item in result:
-                                if item.strip():
-                                    self._cli.console.print(item.strip())
-                        else:
-                            # Senão imprime o resultado completo
-                            self._cli.console.print(result.strip())
-                else:
-                    # Verifica se contém múltiplos valores separados por delimitadores comuns
-                    if len(result) > 1:
-                        # Se encontrou múltiplos itens, imprime cada um separadamente
-                        for item in result:
-                            if item.strip():
-                                self._cli.console.print(item.strip())
-                    else:
-                        # Senão imprime o resultado completo
-                        self._cli.console.print(result.strip())
-        
-        # Salva todos os resultados no log
-        result_output = "\n".join(results)
-        self._save_command_log(result_output)
+                self._cli.console.print(result, end='\n')
+        if results:
+            # Salva todos os resultados no log
+            result_output = "\n".join(results)
+            self._save_command_log(result_output)
 
     def _format_function(self, command: str) -> str:
         """

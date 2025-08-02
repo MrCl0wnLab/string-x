@@ -87,7 +87,7 @@ class XMLOutput(BaseModule):
             # Salvar arquivo
             tree.write(file_path, encoding='utf-8', xml_declaration=True)
             
-            self.set_result(f"Data saved to {file_path}")
+            self.log_debug(f"Data saved to {file_path}")
             
         except Exception as e:
             self.handle_error(e, "Erro ao salvar dados em XML")

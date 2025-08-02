@@ -85,9 +85,15 @@ class SubdomainEnum(BaseModule):
                     subdomains.update(subs)
                 except Exception:
                     continue
-            
-            for subdomain in sorted(subdomains):
-                self.set_result("\n".join(subdomain))
+                
+            if not subdomains:
+                self.log_debug("Nenhum subdomínio encontrado")
+                return
+                            
+            # Deduplicar e formatar resultados
+            subdomains = sorted(list(set(subdomains)))
+            self.log_debug(f"Subdomínios encontrados: {len(subdomains)}")            
+            self.set_result("\n".join(subdomains))
         except Exception as e:
             self.handle_error(e, "Erro Subdomain")
 

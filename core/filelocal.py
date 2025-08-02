@@ -9,7 +9,10 @@ manipulação de CSV e navegação em diretórios, além de configurações INI.
 import os
 import csv
 import pathlib
+from pathlib import Path
 import configparser
+from datetime import datetime
+from typing import Tuple, List, Union, Optional
 
 # Módulos locais
 from core.style_cli import StyleCli
@@ -30,6 +33,7 @@ class FileLocal:
         """
         self._cli = StyleCli()
 
+
     def open_file(self, filename: str, mode: str):
         """
         Abre um arquivo e retorna suas linhas e handle.
@@ -42,16 +46,26 @@ class FileLocal:
             tuple: Tupla contendo (linhas_do_arquivo, handle_do_arquivo)
         """
         if filename and mode:
-            try:
-                data_return = open(filename, mode, encoding="utf8")
-                txt_line = (data_return.readlines())
-                return txt_line, data_return
-            except FileNotFoundError:
-                self._cli.console.print_exception(max_frames=3)
-            except PermissionError:
-                self._cli.console.print_exception(max_frames=3)
-            except Exception:
-                self._cli.console.print_exception(max_frames=3)
+            encodings_to_try = ['utf-8', 'latin1', 'iso-8859-1', 'cp1252']
+            for encoding in encodings_to_try:
+                try:
+                    data_return = open(filename, mode, encoding=encoding)
+                    txt_line = data_return.readlines()
+                    return txt_line, data_return
+                except UnicodeDecodeError:
+                    continue
+                except FileNotFoundError:
+                    self._cli.console.print_exception(max_frames=3)
+                    break
+                except PermissionError:
+                    self._cli.console.print_exception(max_frames=3)
+                    break
+                except Exception:
+                    self._cli.console.print_exception(max_frames=3)
+                    break
+        
+        # Retornar valores vazios se não conseguimos ler o arquivo
+        return [], None
 
     def save_value(self, value: str, file: str, mode: str = 'a+'):
         """
@@ -64,7 +78,7 @@ class FileLocal:
         """
         if value and file:
             try:
-                # Create directory if it doesn't exist
+                # Criar diretório se não existir
                 os.makedirs(os.path.dirname(file), exist_ok=True)
                 with open(file, mode) as data_return:
                     data_return.writelines(value)
@@ -81,7 +95,7 @@ class FileLocal:
         """
         if value and file:
             try:
-                # Create directory if it doesn't exist
+                # Criar diretório se não existir
                 os.makedirs(os.path.dirname(file), exist_ok=True)
                 with open(file, 'w') as data_return:
                     data_return.write(value)

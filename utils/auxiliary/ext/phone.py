@@ -58,12 +58,16 @@ class Phone(BaseModule):
         """
         # Limpar resultados anteriores para evitar acúmulo
         self._result[self._get_cls_name()].clear()
-        
+        result = []
         # Verifica se há dados para processar
         if (target_value := self.options.get("data")) and (regex_data := self.options.get("regex")): 
             regex_data = re.compile(regex_data, re.IGNORECASE)
-            if regex_result_list := set(re.findall(regex_data, target_value)):
-                for value_regex in regex_result_list:
-                    self.set_result(value_regex)
+            if regex_result_list := re.findall(regex_data, target_value):
+                for phone in regex_result_list:
+                    result.append(phone)
+                if result:
+                    result = sorted(list(set(result)))  # Remove duplicatas
+                    return self.set_result("\n".join(result))
+
 
 

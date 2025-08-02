@@ -61,7 +61,7 @@ class AuxRegexDomain(BaseModule):
             "regex": rf'(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-]{{0,61}}[a-zA-Z0-9])?\.)+(?:{tld_pattern})\b',
             "example": './strx -l documents.txt -st "{STRING}" -module "ext:domain" -pm -f ".com"',
             'debug': False,  # Modo de debug para mostrar informações detalhadas
-            'retry': 0,              # Número de tentativas de requisição
+            'retry': 1,              # Número de tentativas de requisição
             'retry_delay': None,        # Atraso entre tentativas de requisição
         }
         
@@ -81,10 +81,16 @@ class AuxRegexDomain(BaseModule):
         """
         # Limpar resultados anteriores para evitar acúmulo
         self._result[self._get_cls_name()].clear()
-        
+        result = []
         # Verifica se há dados para processar
         if (target_value := self.options.get("data")) and (regex_data := self.options.get("regex")): 
             regex_data = re.compile(regex_data, re.IGNORECASE)
-            if regex_result_list := list(set(re.findall(regex_data, target_value))):
-                return self.set_result("\n".join(regex_result_list))
+            if regex_result_list := re.findall(regex_data, target_value):
+                #print(regex_result_list, "\n".join(regex_result_list))
+                for domain in regex_result_list:
+                    result.append(domain)
+                if result:
+                    result = sorted(list(set(result)))  # Remove duplicatas
+                    return self.set_result("\n".join(result))
+
             

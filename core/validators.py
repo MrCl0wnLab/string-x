@@ -214,48 +214,41 @@ class Validator:
                 return False
                                
     
-    # ...existing code...
-
     @staticmethod
     def validate_cpf(cpf: str) -> bool:
         """
-        Valida CPF brasileiro
-
-        Args:   
-            cpf (str): O CPF a ser validado (com ou sem máscara).
+        Valida um CPF usando o algoritmo de dígitos verificadores.
+        
+        Args:
+            cpf (str): CPF apenas com números
+            
         Returns:
-            bool: True se o CPF for válido, False caso contrário.
+            bool: True se válido, False caso contrário
+            
+        Example:
+            >>> validate_cpf("12345678909")
+            >>> validate_cpf("123.456.789-09")
         """
-        if not cpf:
+        # Remove caracteres não numéricos
+        cpf_clean = re.sub(r'[^0-9]', '', cpf)
+        
+        if len(cpf_clean) != 11 or cpf_clean == cpf_clean[0] * 11:
             return False
         
-        # Remove caracteres não numéricos
-        if cpf := ''.join(filter(str.isdigit, cpf)).strip():
-            if len(cpf) != 11:
-                return False
-            print(cpf)
-            # Verifica se todos os dígitos são iguais
-            if len(set(cpf)) == 1:
-                return False
-            
-            try:
-                # Calcula primeiro dígito verificador
-                sum1 = sum(int(cpf[i]) * (10 - i) for i in range(9))
-                digit1 = 11 - (sum1 % 11)
-                if digit1 >= 10:
-                    digit1 = 0
-                
-                # Calcula segundo dígito verificador
-                sum2 = sum(int(cpf[i]) * (11 - i) for i in range(10))
-                digit2 = 11 - (sum2 % 11)
-                if digit2 >= 10:
-                    digit2 = 0
-                
-                return int(cpf[9]) == digit1 and int(cpf[10]) == digit2
-            except Exception:
-                return False
-        return False
-
+        # Calcular primeiro dígito verificador
+        sum1 = sum(int(cpf_clean[i]) * (10 - i) for i in range(9))
+        digit1 = 11 - (sum1 % 11)
+        if digit1 >= 10:
+            digit1 = 0
+        
+        # Calcular segundo dígito verificador
+        sum2 = sum(int(cpf_clean[i]) * (11 - i) for i in range(10))
+        digit2 = 11 - (sum2 % 11)
+        if digit2 >= 10:
+            digit2 = 0
+        
+        return int(cpf_clean[9]) == digit1 and int(cpf_clean[10]) == digit2
+        
     @staticmethod
     def validate_hash(hash_value: str, hash_type: str = "auto") -> bool:
         """
@@ -550,40 +543,36 @@ class Validator:
     @staticmethod
     def validate_pis(pis: str) -> bool:
         """
-        Valida PIS/PASEP brasileiro
-
-        Args:
-            pis (str): O PIS/PASEP a ser validado (com ou sem máscara).
-
-        Returns:
-            bool: True se o PIS/PASEP for válido, False caso contrário.
-        """
-        if not pis:
-            return False
+        Valida um número de PIS/PASEP.
         
+        Args:
+            pis (str): PIS apenas com números
+            
+        Returns:
+            bool: True se válido, False caso contrário
+            
+        Example:
+            >>> validate_pis("12345678909")
+            >>> validate_pis("123.45678.90-9")
+        """
         # Remove caracteres não numéricos
-        pis_clean = re.sub(r'\D', '', pis)
+        pis_clean = re.sub(r'[^0-9]', '', pis)
         
         if len(pis_clean) != 11:
             return False
-        
-        try:
-            # Pesos para cálculo
-            weights = [3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
             
-            # Calcula soma ponderada
-            soma = sum(int(pis_clean[i]) * weights[i] for i in range(10))
-            
-            # Calcula dígito verificador
-            resto = soma % 11
-            if resto < 2:
-                dv = 0
-            else:
-                dv = 11 - resto
-            
-            return int(pis_clean[10]) == dv
-        except (ValueError, IndexError):
+        if pis_clean == pis_clean[0] * 11:
             return False
+            
+        # Pesos para o cálculo
+        weights = [3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+        
+        # Calcular dígito verificador
+        soma = sum(int(pis_clean[i]) * weights[i] for i in range(10))
+        resto = soma % 11
+        dv = 11 - resto if resto != 0 and resto != 1 else 0
+        
+        return int(pis_clean[10]) == dv
 
     @staticmethod
     def validate_litecoin_address(address: str) -> bool:
@@ -1498,10 +1487,10 @@ class Validator:
         if not plate:
             return False
             
-        # Remove spaces and hyphens
+        # Remove espaços e hífens
         plate = plate.replace(' ', '').replace('-', '').upper()
         
-        # Old format (ABC1234)
+        # Formato antigo (ABC1234)
         old_format = bool(re.match(r'^[A-Z]{3}[0-9]{4}$', plate))
         
         # Mercosul format (ABC1D23)
@@ -1717,7 +1706,7 @@ class Validator:
         
         # Validate format: 2 letters + 9 numbers + 2 letters
         return bool(re.match(r'^[A-Z]{2}[0-9]{9}[A-Z]{2}$', code))
-    
-    
+
+
 
 

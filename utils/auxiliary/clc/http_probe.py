@@ -320,7 +320,6 @@ class HttpProbe(BaseModule):
             
             if not target:
                 self.log_debug("Nenhum alvo especificado")
-                self.set_result("⚠️ Erro: Nenhum alvo especificado")
                 return
             
             # Limpar resultados anteriores
@@ -331,7 +330,7 @@ class HttpProbe(BaseModule):
             # Normalizar URL(s)
             urls_to_check = self._normalize_url(target)
             if not urls_to_check:
-                self.set_result(f"⚠️ Erro: URL inválida: {target}")
+                self.log_debug(f"⚠️ Erro: URL inválida: {target}")
                 return
             
             self.log_debug(f"URLs a verificar: {', '.join(urls_to_check)}")
@@ -344,7 +343,7 @@ class HttpProbe(BaseModule):
                 output = self._format_results(results)
                 self.set_result(output)
             else:
-                self.set_result(f"❓ Sem resposta de {target}")
+                self.log_debug(f"❓ Sem resposta de {target}")
             
         except Exception as e:
             self.handle_error(e, "Erro HTTPProbe")

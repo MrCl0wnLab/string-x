@@ -133,7 +133,6 @@ class archive(BaseModule):
         # Sanitiza o domínio de entrada (remove espaços e caracteres não imprimíveis)
         domain = re.sub(r'[^\x20-\x7E]', '', domain).strip()
         url = f'http://web.archive.org/cdx/search/cdx?url=*.{domain}/*&output=text&fl=original&collapse=urlkey'
-        print(url)
         # Prepara headers para requisição
         headers = {
             'User-Agent': UserAgentGenerator.get_random_user_agent(),

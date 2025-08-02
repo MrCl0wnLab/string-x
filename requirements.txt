@@ -33,3 +33,18 @@ asyncio>=3.4.3
 
 # Opensearch client
 opensearch-py>=2.3.0
+
+# Detecção de tipos de arquivo
+python-magic>=0.4.27
+
+# Processamento de imagens e metadados EXIF
+Pillow>=10.0.0
+
+# Metadados de áudio/vídeo
+mutagen>=1.47.0
+
+# Processamento de documentos PDF
+PyPDF2>=3.0.1
+
+# Detecção de codificação de arquivos
+chardet>=5.0.0

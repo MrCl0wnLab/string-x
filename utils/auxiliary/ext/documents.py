@@ -7,6 +7,7 @@ Faz parte do sistema de módulos auxiliares do String-X.
 """
 import re
 from core.basemodule import BaseModule
+from core.validators import Validator
 
 class AuxRegexDocuments(BaseModule):
     """
@@ -61,26 +62,73 @@ class AuxRegexDocuments(BaseModule):
             'retry_delay': None,  # Atraso entre tentativas de requisição
         }
 
-        # Padrões regex para documentos brasileiros
+        # Padrões regex para documentos brasileiros - melhorados para extração de diversos formatos
         self.document_patterns = {
             'cpf': [
-                r'\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b',  # CPF com ou sem formatação
+                # CPF com formatação padrão: 123.456.789-09
+                r'\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b',
+                
+                # CPF em dumps e outros formatos não padronizados
+                r'(?:CPF|cpf|Cpf)[\s:]*(\d{3}\.?\d{3}\.?\d{3}-?\d{2})',
+                r'(?:nr_cpf|numcpf|num_cpf|cpf_num|cpf_value)[\s:=\"\']*(\d{3}\.?\d{3}\.?\d{3}-?\d{2}|\d{11})',
+                
+                # CPF sem formatação em meio a texto ou valores
+                r'(?<!\d)(\d{11})(?!\d)',
             ],
             'cnpj': [
-                r'\b\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}\b',  # CNPJ com ou sem formatação
+                # CNPJ formatação padrão: 12.345.678/0001-90
+                r'\b\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}\b',
+                
+                # CNPJ em dumps e outros formatos não padronizados
+                r'(?:CNPJ|cnpj|Cnpj)[\s:]*(\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2})',
+                r'(?:nr_cnpj|numcnpj|num_cnpj|cnpj_num|cnpj_value)[\s:=\"\']*(\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}|\d{14})',
+                
+                # CNPJ sem formatação em meio a texto ou valores
+                r'(?<!\d)(\d{14})(?!\d)',
             ],
             'rg': [
-                r'\b\d{1,2}\.?\d{3}\.?\d{3}-?[0-9X]\b',  # RG formato SP
-                r'\b[0-9]{4,9}\b',  # RG formato simples (4-9 dígitos)
+                # RG formato SP: 12.345.678-9
+                r'\b\d{1,2}\.?\d{3}\.?\d{3}-?[0-9X]\b',
+                
+                # RG em dumps e outros formatos não padronizados
+                r'(?:RG|rg|Rg|registro\s*geral)[\s:]*([0-9]{1,2}\.?[0-9]{3}\.?[0-9]{3}-?[0-9X])',
+                r'(?:nr_rg|numrg|num_rg|rg_num|rg_value)[\s:=\"\']*([0-9]{1,2}\.?[0-9]{3}\.?[0-9]{3}-?[0-9X]|[0-9]{7,9}[0-9X]?)',
+                
+                # RG formato simples (4-9 dígitos)
+                r'\b(?<![\w\.])([0-9]{4,9})(?![\w\.])\b',
             ],
             'pis': [
-                r'\b\d{3}\.?\d{5}\.?\d{2}-?\d{1}\b',  # PIS/PASEP
+                # PIS/PASEP formatação padrão: 123.45678.90-1
+                r'\b\d{3}\.?\d{5}\.?\d{2}-?\d{1}\b',
+                
+                # PIS/PASEP em dumps e outros formatos não padronizados
+                r'(?:PIS|pis|Pis|PASEP|pasep|Pasep)[\s:]*(\d{3}\.?\d{5}\.?\d{2}-?\d{1})',
+                r'(?:nr_pis|numpis|num_pis|pis_num|pis_value)[\s:=\"\']*(\d{3}\.?\d{5}\.?\d{2}-?\d{1}|\d{11})',
+                
+                # PIS/PASEP sem formatação
+                r'(?<!\d)(\d{11})(?!\d)',
             ],
             'titulo_eleitor': [
-                r'\b\d{4}\s?\d{4}\s?\d{4}\b',  # Título de eleitor
+                # Título de eleitor formatação padrão: 1234 5678 9012
+                r'\b\d{4}\s?\d{4}\s?\d{4}\b',
+                
+                # Título de eleitor em dumps e outros formatos não padronizados
+                r'(?:titulo\s*eleitoral|titulo\s*de\s*eleitor|te)[\s:]*(\d{4}\s?\d{4}\s?\d{4}|\d{12})',
+                r'(?:nr_titulo|numtitulo|num_titulo|titulo_num|titulo_value)[\s:=\"\']*(\d{4}\s?\d{4}\s?\d{4}|\d{12})',
+                
+                # Título de eleitor sem formatação
+                r'(?<!\d)(\d{12})(?!\d)',
             ],
             'cnh': [
-                r'\b\d{11}\b',  # CNH (11 dígitos)
+                # CNH (11 dígitos)
+                r'\b\d{11}\b',
+                
+                # CNH em dumps e outros formatos não padronizados
+                r'(?:CNH|cnh|Cnh|habilitacao|carteira\s*nacional\s*de\s*habilitacao)[\s:]*(\d{11})',
+                r'(?:nr_cnh|numcnh|num_cnh|cnh_num|cnh_value)[\s:=\"\']*(\d{11})',
+                
+                # CNH sem formatação específica para CNH
+                r'(?<!\d)(\d{11})(?!\d)',
             ],
         }
 
@@ -95,7 +143,7 @@ class AuxRegexDocuments(BaseModule):
         O processo inclui:
         1. Verificação da disponibilidade de dados
         2. Extração de todos os tipos de documentos brasileiros
-        3. Validação de dígitos verificadores (quando aplicável)
+        3. Validação de dígitos verificadores usando a classe Validator
         4. Armazenamento dos resultados únicos encontrados
         """
         # Limpar resultados anteriores para evitar acúmulo
@@ -106,21 +154,25 @@ class AuxRegexDocuments(BaseModule):
 
         self.log_debug(f"Iniciando extração de documentos brasileiros em texto de {len(target_value)} caracteres")
         
-        results = set()
         validate_checksums = self.options.get("validate_checksums", True)
         
         # Extrair todos os tipos de documentos brasileiros
         document_types = ['cpf', 'cnpj', 'rg', 'pis', 'titulo_eleitor', 'cnh']
         
+        # Estrutura para armazenar todos os documentos encontrados
+        all_extracted = set()
+        
+        # Processar texto como está e também normalizar para melhorar detecção
+        processed_text = self._normalize_text(target_value)
+        
         for doc_type in document_types:
-            extracted = self._extract_by_type(target_value, doc_type, validate_checksums)
-            results.update(extracted)
+            docs = self._extract_by_type(processed_text, doc_type, validate_checksums)
+            all_extracted.update(docs)
         
         # Armazenar resultados únicos
-        if results:
-            self.log_debug(f"Encontrados {len(results)} documentos únicos")
-            for document in sorted(results):
-                self.set_result(document)
+        if all_extracted:
+            self.log_debug(f"Encontrados {len(all_extracted)} documentos únicos")
+            self.set_result("\n".join(sorted(all_extracted)))
         else:
             self.log_debug("Nenhum documento brasileiro encontrado")
 
@@ -139,28 +191,60 @@ class AuxRegexDocuments(BaseModule):
         results = set()
         patterns = self.document_patterns.get(doc_type, [])
         
+        # Mapear tipos de documento para métodos de validação do Validator
+        validator_methods = {
+            'cpf': Validator.validate_cpf if hasattr(Validator, 'validate_cpf') else None,
+            'cnpj': Validator.validate_cnpj if hasattr(Validator, 'validate_cnpj') else None,
+            'rg': None,  # RG não tem validador padrão no Validator
+            'pis': None,  # PIS não tem validador padrão no Validator
+            'titulo_eleitor': Validator.validate_titulo_eleitor if hasattr(Validator, 'validate_titulo_eleitor') else None,
+            'cnh': Validator.validate_cnh if hasattr(Validator, 'validate_cnh') else None
+        }
+        
+        # Mapear tipos de documento para rótulos
+        doc_type_labels = {
+            'cpf': 'CPF',
+            'cnpj': 'CNPJ',
+            'rg': 'RG',
+            'pis': 'PIS/PASEP',
+            'titulo_eleitor': 'TÍTULO DE ELEITOR',
+            'cnh': 'CNH'
+        }
+        
+        # Verificar comprimentos mínimos para diferentes tipos de documentos
+        min_lengths = {'cpf': 11, 'cnpj': 14, 'rg': 7, 'pis': 11, 
+                     'titulo_eleitor': 12, 'cnh': 11}
+        
         for pattern in patterns:
-            compiled_regex = re.compile(pattern, re.IGNORECASE)
+            compiled_regex = re.compile(pattern, re.IGNORECASE|re.MULTILINE|re.DOTALL)
             matches = re.findall(compiled_regex, text)
             
             for match in matches:
-                # Limpar e validar o documento
-                cleaned_doc = self._clean_document(match)
+                # Processar o match que pode ser string ou tupla
+                if isinstance(match, tuple):
+                    doc_match = next((m for m in match if m), "")
+                else:
+                    doc_match = match
                 
-                if validate:
-                    if doc_type == 'cpf' and self._validate_cpf(cleaned_doc):
-                        results.add(f"CPF, {self._format_cpf(cleaned_doc)}")
-                    elif doc_type == 'cnpj' and self._validate_cnpj(cleaned_doc):
-                        results.add(f"CNPJ, {self._format_cnpj(cleaned_doc)}")
-                    elif doc_type == 'rg' and self._validate_rg(cleaned_doc):
-                        results.add(f"RG, {self._format_rg(cleaned_doc)}")
-                    elif doc_type in ['pis', 'cnh', 'titulo_eleitor']:
-                        # Para outros tipos sem validação específica
-                        results.add(f"{doc_type.upper()}, {match}")
-                #else:
-                    # Adicionar sem validação
-                #    results.add(f"{doc_type.upper()}, {match}")
-                    
+                if not doc_match:
+                    continue
+                
+                # Limpar o documento de caracteres não numéricos (exceto X para RG)
+                cleaned_doc = self._clean_document(doc_match)
+                
+                # Verificar comprimento mínimo
+                if len(cleaned_doc) < min_lengths.get(doc_type, 4):
+                    continue
+                
+                # Se validação está ativada e existe um método validador para o tipo de documento
+                if validate and validator_methods[doc_type]:
+                    # Validar usando a classe Validator
+                    if validator_methods[doc_type](cleaned_doc):
+                        results.add(f"{doc_type_labels[doc_type]}, {cleaned_doc}")
+                else:
+                    # Sem validação ou sem método validador disponível
+                    results.add(f"{doc_type_labels[doc_type]}, {cleaned_doc}")
+        
         self.log_debug(f"Extraídos {len(results)} documentos do tipo {doc_type}")
         return results
 
@@ -172,153 +256,64 @@ class AuxRegexDocuments(BaseModule):
             document (str): Documento com formatação
             
         Returns:
-            str: Documento apenas com números
+            str: Documento apenas com números (e 'X' para RG)
         """
+        # Preserva X para RGs que usam X como dígito verificador
+        if 'X' in document.upper():
+            # Substitui todos os caracteres não numéricos exceto X
+            cleaned = ''.join(c for c in document.upper() if c.isdigit() or c == 'X')
+            return cleaned
+            
+        # Para outros documentos, remove tudo que não for dígito
         return re.sub(r'[^0-9]', '', document)
-
-    def _validate_cpf(self, cpf: str) -> bool:
+    
+    def _normalize_text(self, text: str) -> str:
         """
-        Valida um CPF usando o algoritmo de dígitos verificadores.
+        Normaliza o texto para melhorar a extração de documentos.
+        
+        Prepara o texto para melhor extração de documentos de diferentes fontes como:
+        - SQL dumps
+        - HTML
+        - Logs
+        - Arquivos de texto diversos
         
         Args:
-            cpf (str): CPF apenas com números
+            text (str): Texto original a ser normalizado
             
         Returns:
-            bool: True se válido, False caso contrário
+            str: Texto normalizado para melhor extração de documentos
         """
-        if len(cpf) != 11 or cpf == cpf[0] * 11:
-            return False
+        if not text:
+            return ""
         
-        # Calcular primeiro dígito verificador
-        sum1 = sum(int(cpf[i]) * (10 - i) for i in range(9))
-        digit1 = 11 - (sum1 % 11)
-        if digit1 >= 10:
-            digit1 = 0
+        # Processar em etapas para melhor desempenho
+        result = text
         
-        # Calcular segundo dígito verificador
-        sum2 = sum(int(cpf[i]) * (11 - i) for i in range(10))
-        digit2 = 11 - (sum2 % 11)
-        if digit2 >= 10:
-            digit2 = 0
+        # 1. Substituir caracteres de escape e HTML entities mais comuns
+        escape_mappings = {
+            "\\n": " ", "\\r": " ", "\\t": " ", "\\\\": "\\", 
+            '\\"': '"', "\\'": "'", "&#039;": "'", "&quot;": '"', 
+            "&amp;": "&", "&lt;": "<", "&gt;": ">"
+        }
         
-        return int(cpf[9]) == digit1 and int(cpf[10]) == digit2
-
-    def _validate_cnpj(self, cnpj: str) -> bool:
-        """
-        Valida um CNPJ usando o algoritmo de dígitos verificadores.
+        for esc, repl in escape_mappings.items():
+            result = result.replace(esc, repl)
         
-        Args:
-            cnpj (str): CNPJ apenas com números
-            
-        Returns:
-            bool: True se válido, False caso contrário
-        """
-        if len(cnpj) != 14 or cnpj == cnpj[0] * 14:
-            return False
+        # 2. Processamento regex em uma única passagem
+        result = re.sub(
+            r'<[^>]+>|'              # Remove tags HTML
+            r'\s+|'                  # Normaliza espaços
+            r'0x[0-9a-fA-F]+|'       # Remove valores hexadecimais
+            r'[;:,\[\]\{\}\(\)\|\\_/]',  # Remove caracteres de formatação
+            ' ', 
+            result
+        )
         
-        # Pesos para o cálculo
-        weights1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
-        weights2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+        # 3. Adicionar espaço entre números e letras para ajudar na separação
+        result = re.sub(r'(\d)([a-zA-Z])', r'\1 \2', result)
+        result = re.sub(r'([a-zA-Z])(\d)', r'\1 \2', result)
         
-        # Calcular primeiro dígito verificador
-        sum1 = sum(int(cnpj[i]) * weights1[i] for i in range(12))
-        digit1 = 11 - (sum1 % 11)
-        if digit1 >= 10:
-            digit1 = 0
+        # 4. Normalizar espaços finais
+        result = ' '.join(result.split())
         
-        # Calcular segundo dígito verificador
-        sum2 = sum(int(cnpj[i]) * weights2[i] for i in range(13))
-        digit2 = 11 - (sum2 % 11)
-        if digit2 >= 10:
-            digit2 = 0
-        
-        return int(cnpj[12]) == digit1 and int(cnpj[13]) == digit2
-    
-    def _validate_rg(self, rg: str) -> bool:
-        """
-        Valida um número de RG (Registro Geral) com dígito verificador.
-
-        Args:
-            rg (str): O número de RG a ser validado (sem pontos ou traços).
-
-        Returns:
-            bool: True se o RG for válido, False caso contrário.
-        """
-        if len(rg) != 9:
-            return False
-
-        try:
-            # Calcula o dígito verificador
-            soma = 0
-            for i in range(8):
-                soma += int(rg[i]) * (10 - (i + 1))
-            resto = soma % 11
-            dv = 11 - resto
-
-            # Trata o caso especial onde dv é 10 (o dígito verificador é 'X')
-            if dv == 10 and rg[8] == 'X':
-                return True
-            elif dv == int(rg[8]):
-                return True
-            else:
-                return False
-        except ValueError:
-            return False
-
-
-    def _format_cpf(self, cpf: str) -> str:
-        """Formata CPF no padrão XXX.XXX.XXX-XX"""
-        return f"{cpf[:3]}.{cpf[3:6]}.{cpf[6:9]}-{cpf[9:]}"
-
-    def _format_cnpj(self, cnpj: str) -> str:
-        """Formata CNPJ no padrão XX.XXX.XXX/XXXX-XX"""
-        return f"{cnpj[:2]}.{cnpj[2:5]}.{cnpj[5:8]}/{cnpj[8:12]}-{cnpj[12:]}"
-    
-    def _format_rg(self, rg:str):
-        """
-        Formata um número de RG no formato XX.XXX.XXX-Y.
-
-        Args:
-            rg_str: Uma string representando o número do RG (sem formatação).
-
-        Returns:
-            Uma string formatada do RG, ou a própria string original se não for possível formatar.
-        """
-        try:
-            # Remove caracteres não numéricos
-            rg_str = ''.join(filter(str.isdigit, rg))
-
-            if len(rg_str) == 9:
-                return f"{rg_str[:2]}.{rg_str[2:5]}.{rg_str[5:8]}-{rg_str[8]}"
-            elif len(rg_str) == 8:
-                return f"{rg_str[:2]}.{rg_str[2:5]}.{rg_str[5:8]}-" + self._calc_dig_verif(rg_str)
-
-            elif len(rg_str) < 8:
-                return rg_str
-            else:
-                return rg_str
-        except (ValueError, IndexError):
-            return rg_str
-        
-    def _calc_dig_verif(rg_str):
-        """
-        Calcula o dígito verificador do RG.
-
-        Args:
-            rg_str: Uma string com os 8 primeiros dígitos do RG.
-
-        Returns:
-            O dígito verificador como uma string.
-        """
-        if len(rg_str) != 8:
-            return "Inválido"
-
-        soma = 0
-        multiplicadores = [9, 8, 7, 6, 5, 4, 3, 2]
-        for i, num in enumerate(rg_str):
-            soma += int(num) * multiplicadores[i]
-        resto = soma % 11
-        if resto == 10:
-            return "X"
-        else:
-            return str(resto)
+        return result

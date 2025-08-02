@@ -29,7 +29,8 @@ class HashExtractor(BaseModule):
         
         self.options = {
             'data': str(),
-            'hash_types': ['md5', 'sha1', 'sha256', 'sha512', 'all'],            'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'hash_types': ['md5', 'sha1', 'sha256', 'sha512', 'all'],            
+            'debug': False,  # Modo de debug para mostrar informações detalhadas
             'retry': 0,              # Número de tentativas de requisição
             'retry_delay': None,        # Atraso entre tentativas de requisição
         }
@@ -58,10 +59,14 @@ class HashExtractor(BaseModule):
         
         if 'all' in hash_types:
             hash_types = list(patterns.keys())
-            
+        result = []    
         for hash_type in hash_types:
             if hash_type in patterns:
                 regex = re.compile(patterns[hash_type], re.IGNORECASE)
-                matches = set(re.findall(regex, target_value))
+                matches = list(set(re.findall(regex, target_value)))
+                
                 for match in matches:
-                    self.set_result(f"{hash_type.upper()}, {match}")
+                    result.append(f"{hash_type.upper()}: {match}")
+        
+        if result:
+             self.set_result("\n".join(result))

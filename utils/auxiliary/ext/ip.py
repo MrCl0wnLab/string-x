@@ -67,8 +67,8 @@ class IPExtractor(BaseModule):
             for ip in ipv6_matches:
                 results.add(f"IPv6: {ip}")
         
-        for result in results:
-            self.set_result(result)
+        if results:
+            self.set_result("".join(results))
     
     def _is_private_ipv4(self, ip: str) -> bool:
         """Verifica se é IP privado."""

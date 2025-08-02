@@ -235,7 +235,12 @@ class IPInfo(BaseModule):
                     "Timezone": data.get("timezone", "N/A"),
                     "Anycast": data.get("anycast", False)
                 }
-                self.set_result(json.dumps(result))
+
+                # Format each key-value pair and join them with newlines
+                formatted_result = [f"{key}: {value}" for key, value in result.items()]
+                if formatted_result:
+                    return self.set_result("\n".join(formatted_result))
+
         except Exception as e:
             self.handle_error(e, "Erro IPInfo")
         return str()

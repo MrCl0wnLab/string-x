@@ -150,7 +150,7 @@ class AuxRegexCryptocurrency(BaseModule):
         self.log_debug(f"Iniciando extração de criptomoedas em texto de {len(target_value)} caracteres")
         
         results = set()
-        
+        results_and_type = []
         # Verificar opções de filtragem
         bitcoin_only = self.options.get("bitcoin_only", False)
         ethereum_only = self.options.get("ethereum_only", False)
@@ -180,7 +180,10 @@ class AuxRegexCryptocurrency(BaseModule):
             self.log_debug(f"Encontrados {len(results)} endereços únicos de criptomoedas")
             for crypto_address in sorted(results):
                 crypto_type = self._identify_crypto_type(crypto_address)
-                self.set_result(f"{crypto_type}, {crypto_address}")
+                results_and_type.append(f"{crypto_type}, {crypto_address}")
+            if results_and_type:
+                result = sorted(list(set(result)))  # Remove duplicatas
+                return self.set_result("\n".join(result))
         else:
             self.log_debug("Nenhum endereço de criptomoeda encontrado")
 
