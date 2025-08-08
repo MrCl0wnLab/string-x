@@ -22,6 +22,7 @@ from core.style_cli import StyleCli
 from core.filelocal import FileLocal
 from core.auto_module import AutoModulo
 from core.output_formatter import OutputFormatter
+from core.logger import logger
 
 class Command:
     """
@@ -69,7 +70,6 @@ class Command:
         self._type_module: str = str()
         self._proxy : str = str()
         self.output_format: str = "txt"
-        self._debug: bool = False
         self._retry: int = int()
         self._retry_delay: int = int()
 
@@ -136,7 +136,7 @@ class Command:
                 
                 # Verificar se o file_output está configurado
                 if not self.file_output:
-                    self._cli.console.print("[bold red]Erro: Caminho de saída não definido![/bold red]")
+                    logger.error("Caminho de saída não definido!")
                     return
 
                 # Garantir que o nome do arquivo tenha um diretório válido
@@ -159,7 +159,7 @@ class Command:
                 '''with open(self.file_last_output, 'w+') as file_w:
                     file_w.write(str(value))'''
             except Exception as e:
-                self._cli.console.print(f"[bold red]Erro ao salvar arquivo: {str(e)}[/bold red]")
+                logger.error(f"Erro ao salvar arquivo: {str(e)}")
 
     def _save_last_target(self, value: str) -> None:
         """
@@ -215,7 +215,7 @@ class Command:
                 if not module_spec or ":" not in module_spec:
                     continue
                     
-                self._cli.verbose(f"[+] Executando módulo {i+1}/{len(modules)}: {module_spec}", self.verbose)
+                logger.verbose(f"[+] Executando módulo {i+1}/{len(modules)}: {module_spec}")
                 auto_load = AutoModulo(module_spec)
                 if obj_module := auto_load.load_module():
                     # Update current module name
@@ -228,7 +228,6 @@ class Command:
                     obj_module.options.update({
                         'data': input_data, 
                         'proxy': self._proxy, 
-                        'debug': self._debug, 
                         'retry': self._retry,
                         'retry_delay': self._retry_delay
                     })
@@ -248,12 +247,12 @@ class Command:
                         # Se não houver resultados, interrompe a cadeia no modo normal
                         # No modo -pmc, continua para o próximo módulo com os dados originais
                         if not self._print_module_chain:
-                            self._cli.verbose(f"[!] Módulo {module_spec} não retornou resultados. Encadeamento interrompido.", self.verbose)
+                            logger.verbose(f"[!] Módulo {module_spec} não retornou resultados. Encadeamento interrompido.")
                             #return None
                         
                     last_module = obj_module
                 else:
-                    self._cli.verbose(f"[!] Falha ao carregar módulo: {module_spec}", self.verbose)
+                    logger.verbose(f"[!] Falha ao carregar módulo: {module_spec}")
                     #return None
             
             # Retorna o último módulo processado
@@ -267,7 +266,6 @@ class Command:
                 obj_module.options.update({
                         'data': data, 
                         'proxy': self._proxy, 
-                        'debug': self._debug, 
                         'retry': self._retry,
                         'retry_delay': self._retry_delay
                     })
@@ -300,7 +298,7 @@ class Command:
                         )
                     except FileNotFoundError as e:
                         if not self._print_func:
-                            self._cli.console.print(e)
+                            logger.error(f"Comando não encontrado: {e}")
                     except ValueError:
                         pass
 
@@ -323,7 +321,7 @@ class Command:
                                         if is_chain:
                                             # No caso de cadeia de módulos, adiciona o nome dos módulos
                                             modules = self._type_module.split("|")
-                                            self._cli.verbose(f"[Chain: {' → '.join(modules)}]", self.verbose)  
+                                            logger.verbose(f"[Chain: {' → '.join(modules)}]")  
             
                                         
                                         # Imprimir o resultado final
@@ -331,7 +329,7 @@ class Command:
 
             except FileNotFoundError as e:
                 if not self._print_func:
-                    self._cli.console.print(e)
+                    logger.error(f"Comando não encontrado: {e}")
                 pass
             except ValueError:
                 pass
@@ -345,10 +343,10 @@ class Command:
         """
         if line_std:
             if self.verbose:
-                self._cli.console.log('RESULT')
-                self._cli.console.print(line_std)
+                logger.verbose('RESULT')
+                logger.result(line_std)
             else:
-                self._cli.console.print(line_std, end='\n')
+                logger.result(line_std)
             self._save_command_log(line_std)
             
     def _print_module_result(self, results: list, module_name: str, module_index: int = 0, total_modules: int = 0) -> None:
@@ -375,12 +373,12 @@ class Command:
         else:
             header = f"[bold cyan][Módulo: {module_name}][/bold cyan]"
             
-        self._cli.verbose(header, self.verbose)
+        logger.verbose(header)
         
         # Processa e exibe cada resultado individualmente
         for result in results:
             if result and result.strip():
-                self._cli.console.print(result, end='\n')
+                logger.result(result)
         if results:
             # Salva todos os resultados no log
             result_output = "\n".join(results)
@@ -469,7 +467,6 @@ class Command:
             self._print_result_module = args.pm
             self._print_module_chain = args.pmc
             self._proxy = args.proxy
-            self._debug = args.debug
             self._retry = int(args.retry)
             self._retry_delay = int(args.retry_delay)
             
@@ -481,16 +478,16 @@ class Command:
 
             if self._filter:
                 if self._filter not in target:
-                    return self._cli.verbose(f"[X] IF VALUE: {target}", self.verbose)
+                    return logger.verbose(f"[X] IF VALUE: {target}")
                 elif self._filter in target:
-                    self._cli.verbose(f"[!] IF VALUE: {target}", self.verbose)
+                    logger.verbose(f"[!] IF VALUE: {target}")
 
             try:
                 command_target = self._command_prepare(target, command)
                 command_pipe = self._command_prepare(target, args.pipe)
-                if command: self._cli.verbose(f"[!] TEMPLATE: {command}", self.verbose)
-                if command_target: self._cli.verbose(f"[!] COMMAND: {command_target}", self.verbose)
-                if command_pipe: self._cli.verbose(f"[!] PIPE: {command_pipe}", self.verbose)
+                if command: logger.verbose(f"[!] TEMPLATE: {command}")
+                if command_target: logger.verbose(f"[!] COMMAND: {command_target}")
+                if command_pipe: logger.verbose(f"[!] PIPE: {command_pipe}")
                 return self._exec_command(command_target, command_pipe)
             except Exception:
                 pass

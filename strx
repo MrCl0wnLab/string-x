@@ -204,8 +204,7 @@ if __name__ == '__main__':
         parser.add_argument('-str', '-st', metavar="cmd", help="String template de comando", default=None)
         parser.add_argument('-out', '-o', metavar="file", help="Arquivo output de valores da execução shell", default=setting.LOG_FILE_OUTPUT)
         parser.add_argument('-pipe', '-p', metavar="cmd", help="Comando que será executado depois de um pipe |", default=None)
-        parser.add_argument('-verbose', '-v', help="Modo verboso", action='store_true', default=False)
-        parser.add_argument('-debug', help="Habilitar debug de módulos", action='store_true', default=setting.DEBUG, required=False)
+        parser.add_argument('-verbose', '-v', metavar="<levels>", help="Níveis de verbosidade: 1=info, 2=warning, 3=debug, 4=error, 5=exception, all=todos. Ex: -v 1 ou -v 1,2 ou -v all", default=None, required=False)
         parser.add_argument('-thread', '-t', metavar=f"<{setting.THREAD_MAX}>", help="Quantidade de threads", default=setting.THREAD_MAX)
         parser.add_argument('-pf', help="Mostrar resultados da execução de função, ignora shell", action='store_true', default=False)
         parser.add_argument('-of', help="Habilitar output de valores da execução de função", action='store_true', default=False)
@@ -279,6 +278,13 @@ if __name__ == '__main__':
             CMD.file_last_output = f'{setting.LOG_DIRECTORY}/{setting.LOG_FILE_LAST}'
 
         CMD.verbose = ARGS.verbose
+        
+        # Configurar níveis de logging baseado no parâmetro -v
+        from core.logger import logger
+        logger.set_verbose_levels(ARGS.verbose)
+        
+        # Configurar o logger para usar o console estilizado
+        logger.set_styled_console(CLI.console)
 
         # Verifica se a lista de alvos não está vazia antes de chamar main
         if target_list:

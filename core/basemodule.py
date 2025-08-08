@@ -22,6 +22,7 @@ except ImportError:
 
 # Módulos locais
 from core.output_formatter import OutputFormatter
+from core.logger import logger
 
 class BaseModule:
     """
@@ -61,7 +62,6 @@ class BaseModule:
         self.options = {
             "data": None,
             "proxy": None,
-            "debug": None,
             "retry":None,
             'retry_delay': None,
         }
@@ -116,13 +116,12 @@ class BaseModule:
 
     def log_debug(self, message):
         """
-        Registra uma mensagem de debug se o modo de debug estiver ativado.
+        Registra uma mensagem de debug.
         
         Args:
             message (str): Mensagem de log
         """
-        if self.options.get('debug'):
-            print(f"[{self._get_cls_name()}] {message}")
+        logger.debug(message, module_name=self._get_cls_name())
 
     def _get_cls_name(self):
         """
@@ -170,20 +169,21 @@ class BaseModule:
         
         # Mensagem para log (mais técnica)
         log_message = f"{error_type}: {error_msg}"
-        self.log_debug(log_message)
+        logger.debug(log_message, module_name=self._get_cls_name())
         
         # Mensagem para o usuário (mais amigável)
         if user_message:
             user_error_msg = f"{user_message}: {error_msg}"
+            logger.error(user_error_msg)
         else:
             user_error_msg = f"Erro ({error_type}): {error_msg}"
-            
-        self.log_debug(user_error_msg)
+            logger.error(user_error_msg)
         
         # Registra traceback para erros não esperados
         if not isinstance(e, (ValueError, RequestException, ConnectError, 
                               ReadTimeout, ConnectTimeout, TimeoutException)):
-            self.log_debug(traceback.format_exc())
+            logger.exception(f"Traceback completo para {error_type}")
+            logger.debug(traceback.format_exc(), module_name=self._get_cls_name())
             
         # Re-lança a exceção se necessário
         if raise_error:

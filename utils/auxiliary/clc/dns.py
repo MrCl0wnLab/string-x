@@ -158,7 +158,6 @@ class DnsInfo(BaseModule):
                 self.set_result(result)
             else:
                 self.log_debug("Nenhum registro DNS encontrado")
-                self.set_result(f"Nenhum registro DNS encontrado para {host}")
                 
         except ValueError as ve:
             self.handle_error(ve, "Erro de validação DNS")
