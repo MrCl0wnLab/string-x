@@ -72,40 +72,52 @@ def quit_process(signal, frame) -> None:
     CLI.console.log(f" [!] Last value: {CMD.last_value}")
     sys.exit(0)
 
-
 def stdin_get_list() -> list:
     """
-    Obtém uma lista de strings do stdin (entrada padrão).
-    
-    Esta função verifica se há dados disponíveis no stdin sem bloquear
-    a execução do programa. É utilizada para permitir que o programa
-    aceite dados via pipe (|) de outros comandos.
-    
+    Lê lista de strings do stdin com suporte a múltiplas codificações.
+    Esta função tenta ler dados da entrada padrão (stdin) e processar as linhas
+    como uma lista de strings. Ela tenta automaticamente detectar a codificação
+    correta tentando, em sequência: utf-8, latin-1, cp1252 e iso-8859-1.
+    Se nenhuma codificação for bem-sucedida, usa utf-8 com errors='ignore'.
+    Linhas vazias são removidas do resultado final.
     Returns:
-        list: Lista de strings lidas do stdin, ou None se não houver dados
-        
+        list: Lista de strings não vazias lidas do stdin, com espaços em branco
+             no início e fim de cada linha removidos.
+        None: Se stdin for um terminal ou se ocorrer um erro (KeyboardInterrupt,
+              NameError ou IOError).
     Raises:
-        KeyboardInterrupt: Quando o usuário interrompe a execução
-        NameError: Quando há erro de nome de variável
-        IOError: Quando há erro de entrada/saída
-        
-    Reference:
-        https://stackoverflow.com/a/3763257
+        As exceções capturadas internamente são: KeyboardInterrupt, NameError e IOError.
+        Outras exceções não tratadas podem ser propagadas.
     """
-    try:
-        if select.select([sys.stdin], [], [], 0.0)[0]:
-            stdin_list = sys.stdin.readlines()
-            if stdin_list:
-                return stdin_list
-        else:
-            return None
-        return None
-    except KeyboardInterrupt:
-        CLI.console.print_exception(max_frames=3)
-    except NameError:
-        CLI.console.print_exception(max_frames=3)
-    except IOError:
-        CLI.console.print_exception(max_frames=3)
+    
+    if not sys.stdin.isatty():
+        try:
+            # Primeiro, tenta ler os bytes brutos
+            stdin_bytes = sys.stdin.buffer.read()
+            
+            # Tenta decodificar com diferentes codificações
+            encodings = ['utf-8', 'latin-1', 'cp1252', 'iso-8859-1']
+            
+            for encoding in encodings:
+                try:
+                    stdin_text = stdin_bytes.decode(encoding)
+                    stdin_lines = stdin_text.splitlines()
+                    return [line.strip() for line in stdin_lines if line.strip()]
+                except UnicodeDecodeError:
+                    continue
+            
+            # Se nenhuma codificação funcionar, usa UTF-8 com ignore
+            stdin_text = stdin_bytes.decode('utf-8', errors='ignore')
+            stdin_lines = stdin_text.splitlines()
+            return [line.strip() for line in stdin_lines if line.strip()]
+            
+        except KeyboardInterrupt:
+            CLI.console.print_exception(max_frames=3)
+        except NameError:
+            CLI.console.print_exception(max_frames=3)
+        except IOError:
+            CLI.console.print_exception(max_frames=3)
+    return None
 
 
 def open_file(filename: str) -> list[str]:
