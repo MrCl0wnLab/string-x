@@ -65,7 +65,7 @@ class TelegramOutput(BaseModule):
             self._result[self._get_cls_name()].clear()
 
             if not bot_token or not chat_id:
-                self.log_debug("✗ Erro: bot_token e chat_id são obrigatórios")
+                self.log_debug("Erro: bot_token e chat_id são obrigatórios")
                 return
             
             # Preparar mensagem
@@ -94,7 +94,7 @@ class TelegramOutput(BaseModule):
                 if result.get('ok'):
                     self.log_debug("✓ Mensagem enviada via Telegram")
                 else:
-                    self.log_debug(f"✗ Erro Telegram: {result.get('description', 'Erro desconhecido')}")
+                    self.log_debug(f"Erro Telegram: {result.get('description', 'Erro desconhecido')}")
                     
         except Exception as e:
             self.handle_error(e, "Erro ao enviar mensagem para Telegram")

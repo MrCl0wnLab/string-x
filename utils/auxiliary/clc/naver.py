@@ -91,7 +91,7 @@ class NaverDorker(BaseModule):
             dork = Format.clear_value(self.options.get('data', '').strip())
             
             if not dork:
-                self.log_debug("⚠️ Dork não fornecido.")
+                self.log_debug("Dork não fornecido.")
                 return
             
             # Limpar resultados anteriores para evitar acúmulo
@@ -101,7 +101,7 @@ class NaverDorker(BaseModule):
             results = self._search_naver(dork)
             
             if not results:
-                self.log_debug(f"⚠️ Nenhum resultado encontrado para: {dork}")
+                self.log_debug(f"Nenhum resultado encontrado para: {dork}")
                 return
 
             self.set_result("\n".join(results))

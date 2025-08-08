@@ -156,7 +156,7 @@ class IPInfo(BaseModule):
             response = await self.request.send_request([base_url], **kwargs)
             
             if not response or isinstance(response[0], Exception):
-                self.set_result(f"✗ {ip}: Erro ao consultar API: {str(response[0]) if response else 'Sem resposta'}")
+                self.set_result(f"{ip}: Erro ao consultar API: {str(response[0]) if response else 'Sem resposta'}")
                 return None
                 
             response = response[0]
@@ -166,10 +166,10 @@ class IPInfo(BaseModule):
                 # Armazenar no cache com timestamp atual
                 return data
             elif response.status_code == 429:  # Too Many Requests
-                self.set_result(f"⚠️ {ip}: Limite de requisições excedido. Tente novamente mais tarde ou use um token de API.")
+                self.set_result(f"{ip}: Limite de requisições excedido. Tente novamente mais tarde ou use um token de API.")
                 return None
             else:
-                self.set_result(f"⚠️ {ip}: API retornou código {response.status_code}")
+                self.set_result(f"{ip}: API retornou código {response.status_code}")
                 return None
             
         except Exception as e:
@@ -202,7 +202,7 @@ class IPInfo(BaseModule):
         try:
             ip = self.options.get("data", "").strip()
             if not ip or not self._is_valid_ip(ip) or self._is_private_ip(ip):
-                self.log_debug("⚠️ Endereço IP inválido ou privado.")
+                self.log_debug("Endereço IP inválido ou privado.")
                 return
             
             # Limpar resultados anteriores para evitar acúmulo

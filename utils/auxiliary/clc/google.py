@@ -120,7 +120,7 @@ class GoogleDorker(BaseModule):
             dork = Format.clear_value(self.options.get('data').strip())
             
             if not dork:
-                self.log_debug("⚠️ Dork não fornecido.")
+                self.log_debug("Dork não fornecido.")
                 return
 
             # Coletando resultados
@@ -132,7 +132,7 @@ class GoogleDorker(BaseModule):
                         results.extend(self._first_search_google(dork))
                         
             if not results:
-                self.log_debug(f"⚠️ Nenhum resultado encontrado para: {dork}")
+                self.log_debug(f"Nenhum resultado encontrado para: {dork}")
                 return
 
             self.set_result("\n".join(results))
@@ -196,13 +196,13 @@ class GoogleDorker(BaseModule):
             return None
         except RequestException as e:
             if debug_mode:
-                self.log_debug(f"⚠️ Erro de requisição com {config['host']}: {str(e)}")
+                self.log_debug(f"Erro de requisição com {config['host']}: {str(e)}")
         except ValueError as e:
             if debug_mode:
-                self.log_debug(f"⚠️ Erro de processamento com {config['host']}: {str(e)}")
+                self.log_debug(f"Erro de processamento com {config['host']}: {str(e)}")
         except Exception as e:
             if debug_mode:
-                self.log_debug(f"⚠️ Erro com {config['host']}: {str(e)}")
+                self.log_debug(f"Erro com {config['host']}: {str(e)}")
         return None
         
     
@@ -355,11 +355,11 @@ class GoogleDorker(BaseModule):
             return response.text
         except RequestException as e:
             if debug_mode:
-                self.log_debug(f"⚠️ Erro na requisição para {config['host']}: {str(e)}")
+                self.log_debug(f"Erro na requisição para {config['host']}: {str(e)}")
             raise
         except Exception as e:
             if debug_mode:
-                self.log_debug(f"⚠️ Erro inesperado na requisição para {config['host']}: {str(e)}")
+                self.log_debug(f"Erro inesperado na requisição para {config['host']}: {str(e)}")
             raise ValueError(f"Erro no processamento da requisição: {str(e)}")
         
     def _is_valid_url(self, url: str) -> bool:

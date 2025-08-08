@@ -87,7 +87,7 @@ class GoogleCSEDorker(BaseModule):
         
         # Validação de entrada - verifica se o dork foi fornecido
         if not dork:
-            self.log_debug("⚠️ Dork não fornecido.")
+            self.log_debug("Dork não fornecido.")
             return
         
         # Limpar resultados anteriores para evitar acúmulo
@@ -100,7 +100,7 @@ class GoogleCSEDorker(BaseModule):
             if info_js := self._get_info_from_cse(cse_id):
                 break
         if not info_js:
-            self.log_debug("⚠️ Não foi possível obter informações do CSE.")
+            self.log_debug("Não foi possível obter informações do CSE.")
             return
 
         # Executa a busca propriamente dita com o CSE selecionado
@@ -108,7 +108,7 @@ class GoogleCSEDorker(BaseModule):
             results = list(set(results))  # Remove duplicatas
             return self.set_result("\n".join(results))
         
-        self.log_debug("⚠️ Nenhum resultado encontrado ou erro na busca.")
+        self.log_debug("Nenhum resultado encontrado ou erro na busca.")
    
     def _search(self, dork: str, cse_id: str, info_js: dict) -> list:
         """

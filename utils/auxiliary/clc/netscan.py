@@ -89,7 +89,7 @@ class NetworkScanner(BaseModule):
             scan_type = self.options.get('scan_type', 'ping')
             
             if not data:
-                self.log_debug("⚠️ Nenhum dado fornecido para escaneamento.")
+                self.log_debug("Nenhum dado fornecido para escaneamento.")
                 return
             
             # Limpar resultados anteriores para evitar acúmulo
@@ -98,7 +98,7 @@ class NetworkScanner(BaseModule):
             # Gerar lista de hosts
             hosts = self._parse_targets(data)
             if not hosts:
-                self.set_result("✗ Erro: Targets inválidos")
+                self.set_result("Erro: Targets inválidos")
                 return
             
             # Executar escaneamento baseado no tipo
@@ -109,14 +109,14 @@ class NetworkScanner(BaseModule):
             elif scan_type == 'service':
                 self._service_scan(hosts)
             else:
-                self.set_result("✗ Erro: Tipo de scan inválido (ping, port, service)")
+                self.set_result("Erro: Tipo de scan inválido (ping, port, service)")
                 return
             
             # Compilar resultados
             if self.results:
                 result_str = f"🔍 Escaneamento: {scan_type}\n"
                 result_str += f"🎯 Targets: {len(hosts)}\n"
-                result_str += f"✅ Ativos: {len(self.results)}\n\n"
+                result_str += f"Ativos: {len(self.results)}\n\n"
                 
                 for host_result in self.results[:20]:
                     result_str += f"{host_result}\n"
@@ -126,7 +126,7 @@ class NetworkScanner(BaseModule):
                 
                 self.set_result(result_str)
             else:
-                self.set_result("ℹ️ Nenhum host ativo encontrado")
+                self.set_result("Nenhum host ativo encontrado")
                 
         except ValueError as e:
             self.handle_error(e, "Erro validação NetScan")
@@ -216,7 +216,7 @@ class NetworkScanner(BaseModule):
                 
                 if result.returncode == 0:
                     with self.lock:
-                        self.results.append(f"✅ {host} - Host ativo")
+                        self.results.append(f"{host} - Host ativo")
                         
             except Exception as e:
                 self.handle_error(e, f"Erro ao fazer ping em {host}")

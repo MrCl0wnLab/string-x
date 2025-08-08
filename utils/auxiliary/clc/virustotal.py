@@ -78,7 +78,7 @@ class VirusTotalCollector(BaseModule):
             self._result[self._get_cls_name()].clear()
 
             if not api_key:
-                self.log_debug("✗ Erro: API key do VirusTotal é obrigatória")
+                self.log_debug("Erro: API key do VirusTotal é obrigatória")
                 return
             
             # Detectar tipo automaticamente se necessário
@@ -95,7 +95,7 @@ class VirusTotalCollector(BaseModule):
             elif resource_type == 'file':
                 result = self._query_file(data, api_key)
             else:
-                self.log_debug(f"✗ Erro: Tipo de recurso não suportado: {resource_type}")
+                self.log_debug(f"Erro: Tipo de recurso não suportado: {resource_type}")
                 return
             
             if result:
@@ -167,18 +167,18 @@ class VirusTotalCollector(BaseModule):
                 categories = attributes.get('categories', {})
                 if categories:
                     cats = list(categories.values())[:3]
-                    result += f"📂 Categorias: {', '.join(cats)}\n"
+                    result += f"Categorias: {', '.join(cats)}\n"
                 
                 # Redirect chain
                 redirects = attributes.get('redirection_chain', [])
                 if redirects and len(redirects) > 1:
-                    result += f"🔄 Redirecionamentos: {len(redirects)}\n"
+                    result += f"Redirecionamentos: {len(redirects)}\n"
                 
                 return result
             elif response.status_code == 404:
-                return f"ℹ️ URL {url}: Não analisada ainda"
+                return f"URL {url}: Não analisada ainda"
             else:
-                return f"✗ Erro HTTP {response.status_code}"
+                return f"Erro HTTP {response.status_code}"
                 
         except Exception as e:
             return self.handle_error(e, "Erro na consulta de URL VirusTotal")
@@ -227,9 +227,9 @@ class VirusTotalCollector(BaseModule):
                 
                 return result
             elif response.status_code == 404:
-                return f"ℹ️ IP {ip}: Nenhuma informação disponível"
+                return f"IP {ip}: Nenhuma informação disponível"
             else:
-                return f"✗ Erro HTTP {response.status_code}"
+                return f"Erro HTTP {response.status_code}"
                 
         except Exception as e:
             return self.handle_error(e, "Erro na consulta de IP VirusTotal")
@@ -279,7 +279,7 @@ class VirusTotalCollector(BaseModule):
                 categories = attributes.get('categories', {})
                 if categories:
                     cats = list(categories.values())[:3]
-                    result += f"📂 Categorias: {', '.join(cats)}\n"
+                    result += f"Categorias: {', '.join(cats)}\n"
                 
                 # Whois
                 whois_date = attributes.get('whois_date')
@@ -290,9 +290,9 @@ class VirusTotalCollector(BaseModule):
                 
                 return result
             elif response.status_code == 404:
-                return f"ℹ️ Domínio {domain}: Nenhuma informação disponível"
+                return f"Domínio {domain}: Nenhuma informação disponível"
             else:
-                return f"✗ Erro HTTP {response.status_code}"
+                return f"Erro HTTP {response.status_code}"
                 
         except Exception as e:
             return self.handle_error(e, "Erro na consulta de domínio VirusTotal")
@@ -350,13 +350,13 @@ class VirusTotalCollector(BaseModule):
                         detections.append(f"{engine}: {malware_name}")
                 
                 if detections:
-                    result += f"⚠️ Detecções: {'; '.join(detections[:3])}\n"
+                    result += f"Detecções: {'; '.join(detections[:3])}\n"
                 
                 return result
             elif response.status_code == 404:
-                return f"ℹ️ Hash {file_hash}: Arquivo não encontrado"
+                return f"Hash {file_hash}: Arquivo não encontrado"
             else:
-                return f"✗ Erro HTTP {response.status_code}"
+                return f"Erro HTTP {response.status_code}"
                 
         except Exception as e:
             return self.handle_error(e, "Erro na consulta de arquivo VirusTotal")

@@ -80,7 +80,7 @@ class ShodanCollector(BaseModule):
             self._result[self._get_cls_name()].clear()
 
             if not api_key:
-                self.log_debug("✗ Erro: API key do Shodan é obrigatória")
+                self.log_debug("Erro: API key do Shodan é obrigatória")
                 return
             
             if query_type == 'host':
@@ -90,7 +90,7 @@ class ShodanCollector(BaseModule):
             elif query_type == 'count':
                 result = self._query_count(data, api_key)
             else:
-                self.log_debug("✗ Erro: query_type inválido (host, search, count)")
+                self.log_debug("Erro: query_type inválido (host, search, count)")
                 return
             
             if result:
@@ -140,7 +140,7 @@ class ShodanCollector(BaseModule):
                 # Vulnerabilidades
                 vulns = data.get('vulns', [])
                 if vulns:
-                    result += f"⚠️ CVEs: {', '.join(list(vulns)[:3])}\n"
+                    result += f"CVEs: {', '.join(list(vulns)[:3])}\n"
                 
                 return result
                 
@@ -148,7 +148,7 @@ class ShodanCollector(BaseModule):
             self.handle_error(e,"Erro: IP inválido")
         except Exception as e:
             if hasattr(e, 'status_code') and e.status_code == 404:
-                return self.handle_error(e,f"ℹ️ Host {ip}: Nenhuma informação disponível")
+                return self.handle_error(e,f"Host {ip}: Nenhuma informação disponível")
             return  self.handle_error(e,"Erro na consulta")
     
     def _query_host(self, ip: str, api_key: str) -> str:
@@ -195,7 +195,7 @@ class ShodanCollector(BaseModule):
                 return result
                 
         except Exception as e:
-            self.handle_error(e,"✗ Erro na busca")
+            self.handle_error(e,"Erro na busca")
             
     def _query_search(self, query: str, api_key: str) -> str:
         """Realiza busca por query no Shodan (wrapper para método assíncrono)."""

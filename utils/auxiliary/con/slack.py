@@ -62,7 +62,7 @@ class SlackOutput(BaseModule):
             self._result[self._get_cls_name()].clear()
 
             if not webhook_url:
-                self.set_result("✗ Erro: webhook_url é obrigatório")
+                self.set_result("Erro: webhook_url é obrigatório")
                 return
             
             # Preparar payload
@@ -98,7 +98,7 @@ class SlackOutput(BaseModule):
                 if response.status == 200:
                     self.log_debug("✓ Mensagem enviada via Slack")
                 else:
-                    self.log_debug(f"✗ Erro Slack: Status {response.status}")
+                    self.log_debug(f"Erro Slack: Status {response.status}")
                     
         except Exception as e:
             self.handle_error(e, "Erro ao enviar mensagem para Slack")

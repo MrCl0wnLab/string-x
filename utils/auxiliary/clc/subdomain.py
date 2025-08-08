@@ -63,7 +63,7 @@ class SubdomainEnum(BaseModule):
         try:
             domain = self.options.get("data", "").strip()
             if not domain:
-                self.log_debug("⚠️ Domínio não fornecido.")
+                self.log_debug("Domínio não fornecido.")
                 return
             
             # Limpar resultados anteriores para evitar acúmulo
@@ -175,7 +175,7 @@ class SubdomainEnum(BaseModule):
             
             return {sub for sub in subdomains if domain in sub}
         except Exception as e:
-            self.log_debug(f"✗ Erro ao conectar ao CertSpotter: {str(e)}")
+            self.log_debug(f"Erro ao conectar ao CertSpotter: {str(e)}")
             raise ValueError(e)
         
     @retry_operation
@@ -211,5 +211,5 @@ class SubdomainEnum(BaseModule):
             
             return subdomains
         except Exception as e:
-            self.log_debug(f"✗ Erro ao conectar ao HackerTarget: {str(e)}")
+            self.log_debug(f"Erro ao conectar ao HackerTarget: {str(e)}")
             raise ValueError(e)

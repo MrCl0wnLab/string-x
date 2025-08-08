@@ -52,7 +52,10 @@ class BaseModule:
         Configura estruturas básicas para resultados, opções e metadados
         que serão utilizadas pelos módulos filhos.
         """
+
         self._result = {f"{self._get_cls_name()}": []}
+        self._auto_clear_results = True  # Habilita limpeza automática por padrão
+
 
         # Cada módulo deverá definir suas opções (chave: dict com required, description, value)
         self.options = {
@@ -71,6 +74,18 @@ class BaseModule:
             "version": None,
             "type": None
         }
+    def _clear_results(self):
+        """Limpa todos os resultados armazenados."""
+        self._result[self._get_cls_name()].clear()
+    
+    def set_auto_clear(self, value: bool):
+        """
+        Define se os resultados devem ser limpos automaticamente.
+        
+        Args:
+            value (bool): True para limpar automaticamente, False caso contrário
+        """
+        self._auto_clear_results = value
 
     def set_result(self, value: str):
         """
@@ -79,8 +94,13 @@ class BaseModule:
         Args:
             value (str): Valor a ser adicionado aos resultados
         """
+         # Se auto_clear estiver habilitado e for o primeiro resultado, limpar antes
+        if self._auto_clear_results and not self._result.get(self._get_cls_name()):
+            self._clear_results()
+            
         if value:
             self._result.get(self._get_cls_name()).append(value)
+
 
     def get_result(self, plain=False):
         """

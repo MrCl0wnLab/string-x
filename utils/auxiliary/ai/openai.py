@@ -237,7 +237,7 @@ class OpenAI(BaseModule):
             
             self.log_debug("Erro: estrutura de resposta inesperada ou inválida")
             self.log_debug(f"Estrutura recebida: {json.dumps(result)[:150]}...")
-            return f"✗ Formato de Resposta da API Inesperado: {json.dumps(result)[:100]}..."
+            return f"Formato de Resposta da API Inesperado: {json.dumps(result)[:100]}..."
             
         except HTTPError as e:
             return self.handle_error(e, "Erro HTTP durante a comunicação com a API")

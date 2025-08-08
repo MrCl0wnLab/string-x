@@ -60,7 +60,7 @@ class MySqlOutput(BaseModule):
             
             data = Format.clear_value(self.options.get('data', ''))
             if not data:
-                self.log_debug("⚠️ Nenhum dado fornecido para salvar no MySQL.")
+                self.log_debug("Nenhum dado fornecido para salvar no MySQL.")
                 return
             
             # Limpar resultados anteriores para evitar acúmulo
@@ -76,7 +76,7 @@ class MySqlOutput(BaseModule):
             }
             
             if not config['password']:
-                self.set_result("✗ Erro: Senha MySQL não fornecida")
+                self.set_result("Erro: Senha MySQL não fornecida")
                 return
             
             table_name = self.options.get('table', 'results')

@@ -93,7 +93,7 @@ class EmailVerifier(BaseModule):
             # Validação básica de sintaxe
             if not self._is_valid_email_syntax(email):
                 self.log_debug("Sintaxe de email inválida")
-                self.set_result(f"✗ {email}: Sintaxe inválida")
+                self.set_result(f"{email}: Sintaxe inválida")
                 return
             
             username, domain = email.split('@')
@@ -127,7 +127,7 @@ class EmailVerifier(BaseModule):
             if analysis:
                 result += f"🔍 Análise: {analysis}\n"
             
-            result += "✅ Status: Email válido"
+            result += "Status: Email válido"
             self.log_debug("Verificação concluída com sucesso")
             self.set_result(result)
             

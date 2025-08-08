@@ -297,14 +297,14 @@ class HttpProbe(BaseModule):
                 output.append(f"   🖥️ Servidor: {result['server']}")
             
             if result['redirect_url']:
-                output.append(f"   🔄 Redireciona para: {result['redirect_url']}")
+                output.append(f"   Redireciona para: {result['redirect_url']}")
             
             if result['security_headers']:
                 headers_str = ", ".join([f"{k}: {v}" for k, v in result['security_headers'].items()])
                 output.append(f"   🔒 Headers de Segurança: {headers_str}")
             
             if result['error']:
-                output.append(f"   ⚠️ Erro: {result['error']}")
+                output.append(f"   Erro: {result['error']}")
             
             # Linha em branco entre resultados
             output.append("")
@@ -330,7 +330,7 @@ class HttpProbe(BaseModule):
             # Normalizar URL(s)
             urls_to_check = self._normalize_url(target)
             if not urls_to_check:
-                self.log_debug(f"⚠️ Erro: URL inválida: {target}")
+                self.log_debug(f"Erro: URL inválida: {target}")
                 return
             
             self.log_debug(f"URLs a verificar: {', '.join(urls_to_check)}")

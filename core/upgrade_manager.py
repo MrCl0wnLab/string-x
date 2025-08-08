@@ -135,7 +135,7 @@ class UpgradeManager:
             self.cli.console.print("[bold cyan]║[/bold cyan]  [bold white]String-X Upgrade Manager[/bold white]  [bold cyan]║[/bold cyan]")
             self.cli.console.print("[bold cyan]╚════════════════════════════╝[/bold cyan]\n")
             
-            self.cli.console.print("[blue]🔄 Verificando atualizações...[/blue]")
+            self.cli.console.print("[blue]Verificando atualizações...[/blue]")
             
             if self._is_git_repo():
                 # Projeto já é um repositório Git
@@ -143,47 +143,47 @@ class UpgradeManager:
                 pending_commits = self._get_pending_commits()
                 
                 if not pending_commits:
-                    self.cli.console.print("[green]✅ Seu código já está atualizado![/green]")
+                    self.cli.console.print("[green]Seu código já está atualizado![/green]")
                     return True
                 
                 # Mostrar commits que serão baixados
                 num_commits = len(pending_commits)
-                self.cli.console.print(f"[yellow]🔄 {num_commits} novo(s) commit(s) disponíveis:[/yellow]")
+                self.cli.console.print(f"[yellow]{num_commits} novo(s) commit(s) disponíveis:[/yellow]")
                 
                 # Exibir commits formatados
                 for commit in pending_commits:
                     self.cli.console.print(self._format_commit_message(commit))
                 
                 # Solicitar confirmação do usuário
-                self.cli.console.print("\n[yellow]ℹ️ Arquivos modificados serão preservados quando possível.[/yellow]")
+                self.cli.console.print("\n[yellow]Arquivos modificados serão preservados quando possível.[/yellow]")
                 if not self._ask_confirmation("Deseja atualizar para a última versão?"):
-                    self.cli.console.print("[blue]ℹ️ Atualização cancelada pelo usuário.[/blue]")
+                    self.cli.console.print("[blue]Atualização cancelada pelo usuário.[/blue]")
                     return False
                 
-                self.cli.console.print("[blue]🔄 Atualizando repositório Git...[/blue]")
+                self.cli.console.print("[blue]Atualizando repositório Git...[/blue]")
                 
                 # Fazer stash das mudanças locais (salva modificações locais)
                 has_changes, _, _ = self._run_command("git diff-index --quiet HEAD -- || echo 'has-changes'")
                 if has_changes:
-                    self.cli.console.print("[yellow]ℹ️ Salvando suas modificações locais...[/yellow]")
+                    self.cli.console.print("[yellow]Salvando suas modificações locais...[/yellow]")
                     self._run_command("git stash save 'Auto-stash before strx upgrade'")
                 
                 # Pull das atualizações
                 success, _, stderr = self._run_command("git pull origin main")
                 if success:
-                    self.cli.console.print("[green]✅ Código atualizado com sucesso![/green]")
+                    self.cli.console.print("[green]Código atualizado com sucesso![/green]")
                 else:
-                    self.cli.console.print("[yellow]⚠️ Erro no git pull, tentando método alternativo...[/yellow]")
+                    self.cli.console.print("[yellow]Erro no git pull, tentando método alternativo...[/yellow]")
                     
                     if "local changes" in stderr:
                         # Conflito com alterações locais
-                        self.cli.console.print("[yellow]⚠️ Conflito detectado com alterações locais.[/yellow]")
+                        self.cli.console.print("[yellow]Conflito detectado com alterações locais.[/yellow]")
                         
                         if self._ask_confirmation("Forçar atualização? (suas alterações locais serão perdidas)"):
                             self._run_command("git reset --hard origin/main")
-                            self.cli.console.print("[green]✅ Código atualizado forçadamente![/green]")
+                            self.cli.console.print("[green]Código atualizado forçadamente![/green]")
                         else:
-                            self.cli.console.print("[blue]ℹ️ Atualização cancelada para preservar alterações locais.[/blue]")
+                            self.cli.console.print("[blue]Atualização cancelada para preservar alterações locais.[/blue]")
                             return False
                     else:
                         # Outro tipo de erro, tentar reset
@@ -191,20 +191,20 @@ class UpgradeManager:
                 
                 # Restaurar mudanças locais do stash se houver
                 if has_changes:
-                    self.cli.console.print("[yellow]ℹ️ Restaurando suas modificações locais...[/yellow]")
+                    self.cli.console.print("[yellow]Restaurando suas modificações locais...[/yellow]")
                     stash_result, _, _ = self._run_command("git stash pop")
                     if not stash_result:
-                        self.cli.console.print("[yellow]⚠️ Houve conflitos ao restaurar suas mudanças.[/yellow]")
-                        self.cli.console.print("[yellow]⚠️ Suas alterações foram preservadas no git stash.[/yellow]")
+                        self.cli.console.print("[yellow]Houve conflitos ao restaurar suas mudanças.[/yellow]")
+                        self.cli.console.print("[yellow]Suas alterações foram preservadas no git stash.[/yellow]")
                 
             else:
                 # Não é um repo Git, fazer clone
                 self.cli.console.print("[blue]📥 Não é um repositório Git.[/blue]")
-                self.cli.console.print("[yellow]ℹ️ Clone completo será executado - todos os commits serão baixados[/yellow]")
+                self.cli.console.print("[yellow]Clone completo será executado - todos os commits serão baixados[/yellow]")
                 
                 # Solicitar confirmação do usuário
                 if not self._ask_confirmation("Deseja baixar a versão mais recente do String-X?"):
-                    self.cli.console.print("[blue]ℹ️ Atualização cancelada pelo usuário.[/blue]")
+                    self.cli.console.print("[blue]Atualização cancelada pelo usuário.[/blue]")
                     return False
                 
                 # Backup dos arquivos importantes
@@ -213,7 +213,7 @@ class UpgradeManager:
                 
                 for dir_name in important_dirs:
                     if Path(dir_name).exists():
-                        self.cli.console.print(f"[yellow]ℹ️ Fazendo backup da pasta '{dir_name}'...[/yellow]")
+                        self.cli.console.print(f"[yellow]Fazendo backup da pasta '{dir_name}'...[/yellow]")
                         self._run_command(f"cp -r {dir_name} /tmp/strx_{dir_name}_backup")
                         backup_created = True
                 
@@ -229,7 +229,7 @@ class UpgradeManager:
                     
                     # Restaurar backups
                     if backup_created:
-                        self.cli.console.print("[yellow]ℹ️ Restaurando arquivos e configurações...[/yellow]")
+                        self.cli.console.print("[yellow]Restaurando arquivos e configurações...[/yellow]")
                         for dir_name in important_dirs:
                             if Path(f"/tmp/strx_{dir_name}_backup").exists():
                                 self._run_command(f"cp -r /tmp/strx_{dir_name}_backup/* {dir_name}/")
@@ -246,11 +246,11 @@ class UpgradeManager:
                 self.cli.console.print("[blue]📦 Atualizando dependências...[/blue]")
                 success, _, _ = self._run_command(f"{sys.executable} -m pip install -r requirements.txt")
                 if success:
-                    self.cli.console.print("[green]✅ Dependências atualizadas com sucesso![/green]")
+                    self.cli.console.print("[green]Dependências atualizadas com sucesso![/green]")
                 else:
-                    self.cli.console.print("[yellow]⚠️ Erro ao atualizar dependências[/yellow]")
+                    self.cli.console.print("[yellow]Erro ao atualizar dependências[/yellow]")
             
-            self.cli.console.print("\n[green bold]✅ String-X atualizado com sucesso![/green bold]")
+            self.cli.console.print("\n[green bold]String-X atualizado com sucesso![/green bold]")
             self.cli.console.print("[blue]💡 Reinicie o terminal para garantir as mudanças[/blue]")
             return True
                 

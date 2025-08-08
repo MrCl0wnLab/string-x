@@ -144,7 +144,7 @@ class OpenSearchOutput(BaseModule):
             
             data = Format.clear_value(self.options.get('data', ''))
             if not data:
-                self.log_debug("✗ Erro: Nenhum dado fornecido para enviar ao OpenSearch")
+                self.log_debug("Erro: Nenhum dado fornecido para enviar ao OpenSearch")
                 return
             
             # Verifica se as bibliotecas necessárias estão instaladas
@@ -159,10 +159,10 @@ class OpenSearchOutput(BaseModule):
                     import httpx
             except ImportError as e:
                 if "httpx" in str(e):
-                    self.log_debug("✗ Erro: Biblioteca 'httpx' não está instalada. "
+                    self.log_debug("Erro: Biblioteca 'httpx' não está instalada. "
                                     "Instale com: pip install httpx")
                 else:
-                    self.log_debug("✗ Erro: Biblioteca 'opensearch-py' não está instalada. "
+                    self.log_debug("Erro: Biblioteca 'opensearch-py' não está instalada. "
                                     "Instale com: pip install opensearch-py")
                 return
             
@@ -183,7 +183,7 @@ class OpenSearchOutput(BaseModule):
             """
             available, message = self.check_server_availability(host, port)
             if not available:
-                self.set_result(f"✗ Erro OpenSearch: {message}")
+                self.set_result(f"Erro OpenSearch: {message}")
                 return
             """
             
@@ -292,7 +292,7 @@ class OpenSearchOutput(BaseModule):
                         if "resource_already_exists_exception" in error_message or "already exists" in error_message:
                             self.log_debug(f"Índice {index} já existe")
                         else:
-                            self.log_debug(f"✗ Erro ao criar índice: {error_message}")
+                            self.log_debug(f"Erro ao criar índice: {error_message}")
                             if self.options.get('debug', False):
                                 # Tentar obter mais detalhes do erro
                                 try:
@@ -321,7 +321,7 @@ class OpenSearchOutput(BaseModule):
                         if response['result'] == 'created':
                             self.set_result(f"{doc_id}, {data}")
                         else:
-                            self.set_result(f"✗ Erro na indexação: {response}")
+                            self.set_result(f"Erro na indexação: {response}")
                         break
                     except Exception as e:
                         self.handle_error(e, "Erro ao indexar documento no OpenSearch")
@@ -350,7 +350,7 @@ class OpenSearchOutput(BaseModule):
                         if success and not failed:
                             self.log_debug(f"{doc_id}, {data}")
                         else:
-                            self.log_debug(f"✗ Erro na indexação: {failed}")
+                            self.log_debug(f"Erro na indexação: {failed}")
                         break
                     except Exception as e:
                         self.handle_error(e, "Erro ao indexar em bulk no OpenSearch")

@@ -68,7 +68,7 @@ class GeoIPCollector(BaseModule):
             ip = self.options.get('data', '').strip()
             
             if not ip:
-                self.log_debug("⚠️ Nenhum IP fornecido.")
+                self.log_debug("Nenhum IP fornecido.")
                 return
             
             # Limpar resultados anteriores para evitar acúmulo
@@ -76,12 +76,12 @@ class GeoIPCollector(BaseModule):
 
             # Validar IP
             if not self._is_valid_ip(ip):
-                self.set_result(f"✗ {ip}: IP inválido")
+                self.set_result(f"{ip}: IP inválido")
                 return
             
             # Verificar se é IP privado
             if self._is_private_ip(ip):
-                self.set_result(f"ℹ️ {ip}: IP privado/local")
+                self.set_result(f"{ip}: IP privado/local")
                 return
             
             provider = self.options.get('api_provider', 'auto')
@@ -98,7 +98,7 @@ class GeoIPCollector(BaseModule):
                 except Exception:
                     continue
             
-            self.set_result(f"✗ {ip}: Não foi possível obter geolocalização")
+            self.set_result(f"{ip}: Não foi possível obter geolocalização")
             
         except Exception as e:
             self.handle_error(e, "Erro GeoIP")

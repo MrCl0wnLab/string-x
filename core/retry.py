@@ -19,7 +19,7 @@ def retry_operation(func):
                 if result is not None:
                     return result
                 if set_result:
-                    set_result(f"⚠️ Função retornou None. Tentativa {attempts+1}/{max_attempts}")
+                    set_result(f"Função retornou None. Tentativa {attempts+1}/{max_attempts}")
                 attempts += 1
                 if attempts < max_attempts:
                     await asyncio.sleep(delay)
@@ -27,11 +27,11 @@ def retry_operation(func):
                 last_error = e
                 attempts += 1
                 if debug_mode and set_result:
-                    set_result(f"⚠️ Tentativa {attempts}/{max_attempts} falhou. Tentando novamente em {delay}s...")
+                    set_result(f"Tentativa {attempts}/{max_attempts} falhou. Tentando novamente em {delay}s...")
                 if attempts < max_attempts:
                     await asyncio.sleep(delay)
         if set_result and debug_mode:
-            set_result(f"⚠️ Todas as {max_attempts} tentativas falharam: {str(last_error)}")
+            set_result(f"Todas as {max_attempts} tentativas falharam: {str(last_error)}")
         # Don't raise exceptions that would be unhandled and cause the tool to exit
         if last_error:
             return None
@@ -49,7 +49,7 @@ def retry_operation(func):
                 if result is not None:
                     return result
                 if set_result and debug_mode:
-                    set_result(f"⚠️ Função retornou None. Tentativa {attempts+1}/{max_attempts}")
+                    set_result(f"Função retornou None. Tentativa {attempts+1}/{max_attempts}")
                 attempts += 1
                 if attempts < max_attempts:
                     time.sleep(delay)
@@ -57,11 +57,11 @@ def retry_operation(func):
                 last_error = e
                 attempts += 1
                 if debug_mode and set_result:
-                    set_result(f"⚠️ Tentativa {attempts}/{max_attempts} falhou. Tentando novamente em {delay}s...")
+                    set_result(f"Tentativa {attempts}/{max_attempts} falhou. Tentando novamente em {delay}s...")
                 if attempts < max_attempts:
                     time.sleep(delay)
         if set_result and debug_mode:
-            set_result(f"⚠️ Todas as {max_attempts} tentativas falharam: {str(last_error)}")
+            set_result(f"Todas as {max_attempts} tentativas falharam: {str(last_error)}")
         # Don't raise exceptions that would be unhandled and cause the tool to exit
         if last_error:
             return None

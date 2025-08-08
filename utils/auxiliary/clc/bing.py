@@ -106,7 +106,7 @@ class BingDorker(BaseModule):
             dork = Format.clear_value(self.options.get('data', '').strip())
             
             if not dork:
-                self.log_debug("⚠️ Dork não fornecido.")
+                self.log_debug("Dork não fornecido.")
                 return
             
             # Limpar resultados anteriores para evitar acúmulo
@@ -117,7 +117,7 @@ class BingDorker(BaseModule):
             results = self._search_bing(dork)
             
             if not results:
-                self.log_debug(f"⚠️ Nenhum resultado encontrado para: {dork}")
+                self.log_debug(f"Nenhum resultado encontrado para: {dork}")
                 return
 
             self.set_result("\n".join(results))
@@ -203,7 +203,7 @@ class BingDorker(BaseModule):
             return results
                 
         except RequestException as e:
-            self.log_debug(f"✗ Erro ao conectar ao Bing: {str(e)}")
+            self.log_debug(f"Erro ao conectar ao Bing: {str(e)}")
             raise # Re-raise the original exception
         
     def _is_valid_url(self, url: str) -> bool:
