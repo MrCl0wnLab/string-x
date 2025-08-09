@@ -263,6 +263,13 @@ MEMORY_LIMIT = get_env_int('STRX_MEMORY_LIMIT', 512) * 1024 * 1024  # MB to byte
 MIN_DISK_SPACE = get_env_int('STRX_MIN_DISK_SPACE', 100) * 1024 * 1024  # MB
 
 # ==========================================
+# NOTIFICATION CONFIGURATION
+# ==========================================
+NOTIFICATIONS_ENABLED = get_env_bool('STRX_NOTIFICATIONS_ENABLED', False)
+NOTIFICATION_ICON_PATH = os.getenv('STRX_NOTIFICATION_ICON_PATH', '')
+NOTIFICATION_APP_NAME = os.getenv('STRX_NOTIFICATION_APP_NAME', 'String-X')
+
+# ==========================================
 # DEVELOPMENT/DEBUG OPTIONS
 # ==========================================
 DEBUG = get_env_bool('STRX_DEBUG', False)

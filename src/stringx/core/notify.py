@@ -31,6 +31,7 @@ except ImportError:
     NOTIFY_FUNCTIONAL = False
 
 from stringx.core.logger import logger
+from stringx.config import setting
 
 
 class NotificationManager:
@@ -70,8 +71,8 @@ class NotificationManager:
         self.functions_used = []
         self.execution_details = {}
         
-        # Configurações da notificação
-        self.app_name = "String-X"
+        # Configurações da notificação (usando variáveis do setting.py)
+        self.app_name = setting.NOTIFICATION_APP_NAME
         
         # Set the String-X icon path
         icon_path = self._get_icon_path()
@@ -271,41 +272,25 @@ class NotificationManager:
         Procura primeiro por variáveis de ambiente ou arquivo .env,
         depois usa o caminho relativo padrão do projeto.
         
-        Environment variables checked:
-        - STRINGX_ICON_PATH: Caminho completo para o ícone
-        - STRINGX_PROJECT_ROOT: Diretório raiz do projeto
+        Environment variables checked (via setting.py):
+        - STRX_NOTIFICATION_ICON_PATH: Caminho completo para o ícone
+        - STRX_PROJECT_ROOT: Diretório raiz do projeto (setting.PROJECT_ROOT)
         
         Returns:
             str: Caminho absoluto para o ícone ou None se não encontrado
         """
         try:
-            # 1. Check environment variable for direct icon path
-            icon_env_path = os.getenv('STRINGX_ICON_PATH')
-            if icon_env_path and os.path.exists(icon_env_path):
-                return str(Path(icon_env_path).absolute())
+            # 1. Check setting.py configured icon path (from STRX_NOTIFICATION_ICON_PATH)
+            if setting.NOTIFICATION_ICON_PATH and os.path.exists(setting.NOTIFICATION_ICON_PATH):
+                return str(Path(setting.NOTIFICATION_ICON_PATH).absolute())
             
-            # 2. Check environment variable for project root
-            project_root_env = os.getenv('STRINGX_PROJECT_ROOT')
-            if project_root_env:
-                icon_path = Path(project_root_env) / "asset" / "icon.png"
+            # 2. Check PROJECT_ROOT from setting.py + asset/icon.png
+            if hasattr(setting, 'PROJECT_ROOT') and setting.PROJECT_ROOT:
+                icon_path = setting.PROJECT_ROOT / "asset" / "icon.png"
                 if icon_path.exists():
                     return str(icon_path.absolute())
             
-            # 3. Try to load from .env file in project root
-            self._load_env_file()
-            
-            # Re-check environment variables after loading .env
-            icon_env_path = os.getenv('STRINGX_ICON_PATH')
-            if icon_env_path and os.path.exists(icon_env_path):
-                return str(Path(icon_env_path).absolute())
-                
-            project_root_env = os.getenv('STRINGX_PROJECT_ROOT')
-            if project_root_env:
-                icon_path = Path(project_root_env) / "asset" / "icon.png"
-                if icon_path.exists():
-                    return str(icon_path.absolute())
-            
-            # 4. Fallback to relative path detection
+            # 3. Fallback to relative path detection
             current_dir = Path(__file__).parent
             project_root = current_dir.parent.parent.parent
             icon_path = project_root / "asset" / "icon.png"
@@ -317,30 +302,6 @@ class NotificationManager:
                 
         except Exception:
             return None
-    
-    def _load_env_file(self):
-        """
-        Carrega variáveis de ambiente de um arquivo .env no diretório do projeto.
-        """
-        try:
-            # Find potential .env file locations
-            current_dir = Path(__file__).parent
-            project_root = current_dir.parent.parent.parent
-            env_file = project_root / ".env"
-            
-            if env_file.exists():
-                with open(env_file, 'r', encoding='utf-8') as f:
-                    for line in f:
-                        line = line.strip()
-                        if line and not line.startswith('#') and '=' in line:
-                            key, value = line.split('=', 1)
-                            key = key.strip()
-                            value = value.strip().strip('"').strip("'")
-                            # Only set if not already set in environment
-                            if key not in os.environ:
-                                os.environ[key] = value
-        except Exception:
-            pass  # Silently fail if .env file cannot be loaded
     
     def _send_notification(self):
         """
