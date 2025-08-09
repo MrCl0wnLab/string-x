@@ -14,7 +14,10 @@ try:
 except ImportError:
     load_dotenv = None
 
-# Get project root directory
+# Import default configuration values
+from stringx.config.defaults import *
+
+# Get project root directory (also available from defaults)
 SCRIPT_DIR = Path(__file__).parent.parent.parent.parent.resolve()
 PROJECT_ROOT = SCRIPT_DIR
 
@@ -76,15 +79,15 @@ def get_env_path(key: str, default: Union[str, Path]) -> Path:
 # ==========================================
 # APPLICATION INFORMATION
 # ==========================================
-__version__ = os.getenv('STRX_VERSION', '1.0.0')
-__author__ = os.getenv('STRX_AUTHOR', 'Cleiton Pinheiro aka MrCl0wn')
+__version__ = os.getenv('STRX_VERSION', DEFAULT_VERSION)
+__author__ = os.getenv('STRX_AUTHOR', DEFAULT_AUTHOR)
 __maintainer__ = __author__
 __credits__ = [__author__]
 __description__ = "String-X: Modern OSINT Automation Tool"
-__url__ = os.getenv('STRX_URL', 'https://github.com/MrCl0wnLab/string-x')
-__license__ = os.getenv('STRX_LICENSE', 'MIT')
-__email__ = os.getenv('STRX_EMAIL', 'mrcl0wnlab@gmail.com')
-__twitter__ = os.getenv('STRX_TWITTER', 'https://twitter.com/MrCl0wnLab')
+__url__ = os.getenv('STRX_URL', DEFAULT_URL)
+__license__ = os.getenv('STRX_LICENSE', DEFAULT_LICENSE)
+__email__ = os.getenv('STRX_EMAIL', DEFAULT_EMAIL)
+__twitter__ = os.getenv('STRX_TWITTER', DEFAULT_TWITTER)
 __git__ = [
     'https://github.com/MrCl0wnLab',
     'https://github.com/osintbrazuca'
@@ -93,13 +96,13 @@ __git__ = [
 # ==========================================
 # LOGGING CONFIGURATION
 # ==========================================
-LOG_LEVEL = os.getenv('STRX_LOG_LEVEL', 'INFO')
-LOG_DIRECTORY = get_env_path('STRX_LOG_DIRECTORY', 'output')
-LOG_TIME_FORMAT = os.getenv('STRX_LOG_TIME_FORMAT', '%d-%m-%Y-%H')
-LOG_FILE_LAST = os.getenv('STRX_LOG_FILE_LAST', 'output-last-value.log')
-ENABLE_FILE_LOGGING = get_env_bool('STRX_ENABLE_FILE_LOGGING', True)
-LOG_MAX_FILE_SIZE = get_env_int('STRX_LOG_MAX_FILE_SIZE', 100) * 1024 * 1024  # MB to bytes
-LOG_BACKUP_COUNT = get_env_int('STRX_LOG_BACKUP_COUNT', 5)
+LOG_LEVEL = os.getenv('STRX_LOG_LEVEL', DEFAULT_LOG_LEVEL)
+LOG_DIRECTORY = get_env_path('STRX_LOG_DIRECTORY', DEFAULT_LOG_DIRECTORY)
+LOG_TIME_FORMAT = os.getenv('STRX_LOG_TIME_FORMAT', DEFAULT_LOG_TIME_FORMAT)
+LOG_FILE_LAST = os.getenv('STRX_LOG_FILE_LAST', DEFAULT_LOG_FILE_LAST)
+ENABLE_FILE_LOGGING = get_env_bool('STRX_ENABLE_FILE_LOGGING', DEFAULT_ENABLE_FILE_LOGGING)
+LOG_MAX_FILE_SIZE = get_env_int('STRX_LOG_MAX_FILE_SIZE', DEFAULT_LOG_MAX_FILE_SIZE) * 1024 * 1024  # MB to bytes
+LOG_BACKUP_COUNT = get_env_int('STRX_LOG_BACKUP_COUNT', DEFAULT_LOG_BACKUP_COUNT)
 
 # Create time-based log filename
 TIME = datetime.now().strftime(LOG_TIME_FORMAT)
@@ -112,18 +115,18 @@ LOG_DIRECTORY.mkdir(parents=True, exist_ok=True)
 # HTTP REQUEST CONFIGURATION
 # ==========================================
 REQUEST_USER_AGENT = os.getenv('STRX_USER_AGENT', f'String-X/{__version__}')
-REQUEST_TIMEOUT = get_env_int('STRX_REQUEST_TIMEOUT', 30)
-RETRY_OPERATIONS = get_env_int('STRX_RETRY_OPERATIONS', 3)
-RETRY_DELAY = get_env_int('STRX_RETRY_DELAY', 2)
-RETRY_MAX_DELAY = get_env_int('STRX_RETRY_MAX_DELAY', 60)
-CONNECTION_POOL_SIZE = get_env_int('STRX_CONNECTION_POOL_SIZE', 10)
+REQUEST_TIMEOUT = get_env_int('STRX_REQUEST_TIMEOUT', DEFAULT_REQUEST_TIMEOUT)
+RETRY_OPERATIONS = get_env_int('STRX_RETRY_OPERATIONS', DEFAULT_RETRY_OPERATIONS)
+RETRY_DELAY = get_env_int('STRX_RETRY_DELAY', DEFAULT_RETRY_DELAY)
+RETRY_MAX_DELAY = get_env_int('STRX_RETRY_MAX_DELAY', DEFAULT_RETRY_MAX_DELAY)
+CONNECTION_POOL_SIZE = get_env_int('STRX_CONNECTION_POOL_SIZE', DEFAULT_CONNECTION_POOL_SIZE)
 
 # ==========================================
 # THREADING CONFIGURATION
 # ==========================================
-THREAD_MAX = get_env_int('STRX_THREAD_MAX', 10)
-THREAD_TIMEOUT = get_env_int('STRX_THREAD_TIMEOUT', 300)
-THREAD_POOL_MAX_WORKERS = get_env_int('STRX_THREAD_POOL_MAX_WORKERS', 20)
+THREAD_MAX = get_env_int('STRX_THREAD_MAX', DEFAULT_THREAD_MAX)
+THREAD_TIMEOUT = get_env_int('STRX_THREAD_TIMEOUT', DEFAULT_THREAD_TIMEOUT)
+THREAD_POOL_MAX_WORKERS = get_env_int('STRX_THREAD_POOL_MAX_WORKERS', DEFAULT_THREAD_POOL_MAX_WORKERS)
 
 # ==========================================
 # BANNER CONFIGURATION
@@ -265,9 +268,9 @@ MIN_DISK_SPACE = get_env_int('STRX_MIN_DISK_SPACE', 100) * 1024 * 1024  # MB
 # ==========================================
 # NOTIFICATION CONFIGURATION
 # ==========================================
-NOTIFICATIONS_ENABLED = get_env_bool('STRX_NOTIFICATIONS_ENABLED', False)
-NOTIFICATION_ICON_PATH = os.getenv('STRX_NOTIFICATION_ICON_PATH', '')
-NOTIFICATION_APP_NAME = os.getenv('STRX_NOTIFICATION_APP_NAME', 'String-X')
+NOTIFICATIONS_ENABLED = get_env_bool('STRX_NOTIFICATIONS_ENABLED', DEFAULT_NOTIFICATIONS_ENABLED)
+NOTIFICATION_ICON_PATH = os.getenv('STRX_NOTIFICATION_ICON_PATH', DEFAULT_NOTIFICATION_ICON_PATH)
+NOTIFICATION_APP_NAME = os.getenv('STRX_NOTIFICATION_APP_NAME', DEFAULT_NOTIFICATION_APP_NAME)
 
 # ==========================================
 # DEVELOPMENT/DEBUG OPTIONS
