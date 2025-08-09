@@ -2,12 +2,14 @@
 Módulo de formatação de saída.
 
 Este módulo contém classes e funções para formatar a saída dos resultados
-em diferentes formatos, incluindo texto simples (txt), CSV e JSON.
+em diferentes formatos, incluindo texto simples (txt), CSV, JSON e XML.
 """
 import uuid
 import csv
 import json
 import io
+import re
+import xml.etree.ElementTree as ET
 from datetime import datetime
 from typing import Any, Dict, List, Union, Optional
 
@@ -23,6 +25,53 @@ class OutputFormatter:
         formats (dict): Dicionário com os formatadores disponíveis
     """
     
+    @staticmethod
+    def _parse_structured_data(data: Union[List[Any], str, Any]) -> List[Dict[str, Any]]:
+        """
+        Converte dados em lista estruturada para formatação.
+        
+        Args:
+            data: Dados a serem analisados
+            
+        Returns:
+            List[Dict]: Lista de dicionários estruturados
+        """
+        structured_data = []
+        
+        if isinstance(data, list):
+            for item in data:
+                structured_data.extend(OutputFormatter._parse_structured_data(item))
+        elif isinstance(data, str):
+            # Dividir por linhas se contiver múltiplos resultados
+            lines = data.strip().split('\n') if '\n' in data else [data]
+            
+            for line in lines:
+                line = line.strip()
+                if not line:
+                    continue
+                    
+                # Tentar detectar padrão "TIPO: VALOR"
+                type_value_match = re.match(r'^([A-Z0-9]+):\s*(.+)$', line)
+                if type_value_match:
+                    structured_data.append({
+                        'type': type_value_match.group(1),
+                        'value': type_value_match.group(2).strip()
+                    })
+                else:
+                    # Valor simples
+                    structured_data.append({
+                        'type': 'result',
+                        'value': line
+                    })
+        else:
+            # Valor único não-string
+            structured_data.append({
+                'type': 'result',
+                'value': str(data)
+            })
+            
+        return structured_data
+
     @staticmethod
     def format_txt(data: Union[List[Any], str, Any], module: str = "", function: str = "") -> str:
         """
@@ -46,11 +95,11 @@ class OutputFormatter:
                    module: str = "",
                    function: str = "") -> str:
         """
-        Formata os dados como CSV.
+        Formata os dados como CSV com estrutura melhorada.
         
         Args:
             data: Dados a serem formatados
-            columns: Nomes das colunas (padrão: id, data, value, module, function)
+            columns: Nomes das colunas (padrão: id, timestamp, type, value, module, function)
             module: Nome do módulo usado (opcional)
             function: Nome da função usada (opcional)
             
@@ -59,26 +108,21 @@ class OutputFormatter:
         """
         output = io.StringIO()
         if columns is None:
-            columns = ['id', 'data', 'value', 'module', 'function']
+            columns = ['id', 'timestamp', 'type', 'value', 'module', 'function']
         
         writer = csv.DictWriter(output, fieldnames=columns)
         writer.writeheader()
         
-        if isinstance(data, list):
-            for i, item in enumerate(data):
-                row = {
-                    'id': str(uuid.uuid4())[:8],
-                    'data': datetime.now().isoformat(),
-                    'value': str(item),
-                    'module': module,
-                    'function': function
-                }
-                writer.writerow(row)
-        else:
+        # Converter para dados estruturados
+        structured_data = OutputFormatter._parse_structured_data(data)
+        timestamp = datetime.now().isoformat()
+        
+        for item in structured_data:
             row = {
                 'id': str(uuid.uuid4())[:8],
-                'data': datetime.now().isoformat(),
-                'value': str(data),
+                'timestamp': timestamp,
+                'type': item.get('type', 'result'),
+                'value': item.get('value', ''),
                 'module': module,
                 'function': function
             }
@@ -89,7 +133,7 @@ class OutputFormatter:
     @staticmethod
     def format_json(data: Union[List[Any], str, Any], module: str = "", function: str = "") -> str:
         """
-        Formata os dados como JSON.
+        Formata os dados como JSON estruturado.
         
         Args:
             data: Dados a serem formatados
@@ -101,33 +145,77 @@ class OutputFormatter:
         """
         timestamp = datetime.now().isoformat()
         
-        if isinstance(data, list):
-            json_data = []
-            for i, item in enumerate(data):
-                entry = {
-                    'id': str(uuid.uuid4())[:8],
-                    'data': timestamp,
-                    'value': str(item),
-                    'module': module,
-                    'function': function
-                }
-                json_data.append(entry)
-        else:
-            json_data = {
+        # Converter para dados estruturados
+        structured_data = OutputFormatter._parse_structured_data(data)
+        
+        json_data = []
+        for item in structured_data:
+            entry = {
                 'id': str(uuid.uuid4())[:8],
-                'data': timestamp,
-                'value': str(data),
+                'timestamp': timestamp,
+                'type': item.get('type', 'result'),
+                'value': item.get('value', ''),
                 'module': module,
                 'function': function
             }
+            json_data.append(entry)
+        
+        # Se apenas um item, retornar objeto único ao invés de array
+        if len(json_data) == 1:
+            return json.dumps(json_data[0], indent=2, ensure_ascii=False)
         
         return json.dumps(json_data, indent=2, ensure_ascii=False)
+    
+    @staticmethod
+    def format_xml(data: Union[List[Any], str, Any], module: str = "", function: str = "") -> str:
+        """
+        Formata os dados como XML estruturado.
+        
+        Args:
+            data: Dados a serem formatados
+            module: Nome do módulo usado (opcional)
+            function: Nome da função usada (opcional)
+            
+        Returns:
+            str: Dados formatados em XML
+        """
+        # Converter para dados estruturados
+        structured_data = OutputFormatter._parse_structured_data(data)
+        timestamp = datetime.now().isoformat()
+        
+        # Criar elemento raiz
+        root = ET.Element('stringx_results')
+        root.set('timestamp', timestamp)
+        if module:
+            root.set('module', module)
+        if function:
+            root.set('function', function)
+        
+        # Adicionar cada item como elemento
+        for item in structured_data:
+            result_elem = ET.SubElement(root, 'result')
+            result_elem.set('id', str(uuid.uuid4())[:8])
+            result_elem.set('type', item.get('type', 'result'))
+            result_elem.text = item.get('value', '')
+        
+        # Converter para string formatada
+        rough_string = ET.tostring(root, encoding='unicode')
+        
+        # Formatar XML com indentação
+        try:
+            import xml.dom.minidom
+            dom = xml.dom.minidom.parseString(rough_string)
+            return dom.toprettyxml(indent="  ")
+        except:
+            # Fallback sem formatação se minidom não estiver disponível
+            return rough_string
     
     # Dicionário para mapeamento de formato para método
     formats = {
         'txt': format_txt,
         'csv': format_csv,
-        'json': format_json
+        'json': format_json,
+        'xml': format_xml
     }
     
     @classmethod

@@ -7,7 +7,7 @@ básica que todos os módulos devem seguir.
 """
 # Bibliotecas padrão
 import traceback
-from typing import Optional, Any, List, Dict, Type
+from typing import Optional, Any, List, Dict, Type, Union
 
 # Bibliotecas de terceiros
 try:
@@ -87,19 +87,64 @@ class BaseModule:
         """
         self._auto_clear_results = value
 
-    def set_result(self, value: str):
+    def set_result(self, value: Union[str, List[str], Dict[str, Any]]):
         """
         Adiciona um resultado à lista de resultados do módulo.
         
         Args:
-            value (str): Valor a ser adicionado aos resultados
+            value: Valor a ser adicionado aos resultados (string, lista ou dicionário)
         """
          # Se auto_clear estiver habilitado e for o primeiro resultado, limpar antes
         if self._auto_clear_results and not self._result.get(self._get_cls_name()):
             self._clear_results()
             
         if value:
-            self._result.get(self._get_cls_name()).append(value)
+            if isinstance(value, list):
+                # Adicionar cada item da lista separadamente
+                for item in value:
+                    if item:  # Só adiciona se não for vazio
+                        self._result.get(self._get_cls_name()).append(str(item))
+            else:
+                self._result.get(self._get_cls_name()).append(str(value))
+
+    def set_result_list(self, values: List[Union[str, Dict[str, Any]]]):
+        """
+        Adiciona múltiplos resultados estruturados à lista.
+        
+        Args:
+            values (List): Lista de valores a serem adicionados
+        """
+        if self._auto_clear_results and not self._result.get(self._get_cls_name()):
+            self._clear_results()
+            
+        for value in values:
+            if value:
+                if isinstance(value, dict):
+                    # Se for dicionário com 'type' e 'value', formatar apropriadamente
+                    if 'type' in value and 'value' in value:
+                        formatted = f"{value['type']}: {value['value']}"
+                        self._result.get(self._get_cls_name()).append(formatted)
+                    else:
+                        self._result.get(self._get_cls_name()).append(str(value))
+                else:
+                    self._result.get(self._get_cls_name()).append(str(value))
+
+    def set_result_structured(self, results: List[Dict[str, Any]]):
+        """
+        Adiciona resultados em formato estruturado.
+        
+        Args:
+            results: Lista de dicionários com estrutura {'type': str, 'value': str}
+        """
+        if self._auto_clear_results and not self._result.get(self._get_cls_name()):
+            self._clear_results()
+            
+        for result in results:
+            if isinstance(result, dict) and 'type' in result and 'value' in result:
+                formatted = f"{result['type']}: {result['value']}"
+                self._result.get(self._get_cls_name()).append(formatted)
+            else:
+                self._result.get(self._get_cls_name()).append(str(result))
 
 
     def get_result(self, plain=False):

@@ -59,14 +59,19 @@ class HashExtractor(BaseModule):
         
         if 'all' in hash_types:
             hash_types = list(patterns.keys())
-        result = []    
+        
+        results = []    
         for hash_type in hash_types:
             if hash_type in patterns:
                 regex = re.compile(patterns[hash_type], re.IGNORECASE)
                 matches = list(set(re.findall(regex, target_value)))
                 
                 for match in matches:
-                    result.append(f"{hash_type.upper()}: {match}")
+                    results.append({
+                        'type': hash_type.upper(),
+                        'value': match
+                    })
         
-        if result:
-             self.set_result("\n".join(result))
+        if results:
+            # Usar novo método estruturado
+            self.set_result_structured(results)

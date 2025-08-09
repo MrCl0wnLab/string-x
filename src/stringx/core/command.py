@@ -337,7 +337,7 @@ class Command:
                                     if is_chain:
                                         modules = self._type_module.split("|")
                                         logger.verbose(f"[Chain: {' → '.join(modules)}]")
-                                    self._print_line_std(result_module)
+                                    self._print_line_std(result_module, is_module_result=True)
                     return  # Exit early, don't execute as shell command
             
             first_process = None
@@ -426,7 +426,7 @@ class Command:
                                                     logger.verbose(f"[Chain: {' → '.join(modules)}]")  
                         
                                                 # Imprimir o resultado final
-                                                self._print_line_std(result_module)
+                                                self._print_line_std(result_module, is_module_result=True)
                     
                     if stderr_data and not self._print_func:
                         logger.error(f"Command stderr: {stderr_data.strip()}")
@@ -469,19 +469,33 @@ class Command:
                     except:
                         pass
 
-    def _print_line_std(self, line_std) -> None:
+    def _print_line_std(self, line_std, is_module_result=False) -> None:
         """
         Imprime uma linha de saída padrão e salva no log.
         
         Args:
             line_std: Linha a ser impressa e salva
+            is_module_result: Se True, aplica formatação baseada no output_format
         """
         if line_std:
+            output_to_print = line_std
+            
+            # Se for resultado de módulo e formato não for txt, aplicar formatação
+            if is_module_result and self.output_format != "txt":
+                output_to_print = OutputFormatter.format(
+                    self.output_format, 
+                    line_std, 
+                    module=self._current_module
+                )
+            
             if self.verbose:
                 logger.verbose('RESULT')
-                logger.result(line_std)
+                logger.result(output_to_print)
             else:
-                logger.result(line_std)
+                logger.result(output_to_print)
+            
+            # Para logs, salvar apenas o resultado original (não formatado)
+            # A formatação de arquivo é feita separadamente no _save_command_log
             self._save_command_log(line_std)
             
     def _print_module_result(self, results: list, module_name: str, module_index: int = 0, total_modules: int = 0) -> None:
@@ -511,13 +525,32 @@ class Command:
         logger.verbose(header)
         
         # Processa e exibe cada resultado individualmente
-        for result in results:
-            if result and result.strip():
-                logger.result(result)
+        if self.output_format != "txt":
+            # Para formatos não-texto, formatar todos os resultados juntos
+            formatted_output = OutputFormatter.format(
+                self.output_format, 
+                results, 
+                module=module_name
+            )
+            logger.result(formatted_output)
+        else:
+            # Para formato texto, exibir cada resultado em linha separada
+            for result in results:
+                if result and result.strip():
+                    logger.result(result)
+        
         if results:
-            # Salva todos os resultados no log
-            result_output = "\n".join(results)
-            self._save_command_log(result_output)
+            # Salva todos os resultados no log (sempre formatado se não for txt)
+            if self.output_format != "txt":
+                formatted_output = OutputFormatter.format(
+                    self.output_format, 
+                    results, 
+                    module=module_name
+                )
+                self._save_command_log(formatted_output)
+            else:
+                result_output = "\n".join(results)
+                self._save_command_log(result_output)
 
     def _format_function(self, command: str) -> str:
         """
@@ -621,6 +654,10 @@ class Command:
             self._proxy = args.proxy
             self._retry = int(args.retry)
             self._retry_delay = int(args.retry_delay)
+            
+            # Set output format
+            if hasattr(args, 'format') and args.format:
+                self.output_format = args.format
             
             # Reset module and function information
             self._current_module = str()
