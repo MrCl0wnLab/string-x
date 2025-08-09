@@ -1,31 +1,62 @@
-#https://hub.docker.com/layers/library/python/3-alpine3.21/images/sha256-4ca5d46491194916d97e5d13b01ed571391f735814595e2c83b44091043b1631
-FROM python:3-alpine3.21
+# Use Python 3.12 Alpine for modern String-X requirements
+FROM python:3.12-alpine3.21
 
 # Adicionar metadados como labels
 LABEL maintainer="MrCl0wn <mrcl0wnlab[@]gmail.com>"
-LABEL version="0.1.0"
-LABEL description="Ferramenta de Automatização e Manipulação de Strings"
+LABEL version="1.0.0"
+LABEL description="String-X: Modern OSINT Automation Tool with Python 3.12+"
 LABEL org.opencontainers.image.source="https://github.com/MrCl0wnLab/string-x"
+LABEL org.opencontainers.image.title="String-X"
+LABEL org.opencontainers.image.description="Fast and customizable automation tool for string manipulation and OSINT"
+LABEL org.opencontainers.image.licenses="MIT"
 
-# Copiar arquivos para /app
-COPY . /app
+# Install system dependencies
+RUN apk add --no-cache \
+    git \
+    gcc \
+    musl-dev \
+    libffi-dev \
+    openssl-dev \
+    curl \
+    wget \
+    nmap \
+    bind-tools \
+    whois \
+    && rm -rf /var/cache/apk/*
 
-# Va até o diretorio /app
+# Set working directory
 WORKDIR /app
 
-# Clonar o repositório diretamente do GitHub
-RUN git clone https://github.com/MrCl0wnLab/string-x.git . && \
-    rm -rf .git
+# Copy project files
+COPY . /app/
 
-# Instalar requirements.txt
-RUN pip install -r requirements.txt
+# Create virtual environment and install dependencies
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 
-# Criar link simbólico dentro do container para acesso global ao comando
-RUN chmod +x /app/strx && \
-    ln -sf /app/strx /usr/local/bin/strx
+# Install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir -e .
 
-# Inicie o strx
-ENTRYPOINT ["python3", "strx"]
+# Create non-root user for security
+RUN addgroup -g 1000 strx && \
+    adduser -D -s /bin/sh -u 1000 -G strx strx
 
-# Caso não passe argumentos use o -exemples
+# Create directories and set permissions
+RUN mkdir -p /app/data /app/output && \
+    chown -R strx:strx /app
+
+# Switch to non-root user
+USER strx
+
+# Set environment variables
+ENV PYTHONPATH=/app/src
+ENV PYTHONUNBUFFERED=1
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD strx -h > /dev/null || exit 1
+
+# Default entrypoint and command
+ENTRYPOINT ["strx"]
 CMD ["-examples"]

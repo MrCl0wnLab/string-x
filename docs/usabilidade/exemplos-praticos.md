@@ -90,6 +90,89 @@ Para mais informações sobre encadeamento de módulos, consulte [Encadeamento d
   -host localhost -port 3306 -username user -password pass -database recon -table nmap_results
 ```
 
+## Exemplos com Filtros Avançados
+
+### 1. Filtros de Entrada (-f)
+
+```bash
+# Processar apenas domínios .gov.br de uma lista
+./strx -l dominios.txt -st "curl -I {STRING}" -f ".gov.br" -t 10
+
+# Filtrar apenas URLs HTTPS
+./strx -l urls.txt -st "curl -s -o /dev/null -w '%{http_code}' {STRING}" -f "https" -t 5
+
+# Processar apenas IPs de uma rede específica
+./strx -l ips.txt -st "nmap -p 80,443 {STRING}" -f "192.168.1." -t 20
+```
+
+### 2. Filtros de Resultado de Função (-iff)
+
+```bash
+# Mostrar apenas hashes MD5 que contenham "admin"
+./strx -l passwords.txt -st "{STRING}; md5({STRING})" -pf -iff "admin"
+
+# Filtrar apenas resultados de função que contenham domínios específicos
+./strx -l urls.txt -st "{STRING}; echo 'Processing: {STRING}'" -pf -iff "google"
+
+# Buscar apenas por padrões específicos em resultados de função
+./strx -l data.txt -st "{STRING}; sha256({STRING})" -pf -iff "a1b2c3"
+```
+
+### 3. Filtros de Resultado de Módulo (-ifm)
+
+```bash
+# Extrair apenas emails de domínios administrativos
+./strx -l breach_data.txt -st "echo {STRING}" -module "ext:email" -pm -ifm "admin"
+
+# Coletar apenas hashes MD5 específicos
+./strx -l strings.txt -st "{STRING}; md5({STRING})" -module "ext:hash" -pm -ifm "d41d8cd98f"
+
+# Filtrar apenas domínios que contenham "gov"
+./strx -l urls.txt -st "echo {STRING}" -module "ext:domain" -pm -ifm "gov"
+```
+
+### 4. Combinação de Filtros
+
+```bash
+# Combinar filtro de entrada com filtro de módulo
+./strx -l urls.txt -st "echo {STRING}" -f "https" -module "ext:domain" -pm -ifm "admin"
+
+# Usar todos os tipos de filtros em conjunto
+./strx -l data.txt -st "{STRING}; md5({STRING})" -f "user" -module "ext:hash" -pf -pm -iff "admin" -ifm "MD5"
+
+# Filtros para análise específica de subdomínios
+./strx -l domains.txt -st "dig +short {STRING}" -f ".com" -module "ext:ip" -pm -ifm "192.168"
+```
+
+### 5. Casos de Uso Práticos com Filtros
+
+```bash
+# OSINT: Coletar apenas subdomínios administrativos
+./strx -s "empresa.com" -module "clc:subdomain" -pm -ifm "admin" -o admin_subdomains.txt
+
+# Análise de logs: Extrair apenas IPs suspeitos
+./strx -l access.log -st "echo {STRING}" -module "ext:ip" -pm -ifm "192.168.0" -o suspicious_ips.txt
+
+# Análise de breach: Encontrar apenas emails de administradores
+./strx -l breach.txt -st "echo {STRING}" -module "ext:email" -pm -ifm "@admin" -o admin_emails.txt
+
+# Hash cracking: Filtrar apenas hashes com padrões específicos
+./strx -l hashes.txt -st "{STRING}; echo 'Hash: {STRING}'" -module "ext:hash" -pf -pm -iff "test" -ifm "MD5"
+```
+
+### 6. Filtros para Performance
+
+```bash
+# Reduzir ruído: processar apenas dados relevantes
+./strx -l big_dataset.txt -st "analyze {STRING}" -f "important" -t 50 -v 2
+
+# Filtrar resultados específicos para reduzir output
+./strx -l massive_scan.txt -st "nmap {STRING}" -module "ext:port" -pm -ifm "80|443" -o web_services.txt
+
+# Combinar filtros para análise direcionada
+./strx -l recon_data.txt -st "{STRING}; whois {STRING}" -f ".gov" -module "ext:domain" -pm -ifm "admin" -t 10
+```
+
 ## Exemplos de OSINT e Reconhecimento
 
 ### 1. Enumeração de subdomínios
@@ -201,6 +284,81 @@ Para mais informações sobre encadeamento de módulos, consulte [Encadeamento d
 ```bash
 # Análise de conteúdo com Gemini
 ./strx -l textos.txt -module "ai:gemini" -pm -api-key "SUA_API_KEY" -o analises.json -format json
+```
+
+## Exemplos com Sistema de Verbosidade
+
+### 1. Níveis de Verbose para Debug
+
+```bash
+# Informações básicas de progresso
+./strx -l domains.txt -st "dig {STRING}" -v 1
+
+# Avisos e alertas
+./strx -l urls.txt -st "curl {STRING}" -v 2
+
+# Debug detalhado para desenvolvimento
+./strx -l hosts.txt -st "nmap -p 80,443 {STRING}" -v 3
+
+# Troubleshooting completo
+./strx -l problematic_data.txt -st "complex_command {STRING}" -v all
+```
+
+### 2. Combinação de Níveis
+
+```bash
+# Mostrar apenas info e debug
+./strx -l data.txt -st "process {STRING}" -v "1,3"
+
+# Avisos e erros para produção
+./strx -l data.txt -st "process {STRING}" -v "2,4"
+```
+
+## Exemplos com Sistema de Segurança
+
+### 1. Comandos Complexos com Validação de Segurança
+
+```bash
+# Comando simples - executa normalmente
+./strx -l domains.txt -st "dig {STRING}"
+
+# Comando complexo que pode ser bloqueado
+./strx -l data.txt -st "echo {STRING}; md5sum {STRING}" -ds
+
+# Processamento de arquivos grandes sem limitações
+./strx -l huge_file.txt -st "process {STRING}" -ds -t 20
+```
+
+### 2. Debug de Problemas de Segurança
+
+```bash
+# Ver por que um comando foi bloqueado
+./strx -s "test" -st "comando_complexo" -v 3
+
+# Troubleshooting de validações de segurança
+./strx -l data.txt -st "complex {STRING}" -v "3,4" -ds
+```
+
+## Exemplos de Performance e Monitoramento
+
+### 1. Processamento de Arquivos Grandes
+
+```bash
+# Arquivo grande com monitoramento básico
+./strx -l large_file.txt -st "process {STRING}" -t 10 -sleep 1 -v 1
+
+# Arquivo enorme com configurações otimizadas
+./strx -l huge_dataset.txt -st "analyze {STRING}" -t 5 -sleep 2 -v "1,2" -ds
+```
+
+### 2. Monitoramento Detalhado
+
+```bash
+# Coleta com debug completo
+./strx -l targets.txt -module "clc:dns" -pm -v all -retry 3
+
+# Performance tuning com informações específicas
+./strx -l domains.txt -st "scan {STRING}" -v "1,4" -t 20 -sleep 0.5
 ```
 
 ## Exemplos de Workflow Completo

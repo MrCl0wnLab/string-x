@@ -16,11 +16,14 @@ Este diretório contém a configuração Docker para executar o String-X em um c
 
 ## Características
 
-- Imagem leve baseada em Alpine Linux
-- Todas as dependências pré-instaladas
-- Acesso a todos os módulos do String-X
-- Compatível com montagem de volumes para processamento de arquivos locais
-- Suporte a encadeamento via pipes com comandos do host
+- **Python 3.12+**: Compatível com a versão moderna do String-X
+- **Alpine Linux**: Imagem leve e segura
+- **Dependências pré-instaladas**: Todos os módulos e bibliotecas necessárias
+- **Sistema de segurança**: Validações integradas com opção `-ds` para bypass
+- **5 níveis de verbosidade**: Controle granular de saída (1-5 ou 'all')
+- **Usuário não-root**: Execução segura com usuário limitado
+- **Health checks**: Monitoramento automático do container
+- **Suporte completo a módulos**: EXT, CLC, CON, OUT, AI
 
 ## Requisitos
 
@@ -63,6 +66,9 @@ docker run --rm string-x -examples
 
 # Ver funções disponíveis
 docker run --rm string-x -funcs
+
+# Testar verbosidade (1=info, 2=warning, 3=debug, 4=error, 5=exception)
+docker run --rm string-x -examples -v 3
 ```
 
 ### Procesar uma string individual
@@ -71,8 +77,14 @@ docker run --rm string-x -funcs
 # Executar um comando em uma string
 docker run --rm string-x -s "example.com" -st "whois {STRING}"
 
-# Extrair domínios
-docker run --rm string-x -s "echo 'Visite https://example.com e http://test.org'" -module "ext:domain" -pm
+# Extrair domínios com verbose nível 3
+docker run --rm string-x -s "echo 'Visite https://example.com e http://test.org'" -module "ext:domain" -pm -v 3
+
+# Comando complexo com bypass de segurança
+docker run --rm string-x -s "example.com" -st "whois {STRING} && echo 'Done'" -ds
+
+# Modo verbose 'all' para debug completo
+docker run --rm string-x -s "test@example.com" -module "ext:email" -pm -v all
 ```
 
 ## Exemplos Práticos
@@ -92,17 +104,23 @@ docker run --rm -v $(pwd):/dados string-x -l /dados/dominios.txt -st "dig +short
 ### 2. Usando módulos específicos
 
 ```bash
-# Extrair emails de um arquivo
-docker run --rm -v $(pwd):/dados string-x -l /dados/texto.txt -st "echo {STRING}" -module "ext:email" -pm
+# Extrair emails de um arquivo com debug
+docker run --rm -v $(pwd):/dados string-x -l /dados/texto.txt -module "ext:email" -pm -v 3
 
-# Busca no Google
-docker run --rm -v $(pwd):/dados string-x -l /dados/dorks.txt -st "echo {STRING}" -module "clc:google" -pm
+# Busca no Google com bypass de segurança se necessário
+docker run --rm -v $(pwd):/dados string-x -l /dados/dorks.txt -module "clc:google" -pm -ds
 
-# Multi-threading para consultas DNS
-docker run --rm -v $(pwd):/dados string-x -l /dados/dominios.txt -st "dig {STRING}" -t 20
+# Multi-threading para consultas DNS com verbose warning
+docker run --rm -v $(pwd):/dados string-x -l /dados/dominios.txt -st "dig {STRING}" -t 20 -v 2
 
-# Extrair, validar e salvar emails
-docker run --rm -v $(pwd):/dados string-x -l /dados/texto.txt -module "ext:email" -pm -o /dados/emails.csv
+# Extrair, validar e salvar emails com verbose completo
+docker run --rm -v $(pwd):/dados string-x -l /dados/texto.txt -module "ext:email" -pm -o /dados/emails.csv -v all
+
+# Conectar ao MySQL container
+docker run --rm -v $(pwd):/dados string-x -l /dados/dominios.txt -module "con:mysql" -pm
+
+# Enviar dados para OpenSearch
+docker run --rm -v $(pwd):/dados string-x -l /dados/resultados.txt -module "con:opensearch" -pm
 ```
 
 ### 3. Encadeando módulos
@@ -154,6 +172,46 @@ cat domains.txt | docker run --rm -i string-x -st "host {STRING}" | grep "has ad
 cat urls.txt | docker run --rm -i string-x -module "ext:domain" -pm | docker run --rm -i string-x -st "nslookup {STRING}" | grep "Address"
 ```
 
+## Sistema de Verbosidade
+
+String-X oferece 5 níveis de verbosidade para controle granular da saída:
+
+| Nível | Descrição | Uso Recomendado |
+|-------|-----------|-----------------|
+| `-v 1` | **Info**: Informações básicas | Operações normais |
+| `-v 2` | **Warning**: Avisos e alertas | Detecção de problemas |
+| `-v 3` | **Debug**: Informações detalhadas | Debugging e desenvolvimento |
+| `-v 4` | **Error**: Apenas erros críticos | Monitoramento de falhas |
+| `-v 5` | **Exception**: Exceções e stack traces | Análise profunda de erros |
+| `-v all` | **Todos**: Combinação de todos os níveis | Debug completo |
+
+```bash
+# Exemplos de uso com diferentes níveis
+docker run --rm string-x -s "test.com" -st "dig {STRING}" -v 1    # Info básica
+docker run --rm string-x -s "test.com" -st "dig {STRING}" -v 3    # Debug detalhado
+docker run --rm string-x -s "test.com" -st "dig {STRING}" -v all  # Verbose completo
+```
+
+## Sistema de Segurança
+
+String-X inclui validações de segurança para prevenir execução de comandos maliciosos:
+
+```bash
+# Comando normal (validação ativa)
+docker run --rm string-x -s "test.com" -st "echo {STRING}"
+
+# Comando complexo que pode ser bloqueado
+docker run --rm string-x -s "test.com" -st "echo {STRING}; cat /etc/passwd"
+
+# Bypass de segurança quando necessário (use com cuidado)
+docker run --rm string-x -s "test.com" -st "complex_cmd && other {STRING}" -ds
+
+# Troubleshooting com verbose + bypass
+docker run --rm string-x -s "test.com" -st "comando_complexo {STRING}" -ds -v 3
+```
+
+⚠️ **Aviso**: Use `-ds` apenas quando necessário e em ambientes controlados.
+
 ## Dicas e Otimizações
 
 ### Alias para facilitar o uso
@@ -164,8 +222,17 @@ Adicione ao seu `.bashrc` ou `.zshrc`:
 # Alias para String-X Docker
 alias strx-docker='docker run --rm -v $(pwd):/dados -i string-x'
 
+# Alias com verbose padrão
+alias strx-debug='docker run --rm -v $(pwd):/dados -i string-x -v 3'
+
+# Alias para operações inseguras (bypass)
+alias strx-unsafe='docker run --rm -v $(pwd):/dados -i string-x -ds'
+
 # Uso simplificado
 strx-docker -l /dados/alvos.txt -st "ping -c 1 {STRING}"
+
+# Debug simplificado
+strx-debug -l /dados/alvos.txt -module "ext:domain" -pm
 ```
 
 ### Reuso do contêiner para múltiplas operações

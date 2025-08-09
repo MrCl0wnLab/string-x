@@ -7,6 +7,8 @@ Esta seção fornece documentação detalhada sobre como utilizar efetivamente o
 - [Uso Básico](uso-basico.md) - Primeiros passos com o String-X
 - [Comandos Essenciais](comandos-essenciais.md) - Guia de referência rápida dos principais comandos
 - [Parâmetros](parametros.md) - Descrição detalhada de todos os parâmetros disponíveis
+- [Sistema de Segurança](seguranca.md) - Validações de segurança e parâmetro `-ds`
+- [Níveis de Verbosidade](verbosidade.md) - Sistema de logging com 5 níveis detalhados
 - [Exemplos Práticos](exemplos-praticos.md) - Casos de uso e exemplos do mundo real
 - [Strings Únicas](strings-unicas.md) - Como usar o parâmetro `-s` para processar strings únicas
 - [Encadeamento de Módulos](encadeamento-modulos.md) - Como encadear múltiplos módulos usando o caractere pipe (`|`)
@@ -45,6 +47,33 @@ O sistema de pipe e filter permite encadear múltiplos comandos e processar seus
 ```bash
 # Filtrar resultados
 ./strx -l urls.txt -st "curl -s {STRING}" -p "grep '<title>'"
+```
+
+### Sistema de Segurança
+
+O String-X inclui validações automáticas para proteger contra comandos maliciosos:
+
+```bash
+# Comandos seguros são executados normalmente
+./strx -l data.txt -st "echo {STRING}"
+
+# Comandos complexos podem ser executados desabilitando validações
+./strx -l data.txt -st "echo {STRING}; md5sum {STRING}" -ds
+```
+
+### Verbosidade Granular
+
+Sistema de logging com 5 níveis diferentes para controle preciso da saída:
+
+```bash
+# Informações básicas
+./strx -l data.txt -st "process {STRING}" -v 1
+
+# Debug completo
+./strx -l data.txt -st "process {STRING}" -v 3
+
+# Todos os níveis
+./strx -l data.txt -st "process {STRING}" -v all
 ```
 
 ## Fluxo Básico de Uso

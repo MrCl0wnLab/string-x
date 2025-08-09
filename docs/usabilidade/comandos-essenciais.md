@@ -6,33 +6,40 @@ Este guia fornece uma referência rápida aos comandos e parâmetros mais utiliz
 
 | Parâmetro | Descrição | Exemplo |
 |-----------|-----------|---------|
-| `-s`, `--string` | Define uma string única para processamento | `-s "example.com"` |
-| `-l`, `--list` | Especifica um arquivo com múltiplas linhas | `-l dominios.txt` |
-| `-st`, `--stringtemplate` | Define o comando a ser executado com a string | `-st "dig +short {STRING}"` |
+| `-s`, `-string` | Define uma string única para processamento | `-s "example.com"` |
+| `-l`, `-list` | Especifica um arquivo com múltiplas linhas | `-l dominios.txt` |
+| `-st`, `-stringtemplate` | Define o comando a ser executado com a string | `-st "dig +short {STRING}"` |
 | `-module` | Especifica o módulo a ser utilizado | `-module "ext:email"` |
 
 ## Parâmetros de Controle de Saída
 
 | Parâmetro | Descrição | Exemplo |
 |-----------|-----------|---------|
-| `-o`, `--output` | Arquivo para salvar os resultados | `-o resultados.txt` |
-| `-pm`, `--printmodule` | Imprime a saída do módulo | `-pm` |
-| `-p`, `--pipe` | Define um comando para filtrar a saída | `-p "grep open"` |
+| `-o`, `-output` | Arquivo para salvar os resultados | `-o resultados.txt` |
+| `-pm`, `-printmodule` | Imprime a saída do módulo | `-pm` |
+| `-p`, `-pipe` | Define um comando para filtrar a saída | `-p "grep open"` |
 | `-format` | Define o formato de saída (txt, csv, json) | `-format json` |
 
-## Parâmetros de Performance
+## Parâmetros de Performance e Monitoramento
 
 | Parâmetro | Descrição | Exemplo |
 |-----------|-----------|---------|
-| `-t`, `--thread` | Número de threads para processamento paralelo | `-t 10` |
+| `-t`, `-thread` | Número de threads para processamento paralelo | `-t 10` |
 | `-sleep` | Tempo de espera entre execuções (segundos) | `-sleep 2` |
 | `-retry` | Número de tentativas em caso de falha | `-retry 3` |
+| `-v`, `-verbose` | Modo verboso com níveis (1-5 ou 'all'). 1=info, 2=warning, 3=debug, 4=error, 5=exception | `-v 3` |
+
+## Parâmetros de Segurança
+
+| Parâmetro | Descrição | Exemplo |
+|-----------|-----------|---------|
+| `-ds`, `-disable-security` | Desabilita validações de segurança (usar com cuidado) | `-ds` |
 
 ## Comandos Informativos
 
 | Comando | Descrição | Exemplo |
 |---------|-----------|---------|
-| `--help` | Exibe ajuda geral | `./strx --help` |
+| `-help` | Exibe ajuda geral | `./strx -help` |
 | `-types` | Lista os tipos de módulos disponíveis | `./strx -types` |
 | `-examples` | Lista exemplos de uso dos módulos | `./strx -examples` |
 | `-funcs` | Lista as funções integradas | `./strx -funcs` |
@@ -81,6 +88,32 @@ Este guia fornece uma referência rápida aos comandos e parâmetros mais utiliz
 ```bash
 # Encadear com pipes do sistema
 cat dominios.txt | ./strx -st "host {STRING}" | grep "has address" | ./strx -st "echo {STRING}" -module "ext:ip" -pm
+```
+
+### Níveis de Verbose
+
+```bash
+# Informações básicas (nível 1)
+./strx -l dominios.txt -st "dig {STRING}" -v 1
+
+# Debug detalhado (nível 3)
+./strx -l hosts.txt -st "nmap {STRING}" -v 3
+
+# Máximo de informações
+./strx -l targets.txt -st "scan {STRING}" -v all
+
+# Combinar múltiplos níveis
+./strx -l data.txt -st "process {STRING}" -v "1,3,4"
+```
+
+### Comandos com Segurança
+
+```bash
+# Para comandos complexos que podem ser bloqueados
+./strx -l data.txt -st "echo {STRING}; md5sum {STRING}" -ds
+
+# Debugging de validações de segurança
+./strx -s "test" -st "comando_complexo" -v 3
 ```
 
 ## Próximos Passos

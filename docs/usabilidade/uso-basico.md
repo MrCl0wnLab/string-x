@@ -23,7 +23,7 @@ pip install -r requirements.txt
 chmod +x strx
 
 # Teste a instalação com help
-./strx --help
+./strx -help
 ```
 
 ### Criando link simbólico (opcional)
@@ -43,7 +43,7 @@ sudo ln -sf $HOME/caminho/para/string-x/strx /usr/local/bin/strx
 
 ```bash
 # Exibir ajuda geral
-./strx --help
+./strx -help
 
 # Listar tipos de módulos disponíveis
 ./strx -types

@@ -57,6 +57,7 @@ Con arquitectura modular, ofrece características avanzadas para OSINT, pentest 
 - 🌐 **Dorking Multi-Motor**: Integración con Google, Bing, Yahoo, DuckDuckGo y otros
 - 🧠 **Integración con IA**: Módulo para procesamiento con Google Gemini
 - 🐋 **Soporte Docker**: Ejecución containerizada para entornos aislados
+- 🛡️ **Validaciones de Seguridad**: Sistema de protección contra comandos maliciosos con opción de bypass
 
 ## 📦 INSTALACIÓN
 
@@ -78,7 +79,7 @@ pip install -r requirements.txt
 chmod +x strx
 
 # Probar instalación con ayuda
-./strx --help
+./strx -help
 
 # Listar tipos de módulos
 ./strx -types
@@ -257,25 +258,27 @@ string-x/
 
 ### Ayuda y Parámetros
 ```bash
-./strx --help
+./strx -help
 ```
 
 ### Parámetros Principales
 
 | Parámetro | Descripción | Ejemplo |
 |-----------|-------------|---------|
-| `-h, --help`         | Mostrar ayuda del proyecto | `-h` |
+| `-h, -help`         | Mostrar ayuda del proyecto | `-h` |
 | `-types`             | Listar tipos de módulos | `-types` |
 | `-examples`          | Listar módulos y ejemplos de uso | `-examples` |
 | `-functions, -funcs` | Listar funciones | `-funcs` |
-| `-l, --list` | Archivo con strings para procesamiento | `-l hosts.txt` |
+| `-l, -list` | Archivo con strings para procesamiento | `-l hosts.txt` |
 | `-st, --str` | Plantilla de comando con `{STRING}` | `-st "curl {STRING}"` |
 | `-o, --out` | Archivo de salida para resultados | `-o results.txt` |
-| `-p, --pipe` | Comando adicional vía pipe | `-p "grep 200"` |
-| `-v, --verbose` | Modo verboso con detalles | `-v` |
-| `-debug` | Habilitar debug de módulos | `-debug` |
-| `-t, --thread` | Número de threads paralelos | `-t 50` |
+| `-p, -pipe` | Comando adicional vía pipe | `-p "grep 200"` |
+| `-v, -verbose` | Modo verboso con niveles (1-5 o 'all'). 1=info, 2=warning, 3=debug, 4=error, 5=exception | `-v 3` |
+| `-ds, -disable-security` | Deshabilitar validaciones de seguridad (usar con cuidado) | `-ds` |
+| `-t, -thread` | Número de threads paralelos | `-t 50` |
 | `-f, --filter` | Filtro para selección de strings | `-f ".gov.br"` |
+| `-iff` | Filtro de resultados de función: retorna solo resultados que contengan el valor especificado | `-iff "admin"` |
+| `-ifm` | Filtro de resultados de módulo: retorna solo resultados que contengan el valor especificado | `-ifm "hash"` |
 | `-module` | Selección de módulo específico | `-module "ext:email"` |
 | `-pm` | Mostrar solo resultados del módulo | `-pm` |
 | `-pf` | Mostrar solo resultados de funciones | `-pf` |
@@ -284,9 +287,35 @@ string-x/
 | `-proxy` | Establecer proxy para requests | `-proxy "http://127.0.0.1:8080"` |
 | `-format` | Formato de salida (txt, csv, json) | `-format json` |
 | `-upgrade` | Actualizar String-X vía Git | `-upgrade` |
-| `-r, --retry` | Número de intentos de reintento | `-r 3` |
+| `-r, -retry` | Número de intentos de reintento | `-r 3` |
 
 ## 💡 EJEMPLOS PRÁCTICOS
+
+### Niveles de Verbose
+String-X ofrece 5 niveles de verbosidad para control detallado de la salida:
+
+```bash
+# Nivel 1 (info) - Información básica
+strx -l domains.txt -st "dig {STRING}" -v 1
+
+# Nivel 2 (warning) - Avisos y alertas
+strx -l urls.txt -st "curl {STRING}" -v 2
+
+# Nivel 3 (debug) - Información detallada de depuración
+strx -l targets.txt -st "nmap {STRING}" -v 3
+
+# Nivel 4 (error) - Errores de ejecución
+strx -l data.txt -st "process {STRING}" -v 4
+
+# Nivel 5 (exception) - Excepciones con stack trace
+strx -l complex.txt -st "analyze {STRING}" -v 5
+
+# Todos los niveles - Máxima salida de información
+strx -l hosts.txt -st "scan {STRING}" -v all
+
+# Combinar múltiples niveles
+strx -l mixed.txt -st "test {STRING}" -v "1,3,4"
+```
 
 ### Ejemplos Básicos
 
@@ -446,7 +475,7 @@ String-X incluye más de 25 funciones incorporadas que pueden utilizarse dentro 
 | `leak_check_format` | Formatear email para leaks | `leak_check_format({STRING})` |
 | `cpf_validate` | Validar CPF | `cpf_validate({STRING})` |
 
-> Ver la lista completa y ejemplos en `utils/helper/functions.py` o usar `--functions` en CLI para documentación detallada.
+> Ver la lista completa y ejemplos en `utils/helper/functions.py` o usar `-functions` en CLI para documentación detallada.
 
 ## 🧩 SISTEMA DE MÓDULOS
 
@@ -608,6 +637,15 @@ El sistema de filtros permite procesar solo strings que cumplan criterios espec�
 
 # Filtrar extensiones de archivo
 ./strx -l files.txt -st "process {STRING}" -f ".pdf"
+
+# Filtrar solo resultados de función que contengan "admin"
+./strx -l urls.txt -st "{STRING}; md5({STRING})" -pf -iff "admin"
+
+# Filtrar solo resultados de módulo que contengan hash específico
+./strx -l domains.txt -st "echo {STRING}" -module "ext:hash" -pm -ifm "a1b2c3"
+
+# Combinar filtros de función y módulo
+./strx -l data.txt -st "{STRING}; md5({STRING})" -module "ext:domain" -pf -pm -iff "google" -ifm "admin"
 ```
 
 ## ⚡ PROCESAMIENTO PARALELO
@@ -617,7 +655,7 @@ String-X soporta procesamiento paralelo a través de threads para acelerar opera
 ### Configuración de Threads
 ```bash
 # Definir número de threads
-./strx -t 50 / ./strx --thread 50
+./strx -t 50 / ./strx -thread 50
 
 # Definir delay entre threads
 ./strx -sleep 2
@@ -638,7 +676,50 @@ String-X soporta procesamiento paralelo a través de threads para acelerar opera
 ### Mejores Prácticas para Threading
 - **Rate limiting**: Usar `-sleep` para evitar sobrecarga de servicios
 - **Número adecuado**: Ajustar `-t` según recursos disponibles
-- **Monitoreo (verbose)**: Usar `-v` para seguir progreso
+- **Monitoreo**: Usar `-v 1` para info básica, `-v 3` para debug detallado, `-v all` para máximo control
+
+### Procesamiento de Archivos Grandes
+String-X ha sido optimizado para procesar archivos grandes eficientemente:
+```bash
+# Procesar archivo grande con múltiples threads
+strx -l archivo_grande.txt -st "echo {STRING}" -module "ext:email" -pm -t 20 -sleep 1
+
+# Para archivos muy grandes, usar menos threads y más delay
+strx -l dataset_enorme.txt -st "process {STRING}" -t 10 -sleep 2 -v
+```
+
+## 🛡️ SISTEMA DE SEGURIDAD
+
+String-X incluye validaciones de seguridad para prevenir la ejecución de comandos maliciosos:
+
+### Validaciones Activas
+- **Tamaño de entrada**: Limita datos de entrada a 1MB por defecto
+- **Cantidad de strings**: Máximo de 10,000 strings por ejecución
+- **Patrones peligrosos**: Detecta y bloquea comandos potencialmente maliciosos
+- **Threads**: Limita threads concurrentes para evitar sobrecarga del sistema
+
+### Deshabilitando Validaciones de Seguridad
+**⚠️ ADVERTENCIA**: Usar solo cuando sea necesario y confíe en el contenido
+
+```bash
+# Deshabilitar validaciones para comandos complejos legítimos
+strx -l datos.txt -st "echo {STRING}; md5sum {STRING}" -ds
+
+# Procesar archivos grandes sin limitaciones
+strx -l archivo_enorme.txt -st "process {STRING}" -ds -t 50
+
+# Usar con funciones que pueden generar patrones detectados como sospechosos
+echo "test" | strx -st "echo {STRING}; echo 'resultado'" -ds
+```
+
+### Modo Debug para Seguridad
+```bash
+# Ver detalles de las validaciones de seguridad (debug completo)
+strx -l datos.txt -st "command {STRING}" -v 3
+
+# Verificar por qué un comando fue bloqueado
+strx -s "test" -st "comando_sospechoso" -v 3
+```
 
 ## 📸 EJEMPLOS VISUALES
 

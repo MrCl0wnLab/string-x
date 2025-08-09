@@ -167,7 +167,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Script de automação avançada com String-X")
     parser.add_argument("-t", "--target", required=True, help="Domínio alvo ou arquivo de alvos")
     parser.add_argument("-o", "--output", default="output", help="Diretório de saída")
-    parser.add_argument("--threads", type=int, default=10, help="Número de threads")
+    parser.add_argument("-threads", type=int, default=10, help="Número de threads")
     parser.add_argument("--timeout", type=int, default=30, help="Timeout em segundos")
     return parser.parse_args()
 

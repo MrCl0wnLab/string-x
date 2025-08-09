@@ -59,7 +59,14 @@ O módulo MySQL já está configurado para funcionar com esta configuração. Po
 Exemplo de uso:
 
 ```bash
-./strx -l data.txt -st "echo {STRING}" -module "con:mysql" -pm
+# Usando comando strx instalado
+strx -l data.txt -st "echo {STRING}" -module "con:mysql" -pm
+
+# Usando Python diretamente
+python -m stringx.cli -l data.txt -st "echo {STRING}" -module "con:mysql" -pm
+
+# Com verbose nível 3 para debug
+strx -l data.txt -st "echo {STRING}" -module "con:mysql" -pm -v 3
 ```
 
 ## Segurança

@@ -9,6 +9,8 @@ Bem-vindo à documentação completa do String-X, uma ferramenta modular de auto
   - [Comandos Essenciais](usabilidade/comandos-essenciais.md)
   - [Parâmetros](usabilidade/parametros.md)
   - [Exemplos Práticos](usabilidade/exemplos-praticos.md)
+  - [Sistema de Segurança](usabilidade/seguranca.md)
+  - [Níveis de Verbosidade](usabilidade/verbosidade.md)
   - [Docker](usabilidade/docker.md)
 
 - [Desenvolvimento](dev/README.md)
@@ -40,6 +42,8 @@ Com arquitetura modular, oferece recursos avançados para OSINT, pentest e anál
 - 🛠️ **+25 Funções Integradas**: Hash, encoding, requests, validação e geração de valores aleatórios
 - 📁 **Múltiplas Fontes**: Suporte para arquivos, stdin e encadeamento de pipes
 - 🌐 **Dorking Multi-Engine**: Integração com Google, Bing, Yahoo, DuckDuckGo e outros
+- 🛡️ **Sistema de Segurança**: Validações avançadas contra comandos maliciosos com opção de bypass
+- 📊 **Logging Granular**: 5 níveis de verbosidade para controle detalhado da saída (info, warning, debug, error, exception)
 
 ## Contribuindo
 

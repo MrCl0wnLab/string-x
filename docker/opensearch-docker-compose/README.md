@@ -123,7 +123,7 @@ O módulo `con:opensearch` suporta as seguintes opções:
 | `verify_certs` | Verificar certificados SSL | `false` |
 | `client_type` | Tipo de cliente ('low' ou 'high') | `high` |
 | `data` | Dados a serem enviados | - |
-| `debug` | Modo de depuração | `false` |
+| `verbose` | Nível de verbosidade (1-5 ou 'all') | `1` |
 | `timeout` | Timeout da conexão (segundos) | `60` |
 | `retry` | Tentativas de reconexão | `3` |
 | `retry_delay` | Atraso entre tentativas (segundos) | `5` |
@@ -134,21 +134,21 @@ O módulo `con:opensearch` suporta as seguintes opções:
 
 ```bash
 # Extrair URLs de um arquivo e salvá-las no OpenSearch
-./strx -l arquivo.txt -st "echo {STRING}" -module "con:opensearch" -pm 
+strx -l arquivo.txt -st "echo {STRING}" -module "con:opensearch" -pm
 ```
 
 **Exemplo 2**: Salvar resultados de busca do Google
 
 ```bash
 # Realizar busca e salvar resultados
-./strx -l dorks.txt -st "echo {STRING}" -module "con:opensearch" -pm
+strx -l dorks.txt -st "echo {STRING}" -module "con:opensearch" -pm
 ```
 
 **Exemplo 3**: Usando modo debug para verificar detalhes
 
 ```bash
-# Modo debug para ver detalhes da operação
-./strx -l domains.txt -st "echo {STRING}" -module "con:opensearch" -pm
+# Modo verbose nível 3 para ver detalhes da operação
+strx -l domains.txt -st "echo {STRING}" -module "con:opensearch" -pm -v 3
 ```
 
 ## Exemplos Práticos
@@ -157,7 +157,13 @@ O módulo `con:opensearch` suporta as seguintes opções:
 
 ```bash
 # Coletar subdomínios, validar e salvar no OpenSearch
-./strx -l targets.txt -st "echo {STRING}" -module "con:opensearch" -pm 
+strx -l targets.txt -st "echo {STRING}" -module "con:opensearch" -pm
+
+# Com validação de segurança desabilitada para comandos complexos
+strx -l targets.txt -st "complex_command && other_cmd {STRING}" -module "con:opensearch" -pm -ds
+
+# Com verbose nível 4 para mostrar errors
+strx -l targets.txt -st "echo {STRING}" -module "con:opensearch" -pm -v 4
 ```
 
 ### Busca e visualização de dados

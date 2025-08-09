@@ -75,14 +75,29 @@ Integração do String-X em fluxos de trabalho automatizados:
 Para auxiliar no processo de tunning, o String-X oferece ferramentas de diagnóstico:
 
 ```bash
-# Modo de debug para visualizar operações detalhadas
-./strx -debug -s "example.com" -st "dig {STRING}"
+# Debug detalhado para visualizar operações detalhadas
+./strx -v 3 -s "example.com" -st "dig {STRING}"
 
-# Medição de tempo de execução
-time ./strx -l domains.txt -st "whois {STRING}" -t 10
+# Monitoramento completo com todos os níveis
+./strx -v all -s "example.com" -st "dig {STRING}"
 
-# Perfil de uso de memória
-./strx -l large_file.txt -module "ext:url"
+# Medição de tempo de execução com informações básicas
+time ./strx -l domains.txt -st "whois {STRING}" -t 10 -v 1
+
+# Perfil de uso de memória com debug
+./strx -l large_file.txt -module "ext:url" -v 3
+
+# Troubleshooting de performance com níveis específicos
+./strx -l data.txt -st "process {STRING}" -v "1,4" -t 20
 ```
+
+### Sistema de Verbosidade para Tunning
+
+O sistema de 5 níveis de verbosidade é essencial para tunning:
+
+- **Nível 1 (info)**: Monitor progress and basic metrics
+- **Nível 3 (debug)**: Detailed operation analysis
+- **Nível 4 (error)**: Performance bottlenecks and failures
+- **Nível all**: Complete diagnostic information
 
 Para informações detalhadas sobre cada aspecto do tunning, consulte as páginas específicas listadas no índice.

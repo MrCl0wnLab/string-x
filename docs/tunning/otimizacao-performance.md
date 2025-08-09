@@ -242,7 +242,7 @@ done
 
 ```bash
 # Identificação de gargalos
-./strx -debug -l sample.txt -st "comando {STRING}" 2>&1 | grep "TIMING"
+./strx -v 3 -l sample.txt -st "comando {STRING}" 2>&1 | grep "TIMING"
 ```
 
 ## Cenários de Otimização Comuns
