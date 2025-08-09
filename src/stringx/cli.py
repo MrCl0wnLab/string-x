@@ -322,7 +322,6 @@ def main_cli():
                     CLI.console.log(f"[!] Input data exceeds security limits")
                     CLI.console.log(f"[!] Use -ds to disable security validations if you need to process large datasets")
                     exit(1)
-            
             main(
                 target_str_list=target_list,
                 template_str=ARGS.str
