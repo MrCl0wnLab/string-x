@@ -284,21 +284,65 @@ class NotificationManager:
             if setting.NOTIFICATION_ICON_PATH and os.path.exists(setting.NOTIFICATION_ICON_PATH):
                 return str(Path(setting.NOTIFICATION_ICON_PATH).absolute())
             
-            # 2. Check PROJECT_ROOT from setting.py + asset/icon.png
+            # 2. Check PROJECT_ROOT from setting.py + asset/img/icon.png
             if hasattr(setting, 'PROJECT_ROOT') and setting.PROJECT_ROOT:
-                icon_path = setting.PROJECT_ROOT / "asset" / "icon.png"
+                icon_path = setting.PROJECT_ROOT / "asset" / "img" / "icon.png"
                 if icon_path.exists():
                     return str(icon_path.absolute())
             
             # 3. Fallback to relative path detection
             current_dir = Path(__file__).parent
             project_root = current_dir.parent.parent.parent
-            icon_path = project_root / "asset" / "icon.png"
+            icon_path = project_root / "asset" / "img" / "icon.png"
             
             if icon_path.exists():
                 return str(icon_path.absolute())
             else:
                 return None
+                
+        except Exception:
+            return None
+    
+    def _get_audio_path(self) -> str:
+        """
+        Obtém o caminho para o arquivo de áudio da notificação.
+        
+        Procura o arquivo de áudio configurado em setting.py ou nos caminhos padrão.
+        
+        Returns:
+            str: Caminho absoluto para o arquivo de áudio ou None se não encontrado
+        """
+        try:
+            # 1. Check setting.py configured audio path (from STRX_NOTIFICATION_AUDIO_PATH)
+            if setting.NOTIFICATION_AUDIO_PATH:
+                # If it's an absolute path, use as-is
+                if Path(setting.NOTIFICATION_AUDIO_PATH).is_absolute():
+                    if Path(setting.NOTIFICATION_AUDIO_PATH).exists():
+                        return str(Path(setting.NOTIFICATION_AUDIO_PATH).absolute())
+                else:
+                    # If it's relative, resolve from PROJECT_ROOT
+                    if hasattr(setting, 'PROJECT_ROOT') and setting.PROJECT_ROOT:
+                        audio_path = setting.PROJECT_ROOT / setting.NOTIFICATION_AUDIO_PATH
+                        if audio_path.exists():
+                            return str(audio_path.absolute())
+            
+            # 2. Fallback to default locations in asset/song/
+            if hasattr(setting, 'PROJECT_ROOT') and setting.PROJECT_ROOT:
+                # Try different audio formats
+                for filename in ['notification.wav', 'notification.mp3', 'notification.ogg']:
+                    audio_path = setting.PROJECT_ROOT / "asset" / "song" / filename
+                    if audio_path.exists():
+                        return str(audio_path.absolute())
+            
+            # 3. Fallback to relative path detection
+            current_dir = Path(__file__).parent
+            project_root = current_dir.parent.parent.parent
+            for filename in ['notification.wav', 'notification.mp3', 'notification.ogg']:
+                audio_path = project_root / "asset" / "song" / filename
+                if audio_path.exists():
+                    return str(audio_path.absolute())
+            
+            return None
                 
         except Exception:
             return None
@@ -323,6 +367,13 @@ class NotificationManager:
             # Define ícone se disponível
             if self.app_icon:
                 notification.icon = self.app_icon
+            
+            # Define áudio se disponível e arquivo existir
+            if setting.NOTIFICATION_AUDIO_PATH:
+                audio_path = self._get_audio_path()
+                if audio_path:
+                    notification.audio = audio_path
+                    logger.debug(f"Audio configurado: {audio_path}")
             
             # Envia a notificação
             notification.send(block=False)
@@ -352,8 +403,16 @@ class NotificationManager:
             notification.message = message
             notification.application_name = self.app_name
             
+            # Define ícone se disponível
             if self.app_icon:
                 notification.icon = self.app_icon
+            
+            # Define áudio se disponível e arquivo existir
+            if setting.NOTIFICATION_AUDIO_PATH:
+                audio_path = self._get_audio_path()
+                if audio_path:
+                    notification.audio = audio_path
+                    logger.debug(f"Audio customizado configurado: {audio_path}")
             
             notification.send(block=False)
             logger.info(f"Notificação customizada enviada: {title}")

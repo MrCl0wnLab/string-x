@@ -266,9 +266,9 @@ MIN_DISK_SPACE = get_env_int('STRX_MIN_DISK_SPACE', 100) * 1024 * 1024  # MB
 # NOTIFICATION CONFIGURATION
 # ==========================================
 NOTIFICATIONS_ENABLED = get_env_bool('STRX_NOTIFICATIONS_ENABLED', False)
-NOTIFICATION_ICON_PATH = os.getenv('STRX_NOTIFICATION_ICON_PATH', '')
+NOTIFICATION_ICON_PATH = os.getenv('STRX_NOTIFICATION_ICON_PATH', 'asset/img/icon.png')
 NOTIFICATION_APP_NAME = os.getenv('STRX_NOTIFICATION_APP_NAME', 'String-X')
-
+NOTIFICATION_AUDIO_PATH = os.getenv('STRX_NOTIFICATION_AUDIO_PATH', 'asset/song/notification.wav')
 # ==========================================
 # DEVELOPMENT/DEBUG OPTIONS
 # ==========================================

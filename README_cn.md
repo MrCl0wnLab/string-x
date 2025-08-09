@@ -1,7 +1,7 @@
 <center>
 
 <h1 align="center">
-  <a href="#/"><img src="./asset/logo.png"></a>
+  <a href="#/"><img src="./asset/img/logo.png"></a>
 </h1>
 
 <h4 align="center">字符串操作自动化工具</h4>
