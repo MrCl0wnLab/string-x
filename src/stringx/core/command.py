@@ -23,6 +23,7 @@ from stringx.core.filelocal import FileLocal
 from stringx.core.auto_module import AutoModulo
 from stringx.core.output_formatter import OutputFormatter
 from stringx.core.logger import logger
+from stringx.core.notify import notification_manager
 
 class Command:
     """
@@ -246,6 +247,9 @@ class Command:
                 if obj_module := auto_load.load_module():
                     # Update current module name
                     self._current_module = module_spec
+                    # Track module usage for notifications
+                    if notification_manager.enabled:
+                        notification_manager.add_module_used(module_spec)
                     
                     # Se estiver usando -pmc, cada módulo processa os dados originais
                     # Caso contrário, usa comportamento em cadeia (passando resultados entre módulos)
@@ -296,6 +300,9 @@ class Command:
             if obj_module := auto_load.load_module():
                 # Update current module name
                 self._current_module = _type_module
+                # Track module usage for notifications
+                if notification_manager.enabled:
+                    notification_manager.add_module_used(_type_module)
                 obj_module.options.update({
                         'data': data, 
                         'proxy': self._proxy, 
@@ -478,6 +485,11 @@ class Command:
             is_module_result: Se True, aplica formatação baseada no output_format
         """
         if line_std:
+            # Track result for notifications
+            if notification_manager.enabled:
+                # Count the number of lines as results
+                result_lines = line_std.strip().split('\n') if isinstance(line_std, str) else [str(line_std)]
+                notification_manager.add_result(len(result_lines))
             output_to_print = line_std
             
             # Se for resultado de módulo e formato não for txt, aplicar formatação
@@ -569,6 +581,9 @@ class Command:
                 func_match = re.search(r'([a-zA-Z0-9_]+)\(', command)
                 if func_match:
                     self._current_function = func_match.group(1)
+                    # Track function usage for notifications
+                    if notification_manager.enabled:
+                        notification_manager.add_function_used(self._current_function)
 
                 command_func = self._format_func.func_format(command)
                 

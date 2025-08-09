@@ -27,6 +27,7 @@ from stringx.core.style_cli import StyleCli, RichArgumentParser, RawDescriptionH
 from stringx.core.help_modules import *
 from stringx.core.upgrade_manager import UpgradeManager
 from stringx.core.security_validator import SecurityValidator
+from stringx.core.notify import notification_manager
 
 
 def quit_process(signal, frame) -> None:
@@ -139,6 +140,10 @@ def main(target_str_list: list, template_str: str) -> None:
     Raises:
         BrokenPipeError: Quando há erro de pipe quebrado
     """
+    # Start execution tracking for notifications
+    if notification_manager.enabled:
+        notification_manager.start_execution(template_str)
+    
     if target_str_list and template_str:
         try:
             if list is type(target_str_list):
@@ -153,6 +158,10 @@ def main(target_str_list: list, template_str: str) -> None:
                     CLI.console.print_exception(max_frames=3)
         except BrokenPipeError:
             CLI.console.print_exception(max_frames=3)
+    
+    # End execution tracking and send notification
+    if notification_manager.enabled:
+        notification_manager.end_execution()
 
 
 def main_cli():
@@ -208,6 +217,7 @@ def main_cli():
         parser.add_argument('-upgrade', help="Atualizar String-X via Git", action='store_true')
         parser.add_argument('-retry', '-r', metavar=f"<{setting.RETRY_OPERATIONS}>", help="Quantidade de tentativas", default=setting.RETRY_OPERATIONS, required=False)
         parser.add_argument('-retry-delay', '-rd', metavar=f"<{setting.RETRY_DELAY}>", help="Delay entre tentativas", default=setting.RETRY_DELAY, required=False)
+        parser.add_argument('-notify', help="Enviar notificação desktop ao finalizar a execução", action='store_true', default=False)
         parser.add_argument('-version', action='version', version=f"%(prog)s {setting.__version__}")
         ARGS = parser.parse_args() 
 
@@ -296,6 +306,13 @@ def main_cli():
         
         # Configurar o logger para usar o console estilizado
         logger.set_styled_console(CLI.console)
+
+        # Enable notifications if requested
+        if ARGS.notify:
+            if notification_manager.enable():
+                CLI.console.log("[+] Notificações desktop habilitadas")
+            else:
+                CLI.console.log("[!] Não foi possível habilitar notificações (notify_py não disponível)")
 
         # Verifica se a lista de alvos não está vazia antes de chamar main
         if target_list:

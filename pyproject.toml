@@ -47,6 +47,7 @@ dependencies = [
     "PyPDF2>=3.0.1",
     "chardet>=5.0.0",
     "python-dotenv>=1.0.0",
+    "notify_py>=0.3.42",
 ]
 
 [project.urls]
