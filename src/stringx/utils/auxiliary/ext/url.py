@@ -70,6 +70,8 @@ class AuxRegexURL(BaseModule):
                     self.log_debug(f"[+] Encontradas {len(regex_result_list)} URLs (com duplicatas)")
                     
                     for url in regex_result_list:
+                        url = url.strip()
+                        url = url[:url.rfind(';')] if ';' in url else url  # Remove fragmentos
                         result.append(url)
                         
                     if result:

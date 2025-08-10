@@ -1,21 +1,24 @@
 """
-Módulo CLC Spider para coleta recursiva de URLs.
+Módulo CLC Spider para coleta recursiva de URLs com códigos HTTP.
 
 Este módulo implementa um web spider (crawler) que coleta URLs de forma recursiva,
 visitando páginas web e extraindo links para exploração adicional baseada em
-profundidade configurável.
+profundidade configurável. Cada URL é acompanhada do seu código de status HTTP.
 
 O spider oferece:
 - Coleta recursiva de URLs com controle de profundidade
 - Requisições HTTP/HTTPS assíncronas para performance
+- Captura e exibição de códigos de status HTTP para cada URL
 - Suporte a proxy e configurações de timeout
 - Filtragem e deduplicação automática de URLs
 - Extração de URLs usando expressões regulares otimizadas
 - Tratamento robusto de erros HTTP/SSL
 - Controle de rate limiting para evitar sobrecarga
+- Formato de saída: {URL}; {HTTP_CODE}
 """
 import re
 import asyncio
+import signal
 import time
 from typing import List, Set, Tuple
 from urllib.parse import urljoin, urlparse, urlunparse
@@ -52,7 +55,8 @@ class WebSpider(BaseModule):
             'version': '1.0',
             'description': 'Coleta URLs de forma recursiva com controle de profundidade',
             'type': 'collector',
-            'example': './strx -s "https://example.com" -st "echo {STRING}" -module "clc:spider" -pm'
+            'example': './strx -s "https://example.com" -st "echo {STRING}" -module "clc:spider" -pm',
+            'output_format': '{URL}; {HTTP_CODE}'
         }
         
         # Get user agent value to avoid pickle issues with module references
@@ -63,13 +67,13 @@ class WebSpider(BaseModule):
         
         self.options = {
             'data': str(),                    # URL inicial para começar o spider
-            'depth': 2,                       # Profundidade máxima de exploração (reduzida para performance)
-            'max_urls': 4000,                 # Número máximo de URLs a coletar (reduzida para evitar memory issues)
-            'max_url_length': 4096,           # Tamanho máximo de URL para evitar memory issues
+            'depth': 3,                       # Profundidade máxima de exploração (reduzida para performance)
+            'max_urls': 14000,                 # Número máximo de URLs a coletar (reduzida para evitar memory issues)
+            'max_url_length': 5096,           # Tamanho máximo de URL para evitar memory issues
             'max_content_size': 5242880,      # Tamanho máximo de conteúdo (5MB)
             'max_total_memory': 104857600,    # Limite de memória total (100MB)
-            'timeout': 10,                     # Timeout para requisições HTTP (reduzido)
-            'delay': 0.5,                     # Delay entre requisições (reduzido para velocidade)
+            'timeout': 30,                     # Timeout para requisições HTTP (reduzido)
+            'delay': 5.0,                     # Delay entre requisições (reduzido para velocidade)
             'user_agent': user_agent_value,   # User-Agent para requisições HTTP (valor direto, não referência ao módulo)
             'verify_ssl': False,              # Verificar certificados SSL
             'follow_redirects': False,        # Seguir redirecionamentos
@@ -79,7 +83,7 @@ class WebSpider(BaseModule):
             'exclude_extensions': 'jpg,jpeg,png,gif,bmp,svg,ico,css,js,pdf,zip,rar,tar,gz,mp3,mp4,avi,mov,wmv,flv,swf,exe,msi,dmg,deb,rpm,woff,woff2,ttf,eot',  # Extensões a excluir (expandidas)
             'include_patterns': str(),        # Padrões regex para incluir URLs
             'exclude_patterns': str(),        # Padrões regex para excluir URLs
-            'concurrent_requests': 5,         # Número de requisições simultâneas (reduzido para memory safety)
+            'concurrent_requests': 3,         # Número de requisições simultâneas (reduzido para memory safety)
             'extract_from_js': True,          # Extrair URLs de arquivos JavaScript
             'extract_from_css': False,        # Extrair URLs de arquivos CSS
             'respect_robots': False,          # Respeitar robots.txt (básico)
@@ -110,6 +114,7 @@ class WebSpider(BaseModule):
         # Conjunto para controlar URLs já visitadas - usando deque para performance
         self.visited_urls: Set[str] = set()
         self.collected_urls: Set[str] = set()
+        self.url_status: dict = {}  # Store URL -> HTTP status code mapping
         self.url_queue: deque = deque()
         self.base_domain: str = ""
         
@@ -120,6 +125,10 @@ class WebSpider(BaseModule):
         # Memory protection
         self._total_content_size = 0
         self._processed_urls = 0
+        
+        # Interrupt handling
+        self._interrupted = False
+        self._shutdown_event = None
     
     def __getstate__(self):
         """Custom pickle state to handle module references."""
@@ -333,7 +342,7 @@ class WebSpider(BaseModule):
         
         return list(urls)
     
-    async def _fetch_url(self, session: httpx.AsyncClient, url: str) -> Tuple[str, str, bool]:
+    async def _fetch_url(self, session: httpx.AsyncClient, url: str) -> Tuple[str, str, bool, int]:
         """
         Faz requisição HTTP para uma URL.
         
@@ -342,43 +351,68 @@ class WebSpider(BaseModule):
             url: URL a ser requisitada
             
         Returns:
-            Tupla (url, content, success)
+            Tupla (url, content, success, status_code)
         """
         try:
             if self.options.get('debug'):
                 self.log_debug(f"[*] Fazendo requisição para: {url}")
             
             response = await session.get(url)
+            status_code = response.status_code
+            
+            # Store the status code for this URL
+            self.url_status[url] = status_code
             
             # Verificar se é conteúdo HTML/texto
             content_type = response.headers.get('content-type', '').lower()
             if not any(ct in content_type for ct in ['text/html', 'text/plain', 'application/xhtml']):
                 if self.options.get('debug'):
                     self.log_debug(f"[!] Tipo de conteúdo ignorado: {content_type}")
-                return url, "", False
+                return url, "", False, status_code
             
             # Verificar tamanho do conteúdo usando configuração
             max_content_size = self.options.get('max_content_size', 5242880)  # 5MB default
             if len(response.content) > max_content_size:
                 if self.options.get('debug'):
                     self.log_debug(f"[!] Conteúdo muito grande, ignorando: {len(response.content)} bytes")
-                return url, "", False
+                return url, "", False, status_code
             
             content = response.text
-            return url, content, True
+            return url, content, True, status_code
             
         except httpx.TimeoutException:
             if self.options.get('debug'):
                 self.log_debug(f"[!] Timeout na requisição: {url}")
-            return url, "", False
+            self.url_status[url] = 408  # Request Timeout
+            return url, "", False, 408
         except httpx.RequestError as e:
             if self.options.get('debug'):
                 self.log_debug(f"[x] Erro de requisição para {url}: {e}")
-            return url, "", False
+            self.url_status[url] = 0  # Connection error
+            return url, "", False, 0
         except Exception as e:
             if self.options.get('debug'):
                 self.log_debug(f"[x] Erro inesperado para {url}: {e}")
-            return url, "", False
+            self.url_status[url] = -1  # Unknown error
+            return url, "", False, -1
+    
+    def _setup_signal_handlers(self):
+        """
+        Configura manipuladores de sinal para interrupção graciosa.
+        """
+        try:
+            def signal_handler(signum, frame):
+                self._interrupted = True
+                if self.options.get('debug'):
+                    self.log_debug("Recebido sinal de interrupção, parando spider...")
+                    
+            # Configure signal handlers for graceful shutdown
+            signal.signal(signal.SIGINT, signal_handler)
+            signal.signal(signal.SIGTERM, signal_handler)
+        except ValueError:
+            # signal only works in main thread, use alternative approach
+            if self.options.get('debug'):
+                self.log_debug("Signal handlers não disponíveis (não é thread principal)")
     
     async def _crawl_level(self, session: httpx.AsyncClient, urls: List[str], current_depth: int) -> List[str]:
         """
@@ -392,7 +426,7 @@ class WebSpider(BaseModule):
         Returns:
             Lista de novas URLs encontradas
         """
-        if not urls or current_depth <= 0:
+        if not urls or current_depth <= 0 or self._interrupted:
             return []
         
         new_urls = []
@@ -400,8 +434,12 @@ class WebSpider(BaseModule):
         batch_new_urls = asyncio.Queue(maxsize=1000)
         
         async def process_url(url: str):
+            # Check for interruption before processing
+            if self._interrupted:
+                return
+                
             async with semaphore:
-                if url in self.visited_urls or len(self.collected_urls) >= self.options.get('max_urls', 100):
+                if url in self.visited_urls or len(self.collected_urls) >= self.options.get('max_urls', 100) or self._interrupted:
                     return
                 
                 # Memory protection check
@@ -423,7 +461,7 @@ class WebSpider(BaseModule):
                         await asyncio.sleep(delay - (current_time - self._last_request_time))
                     self._last_request_time = current_time
                 
-                _, content, success = await self._fetch_url(session, url)
+                _, content, success, status_code = await self._fetch_url(session, url)
                 
                 if success and content:
                     # Track content size for memory protection
@@ -451,6 +489,12 @@ class WebSpider(BaseModule):
         # Processar URLs em paralelo com chunks menores para evitar memory spike
         chunk_size = min(10, len(urls))  # Reduzir chunk size para memory safety
         for i in range(0, len(urls), chunk_size):
+            # Check for interruption
+            if self._interrupted:
+                if self.options.get('debug'):
+                    self.log_debug("[!] Spider interrupted, stopping processing")
+                break
+                
             # Check memory limit before processing next chunk
             max_memory = self.options.get('max_total_memory', 104857600)
             if self._total_content_size > max_memory:
@@ -460,10 +504,19 @@ class WebSpider(BaseModule):
                 
             chunk = urls[i:i + chunk_size]
             tasks = [process_url(url) for url in chunk]
-            await asyncio.gather(*tasks, return_exceptions=True)
             
-            # Small delay between chunks to allow garbage collection
-            await asyncio.sleep(0.1)
+            try:
+                await asyncio.gather(*tasks, return_exceptions=True)
+            except asyncio.CancelledError:
+                if self.options.get('debug'):
+                    self.log_debug("[!] Tasks cancelled due to interruption")
+                break
+            
+            # Small delay between chunks to allow garbage collection and check for interruption
+            try:
+                await asyncio.sleep(0.1)
+            except asyncio.CancelledError:
+                break
         
         # Coletar URLs encontradas
         while not batch_new_urls.empty():
@@ -529,15 +582,30 @@ class WebSpider(BaseModule):
         try:
             async with httpx.AsyncClient(**client_params) as session:
                 for depth in range(max_depth):
+                    # Check for interruption at each depth level
+                    if self._interrupted:
+                        if self.options.get('debug'):
+                            self.log_debug("[!] Spider interrupted at depth level")
+                        break
+                        
                     if not current_urls or len(self.collected_urls) >= self.options.get('max_urls', 100):
                         break
                     
                     if self.options.get('debug'):
                         self.log_debug(f"[*] Processando nível {depth + 1}/{max_depth} com {len(current_urls)} URLs")
                     
-                    new_urls = await self._crawl_level(session, current_urls, max_depth - depth)
-                    current_urls = new_urls[:self.options.get('max_urls', 100) - len(self.collected_urls)]
+                    try:
+                        new_urls = await self._crawl_level(session, current_urls, max_depth - depth)
+                        current_urls = new_urls[:self.options.get('max_urls', 100) - len(self.collected_urls)]
+                    except asyncio.CancelledError:
+                        if self.options.get('debug'):
+                            self.log_debug("[!] Crawl level cancelled")
+                        break
             
+            return sorted(list(self.collected_urls))
+        except asyncio.CancelledError:
+            if self.options.get('debug'):
+                self.log_debug("[!] Spider async cancelled")
             return sorted(list(self.collected_urls))
         except Exception as e:
             if self.options.get('debug'):
@@ -553,6 +621,7 @@ class WebSpider(BaseModule):
             self._result[self._get_cls_name()].clear()
             self.visited_urls.clear()
             self.collected_urls.clear()
+            self.url_status.clear()
             self._total_content_size = 0
             self._processed_urls = 0
             
@@ -577,9 +646,23 @@ class WebSpider(BaseModule):
             collected_urls = []
             
             try:
-                # Usar asyncio.run() com tratamento adequado de cleanup
-                collected_urls = asyncio.run(self._run_spider_async(start_url))
+                # Setup signal handling for graceful shutdown
+                self._setup_signal_handlers()
+                
+                # Use asyncio.run with proper KeyboardInterrupt handling
+                try:
+                    collected_urls = asyncio.run(self._run_spider_async(start_url))
+                except KeyboardInterrupt:
+                    self._interrupted = True
+                    if self.options.get('debug'):
+                        self.log_debug("Spider interrompido por KeyboardInterrupt")
+                    collected_urls = list(self.collected_urls)
                     
+            except KeyboardInterrupt:
+                if self.options.get('debug'):
+                    self.log_debug("Spider interrompido pelo usuário (Ctrl+C)")
+                self._interrupted = True
+                collected_urls = list(self.collected_urls)  # Return what we have so far
             except Exception as e:
                 if self.options.get('debug'):
                     self.log_debug(f"Erro durante execução do spider: {e}")
@@ -605,19 +688,25 @@ class WebSpider(BaseModule):
                 result_lines = []
                 
                 if self.options.get('debug'):
-                    result_lines.append(f"# Spider concluído em {end_time - start_time:.2f}s")
+                    status = "interrompido" if self._interrupted else "concluído"
+                    result_lines.append(f"# Spider {status} em {end_time - start_time:.2f}s")
                     result_lines.append(f"# URLs coletadas: {len(collected_urls)}")
                     result_lines.append(f"# URLs visitadas: {len(self.visited_urls)}")
                     result_lines.append("")
                 
-                result_lines.extend(collected_urls)
+                # Format URLs with HTTP status codes
+                for url in collected_urls:
+                    status_code = self.url_status.get(url, 'N/A')
+                    result_lines.append(f"{url}; {status_code}")
                 
                 self.set_result("\n".join(result_lines))
                 
                 if self.options.get('debug'):
                     self.log_debug(f"Spider coletou {len(collected_urls)} URLs")
             else:
-                self.set_result("\n".join([start_url]))
+                # Even if no URLs collected, show the start URL with its status
+                start_status = self.url_status.get(start_url, 'N/A')
+                self.set_result(f"{start_url}; {start_status}")
                 self.log_debug(f"Nenhuma URL coletada de: {start_url}")
                 
         except Exception as e:
