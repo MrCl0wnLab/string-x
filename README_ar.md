@@ -700,6 +700,7 @@ def check_admin_exemplo(value: str) -> str:
 | `netscan`     | فحص الشبكة (المضيفون، الخدمات)         | `-module "clc:netscan"` |
 | `shodan`      | استعلام Shodan API                       | `-module "clc:shodan"` |
 | `sogou`       | إجراء بحث استكشاف في Sogou (صيني)| `-module "clc:sogou"` |
+| `spider`      | زاحف ويب لجمع URLs بشكل تكراري | `-module "clc:spider"` |
 | `subdomain`   | تعداد النطاقات الفرعية                 | `-module "clc:subdomain"` |
 | `virustotal`  | استعلام VirusTotal API                   | `-module "clc:virustotal"` |
 | `whois`       | استعلام WHOIS للنطاقات                | `-module "clc:whois"` |
@@ -753,6 +754,7 @@ echo 'filetype:pdf' | ./strx -st "echo {STRING}" -module "clc:yahoo" -pm
 | `http_probe`  | إجراء فحوصات HTTP على المضيفين      | `-module "con:http_probe"` |
 | `ftp`         | اتصال ونقل عبر FTP                   | `-module "con:ftp"` |
 | `ssh`         | تنفيذ الأوامر عبر SSH                | `-module "con:ssh"` |
+| `s3`          | رفع/تنزيل البيانات من Amazon S3      | `-module "con:s3"` |
 
 ```bash
 # مثال: الحفظ في SQLite

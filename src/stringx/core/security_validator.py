@@ -16,14 +16,14 @@ class SecurityValidator:
 
     # Maximum limits to prevent resource exhaustion (loaded from settings)
     from stringx.config import setting
-    MAX_INPUT_SIZE = setting.MAX_INPUT_SIZE
-    MAX_THREAD_COUNT = setting.MAX_THREAD_COUNT
-    MAX_TIMEOUT = setting.MAX_TIMEOUT
-    MAX_STRING_LIST_SIZE = setting.MAX_STRING_LIST_SIZE
-    MAX_COMMAND_LENGTH = setting.MAX_COMMAND_LENGTH
+    MAX_INPUT_SIZE = setting.STRX_MAX_INPUT_SIZE
+    MAX_THREAD_COUNT = setting.STRX_MAX_THREAD_COUNT
+    MAX_TIMEOUT = setting.STRX_MAX_TIMEOUT
+    MAX_STRING_LIST_SIZE = setting.STRX_MAX_STRING_LIST_SIZE
+    MAX_COMMAND_LENGTH = setting.STRX_MAX_COMMAND_LENGTH
 
-    # Get patterns from configuration
-    DANGEROUS_PATTERNS = setting.BLOCKED_COMMAND_PATTERNS + [
+    # Get patterns from configuration (with safe fallback)
+    DANGEROUS_PATTERNS = getattr(setting, 'STRX_BLOCKED_COMMAND_PATTERNS', []) + [
         r'dd\s+if=',
         r'mkfs\.',
         r'fdisk',

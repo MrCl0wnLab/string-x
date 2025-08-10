@@ -46,11 +46,11 @@ class SSHConnector(BaseModule):
         
         self.options = {
             'data': str(),       # host:port ou apenas host
-            'username': 'root',  # Nome de usuário para autenticação
-            'password': str(),   # Senha para autenticação
+            'username': self.setting.STRX_SSH_USER,  # Nome de usuário para autenticação
+            'password': self.setting.STRX_SSH_PASS,   # Senha para autenticação
             'key_file': str(),   # Arquivo de chave privada para autenticação
-            'command': 'whoami', # Comando a ser executado
-            'timeout': 10,       # Timeout para conexão e execução            'debug': False,      # Modo de debug para mostrar informações detalhadas  
+            'command': self.setting.STRX_SSH_CMD, # Comando a ser executado
+            'timeout': self.setting.STRX_SSH_TIMEOUT,       # Timeout para conexão e execução            'debug': False,      # Modo de debug para mostrar informações detalhadas  
             'retry': 0,          # Número de tentativas de conexão
             'retry_delay': None,    # Atraso entre tentativas de conexão
         }
@@ -84,7 +84,7 @@ class SSHConnector(BaseModule):
         if ':' in target:
             host, port = target.split(':', 1)
         else:
-            host, port = target, '22'
+            host, port = target, self.setting.STRX_SSH_PORT
         
         username = self.options.get('username', 'root')
         password = self.options.get('password', '')

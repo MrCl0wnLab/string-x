@@ -48,20 +48,21 @@ class OpenSearchOutput(BaseModule):
         }
         
         self.options = {
-            'host': 'localhost',
-            'port': 9200,
-            'index': 'strx-data',
-            'username': None,
-            'password': None,
-            'use_ssl': True,
-            'verify_certs': False,
-            'client_type': 'high',  # 'low' para cliente de baixo nível, 'high' para cliente de alto nível
+            'host': self.setting.STRX_OPENSEARCH_HOST,
+            'port': self.setting.STRX_OPENSEARCH_PORT,
+            'index': self.setting.STRX_OPENSEARCH_INDEX,
+            'username': self.setting.STRX_OPENSEARCH_USERNAME,
+            'password': self.setting.STRX_OPENSEARCH_PASS,
+            'use_ssl': self.setting.STRX_OPENSEARCH_USE_SSL,
+            'verify_certs': self.setting.STRX_OPENSEARCH_VERIFY_CERTS,
+            'timeout': self.setting.STRX_OPENSEARCH_TIMEOUT,
+            'retry': self.setting.STRX_OPENSEARCH_RETRY,
+            'retry_delay': self.setting.STRX_OPENSEARCH_RETRY_DELAY,
+            'suppress_warnings': True,  # Opção para suprimir avisos de SSL
             'data': str(),
             'debug': False,
-            'timeout': 60,
-            'retry': 3,
-            'retry_delay': 5,
-            'suppress_warnings': True,  # Opção para suprimir avisos de SSL
+            'client_type': 'high',  # 'low' para cliente de baixo nível, 'high' para cliente de alto nível
+
         }
     
     def check_server_availability(self, host, port, timeout=30):

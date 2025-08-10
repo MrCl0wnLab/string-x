@@ -47,9 +47,9 @@ class FTPConnector(BaseModule):
         
         self.options = {
             'data': str(),            # host:port ou apenas host
-            'username': 'anonymous',   # Nome de usuário para autenticação
-            'password': 'anonymous@example.com',  # Senha para autenticação
-            'timeout': 10,            # Timeout para conexão e operações
+            'username': self.setting.STRX_FTP_USERNAME,   # Nome de usuário para autenticação
+            'password': self.setting.STRX_FTP_PASS,  # Senha para autenticação
+            'timeout': self.setting.STRX_FTP_TIMEOUT,            # Timeout para conexão e operações
             'passive': True,          # Usar modo passivo
             'list_files': True,       # Listar arquivos no diretório atual            'debug': False,           # Modo de debug para mostrar informações detalhadas
             'retry': 0,               # Número de tentativas de requisição
@@ -90,7 +90,7 @@ class FTPConnector(BaseModule):
                 self.log_debug(f"Porta inválida: {port}, usando porta padrão 21")
                 port = 21
         else:
-            host, port = target, 21
+            host, port = target, self.setting.STRX_FTP_PORT
         
         username = self.options.get('username', 'anonymous')
         password = self.options.get('password', 'anonymous@example.com')

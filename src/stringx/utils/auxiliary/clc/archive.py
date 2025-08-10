@@ -48,14 +48,13 @@ class archive(BaseModule):
             "author": "MrCl0wn",
             'version': '1.0',
             'description': 'Coleta URLs arquivadas de um domínio usando o Wayback Machine (archive.org)',
-            'type': 'collector'
-        ,
+            'type': 'collector',
             'example': './strx -l domains.txt -st "echo {STRING}" -module "clc:archive" -pm'
         }
         # Opções configuráveis do módulo
         self.options = {
             'data': str(),           # Domínio alvo
-            'timeout': 30,           # Timeout para requisições
+            'timeout': self.setting.STRX_REQUEST_TIMEOUT,           # Timeout para requisições
             'proxy': str(),          # Proxies para requisições
             'debug': False,          # Modo de debug para mostrar informações detalhadas            'retry': 0,              # Número de tentativas de requisição
             'retry_delay': None,        # Atraso entre tentativas de requisição

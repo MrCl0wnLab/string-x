@@ -51,13 +51,13 @@ class OpenAI(BaseModule):
         }
         
         self.options = {
-            'api_key': str(),  # Chave API OpenAI
-            'model': 'gpt-3.5-turbo',  # Modelo a ser usado (gpt-3.5-turbo, gpt-4, gpt-4-turbo)
+            'api_key': self.setting.STRX_OPENAI_APIKEY,  # Chave API OpenAI
+            'model': self.setting.STRX_OPENAI_MODEL,  # Modelo a ser usado (gpt-3.5-turbo, gpt-4, gpt-4-turbo)
+            'temperature':self.setting.STRX_OPENAI_TEMPERATURE,  # Controla aleatoriedade (0.0 a 2.0)
+            'max_tokens': self.setting.STRX_OPENAI_MAX_TOKENS,  # Máximo de tokens na resposta
+            'system_prompt': self.setting.STRX_OPENAI_PROMPT_SYSTEM,  # Prompt do sistema para definir comportamento
+            'debug': False,  # Modo de debug para mostrar informações detalhadas
             'data': str(),  # O texto do prompt
-            'temperature': 0.7,  # Controla aleatoriedade (0.0 a 2.0)
-            'max_tokens': 1000,  # Máximo de tokens na resposta
-            'system_prompt': '',  # Prompt do sistema para definir comportamento
-            'debug': False  # Modo de debug para mostrar informações detalhadas
         }
         
         self.base_url = "https://api.openai.com/v1/chat/completions"

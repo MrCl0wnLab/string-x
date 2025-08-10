@@ -54,9 +54,10 @@ class VirusTotalCollector(BaseModule):
         # Opções configuráveis do módulo
         self.options = {
             'data': str(),  # URL, IP, domain ou hash
-            'api_key': str(),  # API key do VirusTotal
+            'api_key': self.setting.STRX_VIRUSTOTAL_APIKEY,  # API key do VirusTotal
             'resource_type': 'auto',  # auto, url, ip, domain, file
-            'include_details': True,            'retry': 0,              # Número de tentativas de requisição
+            'include_details': True,
+            'retry': 0,              # Número de tentativas de requisição
             'retry_delay': None,        # Atraso entre tentativas de requisição
         }
     

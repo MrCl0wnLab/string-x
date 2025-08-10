@@ -37,18 +37,18 @@ class MySqlOutput(BaseModule):
         }
         
         self.options = {
-            'host': 'localhost',
-            'port': 3306,
-            'database': 'strx_db',
-            'username': 'strx_user',
-            'password': str(),
+            'host': self.setting.STRX_MYSQL_HOST,
+            'port': self.setting.STRX_MYSQL_PORT,
+            'database': self.setting.STRX_MYSQL_DATABASE,
+            'username': self.setting.STRX_MYSQL_USER,
+            'password': self.setting.STRX_MYSQL_PASS,
             'table': 'results',
-            'data': str(),
-            'source': str(),       # Origem dos dados (opcional)
+            'source': "string-x",  # Origem dos dados (opcional)
             'metadata': str(),     # Metadados em formato JSON (opcional)
             'debug': False,        # Modo de debug para mostrar informações detalhadas
             'retry': 0,            # Número de tentativas de requisição
-            'retry_delay': None,      # Atraso entre tentativas de requisição
+            'retry_delay': None,   # Atraso entre tentativas de requisição
+            'data': str(),
         }
     
     def run(self):

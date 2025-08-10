@@ -201,7 +201,7 @@ def main_cli():
         parser.add_argument('-out', '-o', metavar="file", help="Arquivo output de valores da execução shell", default=setting.LOG_FILE_OUTPUT)
         parser.add_argument('-pipe', '-p', dest='pipe', metavar="cmd", help="Comando que será executado depois de um pipe |", default=None)
         parser.add_argument('-verbose', '-v', metavar="<levels>", help="Níveis de verbosidade: 1=info, 2=warning, 3=debug, 4=error, 5=exception, all=todos. Ex: -v 1 ou -v 1,2 ou -v all", default=None, required=False)
-        parser.add_argument('-thread', '-t', metavar=f"<{setting.THREAD_MAX}>", help="Quantidade de threads", default=setting.THREAD_MAX)
+        parser.add_argument('-thread', '-t', metavar=f"<{setting.STRX_THREAD_MAX}>", help="Quantidade de threads", default=setting.STRX_THREAD_MAX)
         parser.add_argument('-pf', dest='pf', help="Mostrar resultados da execução de função, ignora shell", action='store_true', default=False)
         parser.add_argument('-of', dest='of', help="Habilitar output de valores da execução de função", action='store_true', default=False)
         parser.add_argument('-filter', '-f', dest='filter', metavar="value", help="Valor para filtrar strings para execução", default=None, required=False)
@@ -213,10 +213,10 @@ def main_cli():
         parser.add_argument('-pmc', help="Mostrar resultados de cada módulo no encadeamento separadamente (para coletores, preserva o input original)", action='store_true', default=False)
         parser.add_argument('-proxy', help="Setar um proxy para request", default=str(), required=False)
         parser.add_argument('-disable-security',  '-ds', dest='disable_security', help="Disable security validations (use with caution)", action='store_true', default=False)
-        parser.add_argument('-format', metavar="<format>", help=f"Formato de saída ({', '.join(setting.OUTPUT_FORMATS)})", default=setting.DEFAULT_OUTPUT_FORMAT, choices=setting.OUTPUT_FORMATS)
+        parser.add_argument('-format', metavar="<format>", help=f"Formato de saída ({', '.join(setting.STRX_OUTPUT_FORMATS)})", default=setting.STRX_DEFAULT_OUTPUT_FORMAT, choices=setting.STRX_OUTPUT_FORMATS)
         parser.add_argument('-upgrade', help="Atualizar String-X via Git", action='store_true')
-        parser.add_argument('-retry', '-r', metavar=f"<{setting.RETRY_OPERATIONS}>", help="Quantidade de tentativas", default=setting.RETRY_OPERATIONS, required=False)
-        parser.add_argument('-retry-delay', '-rd', metavar=f"<{setting.RETRY_DELAY}>", help="Delay entre tentativas", default=setting.RETRY_DELAY, required=False)
+        parser.add_argument('-retry', '-r', metavar=f"<{setting.STRX_RETRY_OPERATIONS}>", help="Quantidade de tentativas", default=setting.STRX_RETRY_OPERATIONS, required=False)
+        parser.add_argument('-retry-delay', '-rd', metavar=f"<{setting.STRX_RETRY_DELAY}>", help="Delay entre tentativas", default=setting.STRX_RETRY_DELAY, required=False)
         parser.add_argument('-notify', help="Enviar notificação desktop ao finalizar a execução", action='store_true', default=False)
         parser.add_argument('-version', action='version', version=f"%(prog)s {setting.__version__}")
         ARGS = parser.parse_args() 
@@ -293,10 +293,10 @@ def main_cli():
 
         if ARGS.out:
             if setting.LOG_FILE_OUTPUT != ARGS.out:
-                CMD.file_output = f'{setting.LOG_DIRECTORY}/{ARGS.out}'
+                CMD.file_output = f'{setting.STRX_LOG_DIRECTORY}/{ARGS.out}'
             else:
                 CMD.file_output = ARGS.out
-            CMD.file_last_output = f'{setting.LOG_DIRECTORY}/{setting.LOG_FILE_LAST}'
+            CMD.file_last_output = setting.LOG_FILE_LAST_PATH
 
         CMD.verbose = ARGS.verbose
         

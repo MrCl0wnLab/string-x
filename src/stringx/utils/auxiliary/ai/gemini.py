@@ -48,12 +48,12 @@ class GeminiAI(BaseModule):
         }
         
         self.options = {
-            'api_key': str(),  # Chave API Gemini
-            'model': 'gemini-2.0-flash',  # Versão do modelo
+            'api_key': self.setting.STRX_GEMINI_APIKEY,  # Chave API Gemini
+            'model': self.setting.STRX_GEMINI_MODEL,  # Versão do modelo
+            'temperature': self.setting.STRX_GEMINI_TEMPERATURE,  # Controla aleatoriedade (0.0 a 1.0)
+            'max_tokens': self.setting.STRX_GEMINI_MAX_TOKENS,  # Máximo de tokens na resposta
+            'debug': False,  # Modo de debug para mostrar informações detalhadas
             'data': str(),  # O texto do prompt
-            'temperature': 0.7,  # Controla aleatoriedade (0.0 a 1.0)
-            'max_tokens': 800,  # Máximo de tokens na resposta
-            'debug': False  # Modo de debug para mostrar informações detalhadas
         }
         
         self.base_url = "https://generativelanguage.googleapis.com/v1beta/models/"
@@ -75,6 +75,7 @@ class GeminiAI(BaseModule):
             HTTPError: Erro na comunicação com a API
             RequestError: Erro no processamento da requisição
         """
+
         # Limpar resultados anteriores para evitar acúmulo
         self._result[self._get_cls_name()].clear()
         

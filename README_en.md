@@ -611,6 +611,7 @@ Modules for external information collection, APIs and analysis:
 | `netscan`     | Network scanner (hosts, services)          | `-module "clc:netscan"` |
 | `shodan`      | Query Shodan API                           | `-module "clc:shodan"` |
 | `sogou`       | Perform dork searches on Sogou (Chinese)   | `-module "clc:sogou"` |
+| `spider`      | Web spider for recursive URL collection    | `-module "clc:spider"` |
 | `subdomain`   | Subdomain enumeration                      | `-module "clc:subdomain"` |
 | `virustotal`  | Query VirusTotal API                       | `-module "clc:virustotal"` |
 | `whois`       | Domain WHOIS query                         | `-module "clc:whois"` |
@@ -664,6 +665,7 @@ Modules for connecting to external services and integrating results:
 | `opensearch`  | Index results in Open Search               | `-module "con:opensearch"` |
 | `ftp`         | Connection and transfer via FTP            | `-module "con:ftp"` |
 | `ssh`         | Execute commands via SSH                   | `-module "con:ssh"` |
+| `s3`          | Upload/download data to Amazon S3          | `-module "con:s3"` |
 
 ```bash
 # Example: Save to SQLite

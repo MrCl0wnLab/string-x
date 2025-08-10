@@ -72,7 +72,7 @@ class NotificationManager:
         self.execution_details = {}
         
         # Configurações da notificação (usando variáveis do setting.py)
-        self.app_name = setting.NOTIFICATION_APP_NAME
+        self.app_name = setting.STRX_NOTIFICATION_APP_NAME
         
         # Set the String-X icon path
         icon_path = self._get_icon_path()
@@ -269,7 +269,7 @@ class NotificationManager:
         """
         Obtém o caminho para o ícone do String-X.
         
-        Procura primeiro por variáveis de ambiente ou arquivo .env,
+        Procura primeiro por variáveis de ambiente ou arquivo default.json,
         depois usa o caminho relativo padrão do projeto.
         
         Environment variables checked (via setting.py):
@@ -281,8 +281,8 @@ class NotificationManager:
         """
         try:
             # 1. Check setting.py configured icon path (from STRX_NOTIFICATION_ICON_PATH)
-            if setting.NOTIFICATION_ICON_PATH and os.path.exists(setting.NOTIFICATION_ICON_PATH):
-                return str(Path(setting.NOTIFICATION_ICON_PATH).absolute())
+            if setting.STRX_NOTIFICATION_ICON_PATH and os.path.exists(setting.STRX_NOTIFICATION_ICON_PATH):
+                return str(Path(setting.STRX_NOTIFICATION_ICON_PATH).absolute())
             
             # 2. Check PROJECT_ROOT from setting.py + asset/img/icon.png
             if hasattr(setting, 'PROJECT_ROOT') and setting.PROJECT_ROOT:
@@ -313,16 +313,18 @@ class NotificationManager:
             str: Caminho absoluto para o arquivo de áudio ou None se não encontrado
         """
         try:
+            if not setting.STRX_NOTIFICATION_AUDIO_ENABLED:
+                return None
             # 1. Check setting.py configured audio path (from STRX_NOTIFICATION_AUDIO_PATH)
-            if setting.NOTIFICATION_AUDIO_PATH:
+            if setting.STRX_NOTIFICATION_AUDIO_PATH:
                 # If it's an absolute path, use as-is
-                if Path(setting.NOTIFICATION_AUDIO_PATH).is_absolute():
-                    if Path(setting.NOTIFICATION_AUDIO_PATH).exists():
-                        return str(Path(setting.NOTIFICATION_AUDIO_PATH).absolute())
+                if Path(setting.STRX_NOTIFICATION_AUDIO_PATH).is_absolute():
+                    if Path(setting.STRX_NOTIFICATION_AUDIO_PATH).exists():
+                        return str(Path(setting.STRX_NOTIFICATION_AUDIO_PATH).absolute())
                 else:
                     # If it's relative, resolve from PROJECT_ROOT
                     if hasattr(setting, 'PROJECT_ROOT') and setting.PROJECT_ROOT:
-                        audio_path = setting.PROJECT_ROOT / setting.NOTIFICATION_AUDIO_PATH
+                        audio_path = setting.PROJECT_ROOT / setting.STRX_NOTIFICATION_AUDIO_PATH
                         if audio_path.exists():
                             return str(audio_path.absolute())
             
@@ -369,7 +371,7 @@ class NotificationManager:
                 notification.icon = self.app_icon
             
             # Define áudio se disponível e arquivo existir
-            if setting.NOTIFICATION_AUDIO_PATH:
+            if setting.STRX_NOTIFICATION_AUDIO_PATH:
                 audio_path = self._get_audio_path()
                 if audio_path:
                     notification.audio = audio_path
@@ -408,7 +410,7 @@ class NotificationManager:
                 notification.icon = self.app_icon
             
             # Define áudio se disponível e arquivo existir
-            if setting.NOTIFICATION_AUDIO_PATH:
+            if setting.STRX_NOTIFICATION_AUDIO_PATH:
                 audio_path = self._get_audio_path()
                 if audio_path:
                     notification.audio = audio_path

@@ -23,6 +23,7 @@ except ImportError:
 # Módulos locais
 from stringx.core.output_formatter import OutputFormatter
 from stringx.core.logger import logger
+from stringx.config import setting
 
 class BaseModule:
     """
@@ -53,7 +54,7 @@ class BaseModule:
         Configura estruturas básicas para resultados, opções e metadados
         que serão utilizadas pelos módulos filhos.
         """
-
+        self.setting = setting
         self._result = {f"{self._get_cls_name()}": []}
         self._auto_clear_results = True  # Habilita limpeza automática por padrão
 

@@ -39,9 +39,10 @@ class TelegramOutput(BaseModule):
         }
         
         self.options = {
-            'bot_token': str(),
-            'chat_id': str(),
-            'data': str(),            'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'bot_token': self.setting.STRX_TELEGRAM_BOT_TOKEN,
+            'chat_id': self.setting.STRX_TELEGRAM_CHAT_ID,
+            'data': str(),
+            'debug': False,  # Modo de debug para mostrar informações detalhadas
             'retry': 0,              # Número de tentativas de requisição
             'retry_delay': None,        # Atraso entre tentativas de requisição
         }

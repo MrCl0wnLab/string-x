@@ -754,6 +754,7 @@ Módulos para coleta de informações externas, APIs e análise:
 | `netscan`     | Scanner de rede (hosts, serviços)         | `-module "clc:netscan"` |
 | `shodan`      | Consulta API Shodan                       | `-module "clc:shodan"` |
 | `sogou`       | Realiza buscas com dorks no Sogou (Chinês)| `-module "clc:sogou"` |
+| `spider`      | Web spider para coleta recursiva de URLs  | `-module "clc:spider"` |
 | `subdomain`   | Enumeração de subdomínios                 | `-module "clc:subdomain"` |
 | `virustotal`  | Consulta API VirusTotal                   | `-module "clc:virustotal"` |
 | `whois`       | Consulta WHOIS de domínios                | `-module "clc:whois"` |
@@ -772,6 +773,11 @@ strx -l dorks.txt -st "echo {STRING}" -module "clc:yahoo" -pm
 # Exemplo: Sondar e analisar servidores web
 strx -l urls.txt -st "echo {STRING}" -module "clc:http_probe" -pm
 strx -l dorks.txt -st "echo {STRING}" -module "clc:duckduckgo" -pm
+
+# Exemplo: Spider para coleta recursiva de URLs
+strx -s "https://example.com" -st "echo {STRING}" -module "clc:spider" -pm
+strx -s "https://example.com" -st "echo {STRING}" -module "clc:spider" \
+     -op depth=3,max_urls=50,delay=0.5 -pm
 
 # Exemplos com dorking específico
 echo 'site:fbi.gov filetype:pdf' | strx -st "echo {STRING}" -module "clc:google" -pm
@@ -808,10 +814,22 @@ Módulos para conexão com serviços externos e integração de resultados:
 | `opensearch`  | Indexa resultados em Open Search          | `-module "con:opensearch"` |
 | `ftp`         | Conexão e transferência via FTP           | `-module "con:ftp"` |
 | `ssh`         | Executa comandos via SSH                  | `-module "con:ssh"` |
+| `s3`          | Upload/download de dados no Amazon S3     | `-module "con:s3"` |
 
 ```bash
 # Exemplo: Salvar em SQLite
 strx -l data.txt -st "process {STRING}" -module "con:sqlite" -pm
+
+# Exemplo: Upload para S3
+strx -l logs.txt -st "echo {STRING}" -module "con:s3" -pm
+
+# Exemplo: Download do S3
+strx -s "path/to/file.txt" -st "echo {STRING}" -module "con:s3" \
+     -op operation=download,object_key={STRING} -pm
+
+# Exemplo: Listar objetos no bucket S3
+strx -s "bucket-name" -st "echo {STRING}" -module "con:s3" \
+     -op operation=list,prefix=logs/ -pm
 ```
 
 

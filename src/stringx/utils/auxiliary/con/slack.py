@@ -40,7 +40,8 @@ class SlackOutput(BaseModule):
         self.options = {
             'webhook_url': str(),
             'channel': str(),
-            'data': str(),            'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'data': str(),
+            'debug': False,  # Modo de debug para mostrar informações detalhadas
             'timeout': 10,  # Tempo limite para requisição HTTP
             'retry': 0,              # Número de tentativas de requisição
             'retry_delay': None,        # Atraso entre tentativas de requisição

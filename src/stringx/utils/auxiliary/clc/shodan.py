@@ -59,7 +59,7 @@ class ShodanCollector(BaseModule):
         # Opções configuráveis do módulo
         self.options = {
             'data': str(),  # IP ou hostname
-            'api_key': str(),  # API key do Shodan
+            'api_key': self.setting.STRX_SHODAN_APIKEY,  # API key do Shodan
             'query_type': 'host',  # host, search, count
             'facets': str(),  # Para query type 'search'
             'limit': 100,

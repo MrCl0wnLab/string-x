@@ -71,9 +71,9 @@ class IPInfo(BaseModule):
         # Opções configuráveis do módulo
         self.options = {
             'data': str(),          # Endereço IP a ser consultado (pode ser múltiplos IPs separados por nova linha)
-            'api_token': str(),     # Token de API do ipinfo.io (opcional, pode usar env IPINFO_TOKEN)
+            'api_token': self.setting.STRX_IPINFO_APIKEY,     # Token de API do ipinfo.io (opcional, pode usar env IPINFO_TOKEN)
             'timeout': 10,          # Timeout para requisições
-            'user-agent': 'STRX/1.0 (https://github.com/MrCl0wnLab/string-x)', # User-Agent para requisições
+            'user-agent':  self.setting.STRX_USER_AGENT, # User-Agent para requisições
             'example': './strx -l ips.txt -st "echo {STRING}" -module "clc:ipinfo" -pm', # Exemplo de uso
             'debug': False,         # Modo de debug para mostrar informações detalhadas   
             'retry': 0,             # Número de tentativas de requisição

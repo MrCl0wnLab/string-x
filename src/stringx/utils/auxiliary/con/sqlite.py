@@ -38,10 +38,11 @@ class SqliteOutput(BaseModule):
         }
         
         self.options = {
-            'database': 'strx_results.db',
+            'database': self.setting.STRX_SQLITE_DATABASE,
             'table': 'results',
-            'data': str(),            'debug': False,  # Modo de debug para mostrar informações detalhadas
-            'timeout': 10,  # Tempo limite para operações de banco de dados
+            'data': str(),
+            'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'timeout': self.setting.STRX_SQLITE_TIMEOUT,  # Tempo limite para operações de banco de dados
             'retry': 0,              # Número de tentativas de requisição
             'retry_delay': None,        # Atraso entre tentativas de requisição
         }

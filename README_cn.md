@@ -700,6 +700,7 @@ String-X使用可扩展的模块化架构，允许在不修改主代码的情况
 | `netscan`     | 网络扫描(主机、服务)         | `-module "clc:netscan"` |
 | `shodan`      | 查询Shodan API                       | `-module "clc:shodan"` |
 | `sogou`       | 在Sogou中进行探查搜索(中文)| `-module "clc:sogou"` |
+| `spider`      | 网络爬虫递归收集URL | `-module "clc:spider"` |
 | `subdomain`   | 子域名枚举                 | `-module "clc:subdomain"` |
 | `virustotal`  | 查询VirusTotal API                   | `-module "clc:virustotal"` |
 | `whois`       | 域名WHOIS查询                | `-module "clc:whois"` |
@@ -752,6 +753,7 @@ echo 'filetype:pdf' | ./strx -st "echo {STRING}" -module "clc:yahoo" -pm
 | `opensearch`  | 在Open Search中索引结果          | `-module "con:opensearch"` |
 | `ftp`         | 通过FTP连接和传输                | `-module "con:ftp"` |
 | `ssh`         | 通过SSH执行命令                 | `-module "con:ssh"` |
+| `s3`          | 在Amazon S3上传/下载数据         | `-module "con:s3"` |
 
 ```bash
 # 示例：保存到SQLite
