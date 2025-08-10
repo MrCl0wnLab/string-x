@@ -52,7 +52,8 @@ class DnsInfo(BaseModule):
             'data': str(),  # Nome do host a ser pesquisado
             'records': ['A', 'MX', 'TXT', 'NS'],  # Tipos de registros DNS
             'timeout': 5,  # Timeout para consultas DNS
-            'resolver': '8.8.8.8',  # Servidor DNS resolver            'debug': False,  # Modo de debug para mostrar informações detalhadas 
+            'resolver': '8.8.8.8',  # Servidor DNS resolver            
+            'debug': False,  # Modo de debug para mostrar informações detalhadas 
             'retry': 0,             # Número de tentativas de requisição
             'retry_delay': None,       # Atraso entre tentativas de requisição 
         }
@@ -79,20 +80,20 @@ class DnsInfo(BaseModule):
             resolver = self.options.get("resolver", "8.8.8.8")
             timeout = self.options.get("timeout", 5)
             
-            self.log_debug(f"Consultando registro {record_type} para {host} usando resolver {resolver}")
+            self.log_debug(f"[*] Consultando registro {record_type} para {host} usando resolver {resolver}")
             
             cmd = ['dig', f'@{resolver}', '+short', host, record_type]
-            self.log_debug(f"Executando comando: {' '.join(cmd)}")
+            self.log_debug(f"[*] Executando comando: {' '.join(cmd)}")
             
             result = subprocess.run(cmd, capture_output=True, 
                                   text=True, timeout=timeout)
             
             if result.stdout:
                 records = [line.strip() for line in result.stdout.strip().split('\n') if line.strip()]
-                self.log_debug(f"Encontrados {len(records)} registros {record_type}")
+                self.log_debug(f"[+] Encontrados {len(records)} registros {record_type}")
                 return records
             else:
-                self.log_debug(f"Nenhum registro {record_type} encontrado para {host}")
+                self.log_debug(f"[!] Nenhum registro {record_type} encontrado para {host}")
                 return []
                 
         except subprocess.TimeoutExpired as te:
@@ -124,16 +125,17 @@ class DnsInfo(BaseModule):
             host = self.options.get("data", "").strip()
             
             if not host:
-                self.log_debug("Nenhum host especificado")
+                self.log_debug("[!] Nenhum host especificado")
                 return
             
-            # Limpar resultados anteriores para evitar acúmulo
-            self._result[self._get_cls_name()].clear()
+            # Only clear results if auto_clear is enabled (default behavior)
+            if self._auto_clear_results:
+                self._result[self._get_cls_name()].clear()
             
-            self.log_debug(f"Iniciando coleta de DNS para: {host}")
+            self.log_debug(f"[*] Iniciando coleta de DNS para: {host}")
             
             records_to_check = self.options.get('records', ['A', 'MX', 'TXT', 'NS'])
-            self.log_debug(f"Tipos de registros a consultar: {', '.join(records_to_check)}")
+            self.log_debug(f"[*] Tipos de registros a consultar: {', '.join(records_to_check)}")
             
             dns_info = {
                 'host': host,
@@ -142,22 +144,22 @@ class DnsInfo(BaseModule):
         
             # Coletar cada tipo de registro DNS configurado
             for record_type in records_to_check:
-                self.log_debug(f"Consultando registros {record_type}...")
+                self.log_debug(f"[*] Consultando registros {record_type}...")
                 records = self._get_dns_record(host, record_type)
                 if records:
-                    self.log_debug(f"Registros {record_type}: {', '.join(records)}")
+                    self.log_debug(f"[+] Registros {record_type}: {', '.join(records)}")
                     dns_info['records'][record_type] = records
             
             # Formatar resultado para saída legível
             if dns_info['records']:
-                self.log_debug(f"Coletados {len(dns_info['records'])} tipos de registros")
+                self.log_debug(f"[+] Coletados {len(dns_info['records'])} tipos de registros")
                 result = f"Host: {host}\n"
                 for rtype, values in dns_info['records'].items():
                     result += f"  {rtype}: {', '.join(values)}\n"
                 
                 self.set_result(result)
             else:
-                self.log_debug("Nenhum registro DNS encontrado")
+                self.log_debug("[!] Nenhum registro DNS encontrado")
                 
         except ValueError as ve:
             self.handle_error(ve, "Erro de validação DNS")

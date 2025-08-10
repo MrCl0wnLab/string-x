@@ -44,14 +44,15 @@ class CredentialExtractor(BaseModule):
         e tokens usando padrões regex específicos. Possui suporte aprimorado
         para arquivos .env e outros formatos de configuração.
         """
-        # Limpar resultados anteriores para evitar acúmulo
-        self._result[self._get_cls_name()].clear()
+        # Only clear results if auto_clear is enabled (default behavior)
+        if self._auto_clear_results:
+            self._result[self._get_cls_name()].clear()
         
         if not (target_value := self.options.get("data")):
-            self.log_debug("Nenhum dado fornecido para extração")
+            self.log_debug("[X] Nenhum dado fornecido para extração")
             return
         
-        self.log_debug(f"Iniciando extração de credenciais em texto de {len(target_value)} caracteres")
+        self.log_debug(f"[*] Iniciando extração de credenciais em texto de {len(target_value)} caracteres")
         
         # Configurações
         prioritize_env = self.options.get('prioritize_env', True)
@@ -83,7 +84,7 @@ class CredentialExtractor(BaseModule):
         
         # Realizar extração prioritária de formato .env se ativado
         if prioritize_env and ('env' in types or 'all' in types):
-            self.log_debug("Buscando por credenciais em formato .env")
+            self.log_debug("[*] Buscando por credenciais em formato .env")
             env_credentials = self._extract_env_credentials(target_value, redact_values)
             if env_credentials:
                 results.extend(env_credentials)
@@ -91,7 +92,7 @@ class CredentialExtractor(BaseModule):
         # Extrair outros padrões de credenciais
         for pattern_type in types:
             if pattern_type != 'env' and pattern_type in patterns:
-                self.log_debug(f"Buscando por credenciais do tipo {pattern_type}")
+                self.log_debug(f"[*] Buscando por credenciais do tipo {pattern_type}")
                 regex = re.compile(patterns[pattern_type], re.IGNORECASE | re.MULTILINE)
                 matches = regex.findall(target_value)
                 
@@ -117,10 +118,10 @@ class CredentialExtractor(BaseModule):
         # Armazenar resultados únicos
         if results:
             unique_results = sorted(list(set(results)))
-            self.log_debug(f"Encontradas {len(unique_results)} credenciais únicas")
+            self.log_debug(f"[+] Encontradas {len(unique_results)} credenciais únicas")
             self.set_result("\n".join(unique_results))
         else:
-            self.log_debug("Nenhuma credencial encontrada")
+            self.log_debug("[!] Nenhuma credencial encontrada")
     
     def _extract_env_credentials(self, text: str, redact: bool = False) -> list:
         """

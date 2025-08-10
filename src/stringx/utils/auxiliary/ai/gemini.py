@@ -57,7 +57,7 @@ class GeminiAI(BaseModule):
         }
         
         self.base_url = "https://generativelanguage.googleapis.com/v1beta/models/"
-        self.log_debug("Módulo Gemini AI inicializado com configurações padrão")
+        self.log_debug("[*] Módulo Gemini AI inicializado com configurações padrão")
     
     def run(self) -> None:
         """
@@ -80,7 +80,7 @@ class GeminiAI(BaseModule):
         self._result[self._get_cls_name()].clear()
         
         try:
-            self.log_debug("Iniciando execução do módulo Gemini AI")
+            self.log_debug("[*] Iniciando execução do módulo Gemini AI")
             
             data = self.options.get('data', '').strip()
             api_key = self.options.get('api_key', '')
@@ -88,17 +88,17 @@ class GeminiAI(BaseModule):
             temperature = float(self.options.get('temperature', 0.7))
             max_tokens = int(self.options.get('max_tokens', 800))
             
-            self.log_debug(f"Configuração carregada: modelo={model}, temperatura={temperature}, max_tokens={max_tokens}")
+            self.log_debug(f"[*] Configuração carregada: modelo={model}, temperatura={temperature}, max_tokens={max_tokens}")
             
             if not data:
-                self.log_debug("Erro: prompt vazio - requisição abortada")
+                self.log_debug("[x] Erro: prompt vazio - requisição abortada")
                 return
                 
             if not api_key:
-                self.log_debug("Erro: chave API não fornecida - requisição abortada")
+                self.log_debug("[x] Erro: chave API não fornecida - requisição abortada")
                 return
             
-            self.log_debug(f"Prompt válido recebido com {len(data)} caracteres")
+            self.log_debug(f"[*] Prompt válido recebido com {len(data)} caracteres")
             
             result = self._query_gemini(
                 prompt=data,
@@ -109,10 +109,10 @@ class GeminiAI(BaseModule):
             )
             
             if result:
-                self.log_debug(f"Resposta do Gemini processada com sucesso: {len(result)} caracteres")
+                self.log_debug(f"[+] Resposta do Gemini processada com sucesso: {len(result)} caracteres")
                 self.set_result(result)
             else:
-                self.log_debug("Alerta: resposta vazia recebida da API Gemini")
+                self.log_debug("[!] Alerta: resposta vazia recebida da API Gemini")
                 
         except ValueError as e:
             self.handle_error(e, "Erro de validação nos parâmetros da requisição")
@@ -146,19 +146,19 @@ class GeminiAI(BaseModule):
             TimeoutException: Timeout durante a requisição
         """
         try:
-            self.log_debug(f"Iniciando consulta à API Gemini com modelo '{model}'")
+            self.log_debug(f"[*] Iniciando consulta à API Gemini com modelo '{model}'")
             
             # Validar parâmetros
             if not (0.0 <= temperature <= 1.0):
-                self.log_debug(f"Parâmetro temperatura inválido: {temperature} (deve estar entre 0.0 e 1.0)")
+                self.log_debug(f"[!] Parâmetro temperatura inválido: {temperature} (deve estar entre 0.0 e 1.0)")
                 raise ValueError("Temperatura deve estar entre 0.0 e 1.0")
                 
             if max_tokens <= 0:
-                self.log_debug(f"Parâmetro max_tokens inválido: {max_tokens} (deve ser positivo)")
+                self.log_debug(f"[!] Parâmetro max_tokens inválido: {max_tokens} (deve ser positivo)")
                 raise ValueError("max_tokens deve ser um número positivo")
             
             url = f"{self.base_url}{model}:generateContent?key={api_key}"
-            self.log_debug(f"URL da API configurada: {self.base_url}{model}:generateContent")
+            self.log_debug(f"[*] URL da API configurada: {self.base_url}{model}:generateContent")
             
             payload = {
                 "contents": [
@@ -180,11 +180,11 @@ class GeminiAI(BaseModule):
                 "Content-Type": "application/json"
             }
             
-            self.log_debug(f"Payload JSON preparado com prompt de {len(prompt)} caracteres")
-            self.log_debug("Iniciando envio da requisição HTTP com timeout de 30 segundos")
+            self.log_debug(f"[*] Payload JSON preparado com prompt de {len(prompt)} caracteres")
+            self.log_debug("[*] Iniciando envio da requisição HTTP com timeout de 30 segundos")
             
             with httpx.Client() as client:
-                self.log_debug("Conexão cliente HTTP estabelecida")
+                self.log_debug("[+] Conexão cliente HTTP estabelecida")
                 response = client.post(
                     url, 
                     headers=headers, 
@@ -192,24 +192,24 @@ class GeminiAI(BaseModule):
                     timeout=30
                 )
             
-            self.log_debug(f"Resposta da API recebida - Status HTTP: {response.status_code}")
+            self.log_debug(f"[*] Resposta da API recebida - Status HTTP: {response.status_code}")
             
             if response.status_code != 200:
-                return self.log_debug(f"Corpo da resposta de erro: {response.text[:150]}...")
+                return self.log_debug(f"[x] Corpo da resposta de erro: {response.text[:150]}...")
             
             result = response.json()
-            self.log_debug("Resposta JSON decodificada com sucesso")
+            self.log_debug("[+] Resposta JSON decodificada com sucesso")
             
             # Extrai o texto gerado da resposta
             if 'candidates' in result and len(result['candidates']) > 0:
-                self.log_debug(f"Encontrados {len(result['candidates'])} candidatos na resposta")
+                self.log_debug(f"[+] Encontrados {len(result['candidates'])} candidatos na resposta")
                 if 'content' in result['candidates'][0]:
                     content = result['candidates'][0]['content']
                     if 'parts' in content and len(content['parts']) > 0:
-                        self.log_debug(f"Texto extraído com sucesso: {len(content['parts'][0]['text'])} caracteres")
+                        self.log_debug(f"[+] Texto extraído com sucesso: {len(content['parts'][0]['text'])} caracteres")
                         return content['parts'][0]['text']
             
-            self.log_debug("Erro: estrutura de resposta inesperada ou inválida")
+            self.log_debug("[x] Erro: estrutura de resposta inesperada ou inválida")
             self.log_debug(f"Estrutura recebida: {json.dumps(result)[:150]}...")
             return self.log_debug(f"Corpo da resposta de erro: {response.text[:150]}...")
             

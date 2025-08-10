@@ -81,11 +81,12 @@ class ShodanCollector(BaseModule):
             if not data:
                 return
 
-            # Limpar resultados anteriores para evitar acúmulo
-            self._result[self._get_cls_name()].clear()
+            # Only clear results if auto_clear is enabled (default behavior)
+            if self._auto_clear_results:
+                self._result[self._get_cls_name()].clear()
 
             if not api_key:
-                self.log_debug("Erro: API key do Shodan é obrigatória")
+                self.log_debug("[x] Erro: API key do Shodan é obrigatória")
                 return
 
             if query_type == 'host':
@@ -95,8 +96,7 @@ class ShodanCollector(BaseModule):
             elif query_type == 'count':
                 result = self._query_count(data, api_key)
             else:
-                self.log_debug("Erro: query_type inválido (host, search, "
-                               "count)")
+                self.log_debug("[x] Erro: query_type inválido (host, search, count)")
                 return
 
             if result:

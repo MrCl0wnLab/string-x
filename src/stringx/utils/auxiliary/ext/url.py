@@ -37,7 +37,7 @@ class AuxRegexURL(BaseModule):
         }
         self.options = {
             "data": str(),
-            "regex": r'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+(?:/[-\w%/.]*)*(?:\?[-\w%&=.]*)?',
+            "regex": r'https?://[^\s<>"\']+',
             "example": "./strx -l webpages.txt -st \"{STRING}\" -module \"ext:url\" -pm",
             'debug': False,  # Modo de debug para mostrar informações detalhadas 
             'retry': 1,              # Número de tentativas de requisição
@@ -52,16 +52,49 @@ class AuxRegexURL(BaseModule):
         e extrair URLs válidas de strings de texto. As URLs encontradas
         são armazenadas nos resultados do módulo.
         """
-        # Limpar resultados anteriores para evitar acúmulo
-        self._result[self._get_cls_name()].clear()
+        # Only clear results if auto_clear is enabled (default behavior)
+        if self._auto_clear_results:
+            self._result[self._get_cls_name()].clear()
+            
+        self.log_debug("[*] Iniciando extração de URLs")
         result = []
-        # Verifica se há dados para processar
-        if (target_value := self.options.get("data")) and (regex_data := self.options.get("regex")): 
-            regex_data = re.compile(regex_data, re.IGNORECASE)
-            if regex_result_list := re.findall(regex_data, target_value):
-                for url in regex_result_list:
-                    result.append(url)
-                if result:
-                    result = sorted(list(set(result)))  # Remove duplicatas
-                    return self.set_result("\n".join(result))
+        
+        try:
+            # Verifica se há dados para processar
+            if (target_value := self.options.get("data")) and (regex_data := self.options.get("regex")):
+                self.log_debug(f"[*] Processando {len(target_value)} caracteres de dados")
+                self.log_debug(f"[*] Padrão regex: {regex_data}")
+                
+                regex_data = re.compile(regex_data, re.IGNORECASE)
+                if regex_result_list := re.findall(regex_data, target_value):
+                    self.log_debug(f"[+] Encontradas {len(regex_result_list)} URLs (com duplicatas)")
+                    
+                    for url in regex_result_list:
+                        result.append(url)
+                        
+                    if result:
+                        result = sorted(list(set(result)))  # Remove duplicatas
+                        self.log_debug(f"[*] URLs únicas após deduplicação: {len(result)}")
+                        
+                        # Log some sample URLs for debugging
+                        sample_urls = result[:3] if len(result) > 3 else result
+                        for i, url in enumerate(sample_urls, 1):
+                            self.log_debug(f"   {i}. {url}")
+                        if len(result) > 3:
+                            self.log_debug(f"   ... e mais {len(result) - 3} URLs")
+                            
+                        self.set_result("\n".join(result))
+                    else:
+                        self.log_debug("[!] Lista de URLs vazia após processamento")
+                else:
+                    self.log_debug("[X] Nenhuma URL encontrada no padrão regex")
+            else:
+                self.log_debug("[X] Dados ou regex não fornecidos")
+                if not self.options.get("data"):
+                    self.log_debug("   - Dados: não fornecidos")
+                if not self.options.get("regex"):
+                    self.log_debug("   - Regex: não fornecido")
+                    
+        except Exception as e:
+            self.handle_error(e, "Erro na extração de URLs")
 

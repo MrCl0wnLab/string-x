@@ -73,11 +73,12 @@ class SSHConnector(BaseModule):
             subprocess.SubprocessError: Se ocorrer erro na execução do comando
             FileNotFoundError: Se o arquivo de chave privada não for encontrado
         """
-        # Limpar resultados anteriores para evitar acúmulo
-        self._result[self._get_cls_name()].clear()
+        # Only clear results if auto_clear is enabled (default behavior)
+        if self._auto_clear_results:
+            self._result[self._get_cls_name()].clear()
         target = self.options.get("data", "").strip()
         if not target:
-            self.log_debug("Nenhum host alvo especificado")
+            self.log_debug("[X] Nenhum host alvo especificado")
             return
             
         # Parse host:port
@@ -92,7 +93,7 @@ class SSHConnector(BaseModule):
         command = self.options.get('command', 'whoami')
         timeout = self.options.get('timeout', 10)
         
-        self.log_debug(f"Conectando a {host}:{port} como {username}")
+        self.log_debug(f"[*] Conectando a {host}:{port} como {username}")
         
         try:
             # Validar arquivo de chave se especificado
@@ -106,16 +107,16 @@ class SSHConnector(BaseModule):
             
             if key_file and os.path.exists(key_file):
                 ssh_cmd.extend(['-i', key_file])
-                self.log_debug(f"Usando autenticação por chave: {key_file}")
+                self.log_debug(f"[*] Usando autenticação por chave: {key_file}")
             elif password:
-                self.log_debug("Usando autenticação por senha")
+                self.log_debug("[*] Usando autenticação por senha")
             else:
-                self.log_debug("Nenhum método de autenticação especificado")
+                self.log_debug("[!] Nenhum método de autenticação especificado")
             
             ssh_cmd.append(f"{username}@{host}")
             ssh_cmd.append(command)
             
-            self.log_debug(f"Executando comando: {command}")
+            self.log_debug(f"[*] Executando comando: {command}")
             
             # Executar SSH
             if password:
@@ -128,28 +129,28 @@ class SSHConnector(BaseModule):
                                   text=True, timeout=timeout)
             
             if result.returncode == 0:
-                self.log_debug("Comando executado com sucesso")
+                self.log_debug("[+] Comando executado com sucesso")
                 output = f"SSH Success - {host}:{port}\n"
                 output += f"Command: {command}\n"
                 output += f"Output:\n{result.stdout}"
                 self.set_result(output)
             else:
-                self.log_debug(f"Falha na execução do comando: {result.stderr}")
+                self.log_debug(f"[X] Falha na execução do comando: {result.stderr}")
                 error = f"SSH Failed - {host}:{port}\n"
                 error += f"Error: {result.stderr}"
                 self.set_result(error)
                 
         except FileNotFoundError as e:
-            self.log_debug(f"Arquivo não encontrado: {str(e)}")
+            self.log_debug(f"[X] Arquivo não encontrado: {str(e)}")
             self.set_result(f"SSH Error - {host}:{port}: {str(e)}")
         except subprocess.TimeoutExpired as e:
-            self.log_debug(f"Timeout: {str(e)}")
+            self.log_debug(f"[X] Timeout: {str(e)}")
             self.set_result(f"SSH Timeout - {host}:{port}: operação excedeu {timeout} segundos")
         except subprocess.SubprocessError as e:
-            self.log_debug(f"Erro no subprocess: {str(e)}")
+            self.log_debug(f"[X] Erro no subprocess: {str(e)}")
             self.set_result(f"SSH Error - {host}:{port}: erro na execução do comando: {str(e)}")
         except ValueError as e:
-            self.log_debug(f"Erro de validação: {str(e)}")
+            self.log_debug(f"[X] Erro de validação: {str(e)}")
             self.set_result(f"SSH Error - {host}:{port}: parâmetro inválido: {str(e)}")
         except Exception as e:
             self.handle_error(e, "Erro inesperado na conexão SSH")

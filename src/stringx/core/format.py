@@ -31,11 +31,22 @@ class Format:
 
     @staticmethod
     def clear_value(value: str) -> str:
-        if value:
+        if not value:
+            return str()
+        
+        # Prevenir memory issues com strings muito grandes
+        if len(value) > 10485760:  # 10MB limit
+            return value[:10485760].strip()
+        
+        # Aplicar limpeza básica de forma segura
+        try:
             value = value.strip()
-            value = re.sub(r'[\t\n\r]', '', value)
+            # Usar replace em vez de regex para evitar recursão
+            value = value.replace('\t', '').replace('\n', '').replace('\r', '')
             return value
-        return str()
+        except (AttributeError, MemoryError):
+            # Fallback para valores problemáticos
+            return str(value)[:1024] if value else str()
 
     @staticmethod
     def decode64(value: str) -> str:

@@ -66,7 +66,10 @@ class ThreadProcess:
                     # Wait for all tasks to complete
                     for future in futures:
                         try:
-                            future.result(timeout=60)  # 60 second timeout per task
+                            # Use configurable timeout from settings
+                            from stringx.config import setting
+                            task_timeout = getattr(setting, 'STRX_THREAD_TIMEOUT', 300)
+                            future.result(timeout=task_timeout)
                         except Exception as e:
                             # Log error but continue processing other tasks
                             pass

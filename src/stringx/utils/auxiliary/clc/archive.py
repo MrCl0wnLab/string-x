@@ -75,24 +75,25 @@ class archive(BaseModule):
         # Obtém o domínio alvo da entrada
         domain = self.options.get('data')
         if not domain:
-            self.log_debug("Nenhum domínio fornecido")
+            self.log_debug("[X] Nenhum domínio fornecido")
             return
         
-        # Limpar resultados anteriores para evitar acúmulo
-        self._result[self._get_cls_name()].clear()
+        # Only clear results if auto_clear is enabled (default behavior)
+        if self._auto_clear_results:
+            self._result[self._get_cls_name()].clear()
 
-        self.log_debug(f"Domínio alvo: {domain}")
+        self.log_debug(f"[*] Domínio alvo: {domain}")
         
         # Realiza consulta ao Wayback Machine
         try:
-            self.log_debug("Iniciando consulta ao Wayback Machine")
+            self.log_debug("[*] Iniciando consulta ao Wayback Machine")
             archived_urls = self._query_archive(domain)
             
-            self.log_debug(f"Resultados obtidos: {len(archived_urls) if archived_urls else 0}")
+            self.log_debug(f"[+] Resultados obtidos: {len(archived_urls) if archived_urls else 0}")
             
             if not archived_urls:
                 # Nenhum resultado encontrado
-                self.log_debug("Nenhuma URL arquivada encontrada")
+                self.log_debug("[!] Nenhuma URL arquivada encontrada")
                 self.set_result("")
                 return
             
@@ -146,19 +147,19 @@ class archive(BaseModule):
             'follow_redirects': True,
         }
         
-        self.log_debug(f"URL de consulta: {url}")
+        self.log_debug(f"[*] URL de consulta: {url}")
         
         try:
             # Realiza a requisição assíncrona
             response = await self.request.send_request([url], **kwargs)
             
             if not response or isinstance(response[0], Exception):
-                self.log_debug(f"Erro na requisição: {str(response[0]) if response else 'Sem resposta'}")
+                self.log_debug(f"[X] Erro na requisição: {str(response[0]) if response else 'Sem resposta'}")
                 return []
                 
             response = response[0]
             
-            self.log_debug(f"Status da resposta: {response.status_code}")
+            self.log_debug(f"[*] Status da resposta: {response.status_code}")
             
             if response.status_code == 200:
                 # Processa os resultados
@@ -167,8 +168,8 @@ class archive(BaseModule):
                 urls = [url for url in urls if url.strip()]
                 return urls
             else:
-                self.log_debug(f"Resposta HTTP não-200: {response.status_code}")
-                self.log_debug(f"Conteúdo da resposta: {response.text[:200]}...")
+                self.log_debug(f"[X] Resposta HTTP não-200: {response.status_code}")
+                self.log_debug(f"[*] Conteúdo da resposta: {response.text[:200]}...")
                 return []
                 
         except Exception as e:

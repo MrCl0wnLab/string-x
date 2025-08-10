@@ -45,11 +45,24 @@ def quit_process(signal, frame) -> None:
     Returns:
         None
     """
+    import threading
+    import concurrent.futures
+    import os
+    
     print("")
     CLI.console.log(f" [!] Saindo...")
     CLI.console.log(f" [!] File output: {setting.LOG_FILE_OUTPUT}")
     CLI.console.log(f" [!] Last value: {CMD.last_value}")
-    sys.exit(0)
+    
+    # Clean shutdown of any running threads/executors to prevent threading warnings
+    try:
+        # Clean up any remaining thread pools
+        concurrent.futures.thread._python_exit()
+    except (AttributeError, RuntimeError):
+        pass
+    
+    # Use os._exit to avoid threading shutdown warnings
+    os._exit(0)
 
 
 def stdin_get_list() -> List[str]:

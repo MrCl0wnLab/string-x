@@ -1,7 +1,7 @@
 """
 Módulo OpenAI para String-X.
 
-Este módulo fornece integração com a API OpenAI para processamento
+Este módulo fornece integração com a API OpenAI para processa            self.log_debug(f"[*] Configuração carregada: modelo={model}, temperatura={temperature}, max_tokens={max_tokens}")ento
 de linguagem natural, geração de texto e outras capacidades de IA.
 
 A OpenAI oferece modelos avançados como GPT-4 que podem ser utilizados para:
@@ -61,7 +61,7 @@ class OpenAI(BaseModule):
         }
         
         self.base_url = "https://api.openai.com/v1/chat/completions"
-        self.log_debug("Módulo OpenAI inicializado com configurações padrão")
+        self.log_debug("[*] Módulo OpenAI inicializado com configurações padrão")
     
     def run(self) -> None:
         """
@@ -79,11 +79,12 @@ class OpenAI(BaseModule):
             HTTPError: Erro na comunicação com a API
             RequestError: Erro no processamento da requisição
         """
-        # Limpar resultados anteriores para evitar acúmulo
-        self._result[self._get_cls_name()].clear()
+        # Only clear results if auto_clear is enabled (default behavior)
+        if self._auto_clear_results:
+            self._result[self._get_cls_name()].clear()
         
         try:
-            self.log_debug("Iniciando execução do módulo OpenAI")
+            self.log_debug("[*] Iniciando execução do módulo OpenAI")
             
             data = self.options.get('data', '').strip()
             api_key = self.options.get('api_key', '')
@@ -92,17 +93,17 @@ class OpenAI(BaseModule):
             max_tokens = int(self.options.get('max_tokens', 1000))
             system_prompt = self.options.get('system_prompt', '')
             
-            self.log_debug(f"Configuração carregada: modelo={model}, temperatura={temperature}, max_tokens={max_tokens}")
+            self.log_debug(f"[*] Configuração carregada: modelo={model}, temperatura={temperature}, max_tokens={max_tokens}")
             
             if not data:
-                self.log_debug("Erro: prompt vazio - requisição abortada")
+                self.log_debug("[x] Erro: prompt vazio - requisição abortada")
                 return
                 
             if not api_key:
-                self.log_debug("Erro: chave API não fornecida - requisição abortada")
+                self.log_debug("[x] Erro: chave API não fornecida - requisição abortada")
                 return
             
-            self.log_debug(f"Prompt válido recebido com {len(data)} caracteres")
+            self.log_debug(f"[*] Prompt válido recebido com {len(data)} caracteres")
             
             result = self._query_openai(
                 prompt=data,
@@ -114,10 +115,10 @@ class OpenAI(BaseModule):
             )
             
             if result:
-                self.log_debug(f"Resposta do OpenAI processada com sucesso: {len(result)} caracteres")
+                self.log_debug(f"[+] Resposta do OpenAI processada com sucesso: {len(result)} caracteres")
                 self.set_result(result)
             else:
-                self.log_debug("Alerta: resposta vazia recebida da API OpenAI")
+                self.log_debug("[!] Alerta: resposta vazia recebida da API OpenAI")
                 
         except ValueError as e:
             self.handle_error(e, "Erro de validação nos parâmetros da requisição")
@@ -153,18 +154,18 @@ class OpenAI(BaseModule):
             TimeoutException: Timeout durante a requisição
         """
         try:
-            self.log_debug(f"Iniciando consulta à API OpenAI com modelo '{model}'")
+            self.log_debug(f"[*] Iniciando consulta à API OpenAI com modelo '{model}'")
             
             # Validar parâmetros
             if not (0.0 <= temperature <= 2.0):
-                self.log_debug(f"Parâmetro temperatura inválido: {temperature} (deve estar entre 0.0 e 2.0)")
+                self.log_debug(f"[X] Parâmetro temperatura inválido: {temperature} (deve estar entre 0.0 e 2.0)")
                 raise ValueError("Temperatura deve estar entre 0.0 e 2.0")
                 
             if max_tokens <= 0:
-                self.log_debug(f"Parâmetro max_tokens inválido: {max_tokens} (deve ser positivo)")
+                self.log_debug(f"[X] Parâmetro max_tokens inválido: {max_tokens} (deve ser positivo)")
                 raise ValueError("max_tokens deve ser um número positivo")
             
-            self.log_debug(f"URL da API: {self.base_url}")
+            self.log_debug(f"[*] URL da API: {self.base_url}")
             
             # Preparar mensagens
             messages = []
@@ -175,7 +176,7 @@ class OpenAI(BaseModule):
                     "role": "system",
                     "content": system_prompt
                 })
-                self.log_debug(f"Prompt do sistema adicionado: {len(system_prompt)} caracteres")
+                self.log_debug(f"[*] Prompt do sistema adicionado: {len(system_prompt)} caracteres")
             
             # Adicionar prompt do usuário
             messages.append({
@@ -195,11 +196,11 @@ class OpenAI(BaseModule):
                 "Authorization": f"Bearer {api_key}"
             }
             
-            self.log_debug(f"Payload JSON preparado com prompt de {len(prompt)} caracteres")
-            self.log_debug("Iniciando envio da requisição HTTP com timeout de 60 segundos")
+            self.log_debug(f"[*] Payload JSON preparado com prompt de {len(prompt)} caracteres")
+            self.log_debug("[*] Iniciando envio da requisição HTTP com timeout de 60 segundos")
             
             with httpx.Client() as client:
-                self.log_debug("Conexão cliente HTTP estabelecida")
+                self.log_debug("[*] Conexão cliente HTTP estabelecida")
                 response = client.post(
                     self.base_url, 
                     headers=headers, 
@@ -207,21 +208,22 @@ class OpenAI(BaseModule):
                     timeout=60
                 )
             
-            self.log_debug(f"Resposta da API recebida - Status HTTP: {response.status_code}")
+            self.log_debug(f"[*] Resposta da API recebida - Status HTTP: {response.status_code}")
             
             if response.status_code != 200:
-                return self.log_debug(f"Corpo da resposta de erro: {response.text[:150]}...")
+                self.log_debug(f"[X] Corpo da resposta de erro: {response.text[:150]}...")
+                return
             
             result = response.json()
-            self.log_debug("Resposta JSON decodificada com sucesso")
+            self.log_debug("[*] Resposta JSON decodificada com sucesso")
             
             # Extrai o texto gerado da resposta
             if 'choices' in result and len(result['choices']) > 0:
-                self.log_debug(f"Encontradas {len(result['choices'])} escolhas na resposta")
+                self.log_debug(f"[*] Encontradas {len(result['choices'])} escolhas na resposta")
                 choice = result['choices'][0]
                 if 'message' in choice and 'content' in choice['message']:
                     content = choice['message']['content']
-                    self.log_debug(f"Texto extraído com sucesso: {len(content)} caracteres")
+                    self.log_debug(f"[+] Texto extraído com sucesso: {len(content)} caracteres")
                     
                     # Adicionar informações de uso se disponíveis
                     usage_info = ""
@@ -231,12 +233,12 @@ class OpenAI(BaseModule):
                         completion_tokens = usage.get('completion_tokens', 0)
                         total_tokens = usage.get('total_tokens', 0)
                         usage_info = f"\n\n[Tokens: {prompt_tokens} prompt + {completion_tokens} completion = {total_tokens} total]"
-                        self.log_debug(f"Informações de uso: {total_tokens} tokens totais")
+                        self.log_debug(f"[*] Informações de uso: {total_tokens} tokens totais")
                     
                     return content + usage_info
             
-            self.log_debug("Erro: estrutura de resposta inesperada ou inválida")
-            self.log_debug(f"Estrutura recebida: {json.dumps(result)[:150]}...")
+            self.log_debug("[X] Erro: estrutura de resposta inesperada ou inválida")
+            self.log_debug(f"[*] Estrutura recebida: {json.dumps(result)[:150]}...")
             return f"Formato de Resposta da API Inesperado: {json.dumps(result)[:100]}..."
             
         except HTTPError as e:
@@ -256,7 +258,7 @@ class OpenAI(BaseModule):
             prompt (str): O prompt do sistema que define como o modelo deve se comportar
         """
         self.options['system_prompt'] = prompt
-        self.log_debug(f"Prompt do sistema definido: {len(prompt)} caracteres")
+        self.log_debug(f"[*] Prompt do sistema definido: {len(prompt)} caracteres")
     
     def get_available_models(self) -> list:
         """

@@ -68,7 +68,7 @@ class GeoIPCollector(BaseModule):
             ip = self.options.get('data', '').strip()
             
             if not ip:
-                self.log_debug("Nenhum IP fornecido.")
+                self.log_debug("[!] Nenhum IP fornecido.")
                 return
             
             # Limpar resultados anteriores para evitar acúmulo

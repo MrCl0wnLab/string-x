@@ -255,13 +255,37 @@ class Command:
                     # Caso contrário, usa comportamento em cadeia (passando resultados entre módulos)
                     input_data = data if self._print_module_chain else current_data
                     
-                    obj_module.options.update({
-                        'data': input_data, 
-                        'proxy': self._proxy, 
-                        'retry': self._retry,
-                        'retry_delay': self._retry_delay
-                    })
-                    obj_module.run()
+                    # Check if this is a collector module that needs individual processing
+                    module_type = obj_module.meta.get('type', '')
+                    is_collector = module_type == 'collector'
+                    
+                    if is_collector and '\n' in input_data and not self._print_module_chain:
+                        # For collector modules in chain mode, process each line individually
+                        lines = [line.strip() for line in input_data.split('\n') if line.strip()]
+                        logger.verbose(f"[+] Processando {len(lines)} itens individualmente para módulo coletor {module_spec}")
+                        
+                        # Clear previous results and disable auto-clear for accumulation
+                        obj_module._result[obj_module._get_cls_name()].clear()
+                        obj_module.set_auto_clear(False)  # Disable auto-clear to accumulate results
+                        
+                        for line in lines:
+                            logger.verbose(f"[+] Processando item: {line}")
+                            obj_module.options.update({
+                                'data': line, 
+                                'proxy': self._proxy, 
+                                'retry': self._retry,
+                                'retry_delay': self._retry_delay
+                            })
+                            obj_module.run()
+                    else:
+                        # Normal processing for non-collector modules or single items
+                        obj_module.options.update({
+                            'data': input_data, 
+                            'proxy': self._proxy, 
+                            'retry': self._retry,
+                            'retry_delay': self._retry_delay
+                        })
+                        obj_module.run()
                     
                     # Obter resultados do módulo
                     if results := obj_module.get_result():
@@ -405,7 +429,9 @@ class Command:
 
                 # Use communicate() with timeout to prevent hanging
                 try:
-                    stdout_data, stderr_data = result_command.communicate(timeout=10)
+                    # Use configurable timeout from settings instead of hard-coded value
+                    command_timeout = getattr(setting, 'STRX_THREAD_TIMEOUT', 300)
+                    stdout_data, stderr_data = result_command.communicate(timeout=command_timeout)
                     
                     if stdout_data:
                         # Process each line of output

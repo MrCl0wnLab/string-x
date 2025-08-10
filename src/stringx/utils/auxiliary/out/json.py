@@ -53,7 +53,7 @@ class JSONOutput(BaseModule):
             # Registra uma função para salvar dados na saída do processo
             atexit.register(self._save_all_data)
             _INITIALIZED = True
-            self.log_debug("Registered atexit handler for final data save")
+            self.log_debug("[*] Registered atexit handler for final data save")
 
     @staticmethod
     def _get_output_filepath():
@@ -86,7 +86,7 @@ class JSONOutput(BaseModule):
             if not _COLLECTED_DATA:
                 return
 
-            self.log_debug(f"Final save: saving {len(_COLLECTED_DATA)} items")
+            self.log_debug(f"[+] Final save: saving {len(_COLLECTED_DATA)} items")
 
             # Converte set para lista para serializar
             unique_data = list(_COLLECTED_DATA)
@@ -111,7 +111,7 @@ class JSONOutput(BaseModule):
                     json.dump(entries, f, indent=2, ensure_ascii=False)
 
                 self.log_debug(
-                    f"Successfully saved {
+                    f"[+] Successfully saved {
                         len(entries)} items to {file_path}")
                 # Limpar dados após salvar com sucesso
                 _COLLECTED_DATA.clear()
@@ -138,19 +138,19 @@ class JSONOutput(BaseModule):
             return
 
         self.log_debug(
-            f"Processing data: {data[:50]}{'...' if len(data) > 50 else ''}")
+            f"[*] Processing data: {data[:50]}{'...' if len(data) > 50 else ''}")
 
         # Adiciona ao conjunto global de dados
         with _JSON_LOCK:
             _COLLECTED_DATA.add(data)
             count = len(_COLLECTED_DATA)
-            self.log_debug(f"Total collected: {count} unique items")
+            self.log_debug(f"[*] Total collected: {count} unique items")
 
             # Salva intermediariamente se atingir o limite de batch
             batch_size = int(self.options.get('batch_size', 50))
             if count > 0 and count % batch_size == 0:
                 self.log_debug(
-                    f"Batch size {batch_size} reached, triggering "
+                    f"[*] Batch size {batch_size} reached, triggering "
                     f"intermediary save")
                 self._save_intermediary_batch()
 
@@ -185,7 +185,7 @@ class JSONOutput(BaseModule):
                 json.dump(entries, f, indent=2, ensure_ascii=False)
 
             self.log_debug(
-                f"Intermediary save: {
+                f"[+] Intermediary save: {
                     len(entries)} items to {file_path}")
 
             # NÃO limpa os dados aqui, apenas no final do programa

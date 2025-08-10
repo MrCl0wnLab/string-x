@@ -79,7 +79,7 @@ class VirusTotalCollector(BaseModule):
             self._result[self._get_cls_name()].clear()
 
             if not api_key:
-                self.log_debug("Erro: API key do VirusTotal é obrigatória")
+                self.log_debug("[x] Erro: API key do VirusTotal é obrigatória")
                 return
             
             # Detectar tipo automaticamente se necessário
@@ -96,7 +96,7 @@ class VirusTotalCollector(BaseModule):
             elif resource_type == 'file':
                 result = self._query_file(data, api_key)
             else:
-                self.log_debug(f"Erro: Tipo de recurso não suportado: {resource_type}")
+                self.log_debug(f"[x] Erro: Tipo de recurso não suportado: {resource_type}")
                 return
             
             if result:

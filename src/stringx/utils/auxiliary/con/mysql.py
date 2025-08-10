@@ -60,11 +60,12 @@ class MySqlOutput(BaseModule):
             
             data = Format.clear_value(self.options.get('data', ''))
             if not data:
-                self.log_debug("Nenhum dado fornecido para salvar no MySQL.")
+                self.log_debug("[x] Nenhum dado fornecido para salvar no MySQL.")
                 return
             
-            # Limpar resultados anteriores para evitar acúmulo
-            self._result[self._get_cls_name()].clear()
+            # Only clear results if auto_clear is enabled (default behavior)
+            if self._auto_clear_results:
+                self._result[self._get_cls_name()].clear()
 
             # Configurações de conexão
             config = {

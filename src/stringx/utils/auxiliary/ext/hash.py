@@ -42,36 +42,53 @@ class HashExtractor(BaseModule):
         Utiliza os dados fornecidos e busca por diferentes tipos de hashes
         usando padrões regex específicos para cada tipo.
         """
-        # Limpar resultados anteriores para evitar acúmulo
-        self._result[self._get_cls_name()].clear()
+        # Only clear results if auto_clear is enabled (default behavior)
+        if self._auto_clear_results:
+            self._result[self._get_cls_name()].clear()
+            
+        self.log_debug("[*] Iniciando extração de hashes")
         
-        if not (target_value := self.options.get("data")):
-            return
-           
-        patterns = {
-            'md5': r'\b[a-fA-F0-9]{32}\b',
-            'sha1': r'\b[a-fA-F0-9]{40}\b', 
-            'sha256': r'\b[a-fA-F0-9]{64}\b',
-            'sha512': r'\b[a-fA-F0-9]{128}\b'
-        }
-        
-        hash_types = self.options.get('hash_types', ['all'])
-        
-        if 'all' in hash_types:
-            hash_types = list(patterns.keys())
-        
-        results = []    
-        for hash_type in hash_types:
-            if hash_type in patterns:
-                regex = re.compile(patterns[hash_type], re.IGNORECASE)
-                matches = list(set(re.findall(regex, target_value)))
+        try:
+            if not (target_value := self.options.get("data")):
+                self.log_debug("[X] Dados não fornecidos")
+                return
                 
-                for match in matches:
-                    results.append({
-                        'type': hash_type.upper(),
-                        'value': match
-                    })
-        
-        if results:
-            # Usar novo método estruturado
-            self.set_result_structured(results)
+            self.log_debug(f"[*] Processando {len(target_value)} caracteres de dados")
+               
+            patterns = {
+                'md5': r'\b[a-fA-F0-9]{32}\b',
+                'sha1': r'\b[a-fA-F0-9]{40}\b', 
+                'sha256': r'\b[a-fA-F0-9]{64}\b',
+                'sha512': r'\b[a-fA-F0-9]{128}\b'
+            }
+            
+            hash_types = self.options.get('hash_types', ['all'])
+            
+            if 'all' in hash_types:
+                hash_types = list(patterns.keys())
+            
+            self.log_debug(f"[*] Tipos de hash procurados: {', '.join(hash_types)}")
+            
+            results = []    
+            for hash_type in hash_types:
+                if hash_type in patterns:
+                    regex = re.compile(patterns[hash_type], re.IGNORECASE)
+                    matches = list(set(re.findall(regex, target_value)))
+                    self.log_debug(f"[+] {hash_type.upper()}: {len(matches)} hashes encontrados")
+                    
+                    for match in matches:
+                        results.append({
+                            'type': hash_type.upper(),
+                            'value': match
+                        })
+                        self.log_debug(f"   [*] {hash_type.upper()}: {match}")
+            
+            if results:
+                self.log_debug(f"[*] Total de hashes coletados: {len(results)}")
+                # Usar novo método estruturado
+                self.set_result_structured(results)
+            else:
+                self.log_debug("[!] Nenhum hash encontrado")
+                
+        except Exception as e:
+            self.handle_error(e, "Erro na extração de hashes")

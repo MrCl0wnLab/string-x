@@ -234,3 +234,28 @@ class BaseModule:
         # Re-lança a exceção se necessário
         if raise_error:
             raise
+
+    def __getstate__(self):
+        """
+        Customiza o processo de serialização (pickle) removendo referências de módulos.
+        
+        Returns:
+            dict: Estado do objeto sem referências de módulos que não podem ser serializadas
+        """
+        state = self.__dict__.copy()
+        # Remove a referência ao módulo setting para evitar erros de pickle
+        if 'setting' in state:
+            del state['setting']
+        return state
+    
+    def __setstate__(self, state):
+        """
+        Customiza o processo de desserialização (unpickle) restaurando referências de módulos.
+        
+        Args:
+            state (dict): Estado do objeto desserializado
+        """
+        self.__dict__.update(state)
+        # Restaura a referência ao módulo setting
+        from stringx.config import setting
+        self.setting = setting

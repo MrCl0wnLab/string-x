@@ -47,11 +47,14 @@ class CSVOutput(BaseModule):
         """
         data = Format.clear_value(self.options.get("data", "").strip())
         if not data:
+            self.log_debug("[!] Nenhum dado fornecido para exportar")
             return
         
         # Limpar resultados anteriores para evitar acúmulo
         self._result[self._get_cls_name()].clear()
 
+        self.log_debug("[*] Iniciando exportação para CSV")
+        
         filename = self.options.get('file', 'output.csv')
         # Obter caminho absoluto do diretório output do projeto
         project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
@@ -66,6 +69,9 @@ class CSVOutput(BaseModule):
         columns = self.options.get('columns', ['timestamp', 'data', 'type'])
         delimiter = self.options.get('delimiter', ',')
         
+        self.log_debug(f"[*] Arquivo de saída: {file_path}")
+        self.log_debug(f"[*] Colunas: {columns}")
+        
         try:
             # Verificar se arquivo existe para header
             file_exists = os.path.exists(file_path)
@@ -76,6 +82,7 @@ class CSVOutput(BaseModule):
                 # Escrever header se arquivo não existe
                 if not file_exists:
                     writer.writerow(columns)
+                    self.log_debug("[*] Cabeçalhos CSV escritos")
                 
                 # Preparar dados
                 row_data = []
@@ -91,7 +98,8 @@ class CSVOutput(BaseModule):
                 
                 writer.writerow(row_data)
             
-            #self.set_result(f"Data saved to {file_path}")
+            self.log_debug(f"[+] Dados salvos em {file_path}")
+            self.set_result(f"CSV: Data saved to {file_path}")
             
         except Exception as e:
             self.handle_error(e, "Erro ao salvar dados em CSV")

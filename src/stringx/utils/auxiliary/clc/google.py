@@ -114,13 +114,14 @@ class GoogleDorker(BaseModule):
         Returns:
             None: Os resultados são armazenados internamente através do método set_result
         """
-        # Limpar resultados anteriores para evitar acúmulo
-        self._result[self._get_cls_name()].clear()
+        # Only clear results if auto_clear is enabled (default behavior)
+        if self._auto_clear_results:
+            self._result[self._get_cls_name()].clear()
         try:
             dork = Format.clear_value(self.options.get('data').strip())
             
             if not dork:
-                self.log_debug("Dork não fornecido.")
+                self.log_debug("[X] Dork não fornecido.")
                 return
 
             # Coletando resultados
@@ -132,7 +133,7 @@ class GoogleDorker(BaseModule):
                         results.extend(self._first_search_google(dork))
                         
             if not results:
-                self.log_debug(f"Nenhum resultado encontrado para: {dork}")
+                self.log_debug(f"[!] Nenhum resultado encontrado para: {dork}")
                 return
 
             self.set_result("\n".join(results))

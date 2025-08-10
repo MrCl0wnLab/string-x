@@ -148,7 +148,7 @@ class S3Connector(BaseModule):
                 if isinstance(metadata, dict):
                     extra_args['Metadata'] = {k: str(v) for k, v in metadata.items()}
             except json.JSONDecodeError:
-                self.log_debug(f"Metadados inválidos (JSON): {metadata_str}")
+                self.log_debug(f"[x] Metadados inválidos (JSON): {metadata_str}")
         
         # Upload usando StringIO para dados em texto
         data_stream = StringIO(data)
@@ -241,7 +241,7 @@ class S3Connector(BaseModule):
             data = Format.clear_value(self.options.get('data', ''))
             
             if operation == 'upload' and not data:
-                self.log_debug("Nenhum dado fornecido para upload")
+                self.log_debug("[!] Nenhum dado fornecido para upload")
                 return
             
             # Criar cliente S3
@@ -260,7 +260,7 @@ class S3Connector(BaseModule):
             self.set_result(result)
             
             if self.options.get('debug'):
-                self.log_debug(f"S3 {operation} executado com sucesso")
+                self.log_debug(f"[+] S3 {operation} executado com sucesso")
                 
         except ImportError as e:
             self.handle_error(e, "Erro de importação")

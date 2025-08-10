@@ -43,32 +43,57 @@ class IPExtractor(BaseModule):
         Utiliza os dados fornecidos e busca por endereços IPv4 e IPv6
         usando padrões regex específicos para cada tipo.
         """
-        # Limpar resultados anteriores para evitar acúmulo
-        self._result[self._get_cls_name()].clear()
-        if not (target_value := self.options.get("data")):
-            return
+        # Only clear results if auto_clear is enabled (default behavior)
+        if self._auto_clear_results:
+            self._result[self._get_cls_name()].clear()
             
-        results = set()
+        self.log_debug("[*] Iniciando extração de endereços IP")
         
-        if self.options.get('ipv4', True):
-            # IPv4 pattern
-            ipv4_pattern = r'\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b'
-            ipv4_matches = re.findall(ipv4_pattern, target_value)
+        try:
+            if not (target_value := self.options.get("data")):
+                self.log_debug("[x] Dados não fornecidos")
+                return
+                
+            self.log_debug(f"[*] Processando {len(target_value)} caracteres de dados")
+            results = set()
+            ipv4_enabled = self.options.get('ipv4', True)
+            ipv6_enabled = self.options.get('ipv6', True)
+            include_private = self.options.get('private', True)
             
-            for ip in ipv4_matches:
-                if self.options.get('private', True) or not self._is_private_ipv4(ip):
-                    results.add(f"IPv4: {ip}")
-        
-        if self.options.get('ipv6', True):
-            # IPv6 pattern (simplified)
-            ipv6_pattern = r'\b(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}\b'
-            ipv6_matches = re.findall(ipv6_pattern, target_value)
+            self.log_debug(f"[*] IPv4: {'[+]' if ipv4_enabled else '[x]'}, IPv6: {'[+]' if ipv6_enabled else '[x]'}, Privados: {'[+]' if include_private else '[x]'}")
             
-            for ip in ipv6_matches:
-                results.add(f"IPv6: {ip}")
-        
-        if results:
-            self.set_result("".join(results))
+            if ipv4_enabled:
+                # IPv4 pattern
+                ipv4_pattern = r'\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b'
+                ipv4_matches = re.findall(ipv4_pattern, target_value)
+                self.log_debug(f"[+] Encontrados {len(ipv4_matches)} endereços IPv4")
+                
+                for ip in ipv4_matches:
+                    is_private = self._is_private_ipv4(ip)
+                    if include_private or not is_private:
+                        results.add(f"IPv4: {ip}")
+                        self.log_debug(f"[*] {ip} ({'privado' if is_private else 'público'})")
+                    else:
+                        self.log_debug(f"[x] {ip} (privado - filtrado)")
+            
+            if ipv6_enabled:
+                # IPv6 pattern (simplified)
+                ipv6_pattern = r'\b(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}\b'
+                ipv6_matches = re.findall(ipv6_pattern, target_value)
+                self.log_debug(f"[+] Encontrados {len(ipv6_matches)} endereços IPv6")
+                
+                for ip in ipv6_matches:
+                    results.add(f"IPv6: {ip}")
+                    self.log_debug(f"[*] {ip}")
+            
+            if results:
+                self.log_debug(f"[*] Total de IPs únicos coletados: {len(results)}")
+                self.set_result("; ".join(sorted(results)))
+            else:
+                self.log_debug("[!] Nenhum endereço IP encontrado")
+                
+        except Exception as e:
+            self.handle_error(e, "Erro na extração de IPs")
     
     def _is_private_ipv4(self, ip: str) -> bool:
         """Verifica se é IP privado."""

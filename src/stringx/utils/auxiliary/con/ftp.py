@@ -78,7 +78,7 @@ class FTPConnector(BaseModule):
         self._result[self._get_cls_name()].clear()
         target = self.options.get("data", "").strip()
         if not target:
-            self.log_debug("Nenhum host alvo especificado")
+            self.log_debug("[!] Nenhum host alvo especificado")
             return
             
         # Parse host:port
@@ -87,7 +87,7 @@ class FTPConnector(BaseModule):
             try:
                 port = int(port)
             except ValueError:
-                self.log_debug(f"Porta inválida: {port}, usando porta padrão 21")
+                self.log_debug(f"[!] Porta inválida: {port}, usando porta padrão 21")
                 port = 21
         else:
             host, port = target, self.setting.STRX_FTP_PORT
@@ -97,7 +97,7 @@ class FTPConnector(BaseModule):
         timeout = self.options.get('timeout', 10)
         passive = self.options.get('passive', True)
         
-        self.log_debug(f"Conectando a {host}:{port} como {username}")
+        self.log_debug(f"[*] Conectando a {host}:{port} como {username}")
         
         try:
             # Estabelecer conexão FTP
@@ -106,37 +106,37 @@ class FTPConnector(BaseModule):
             
             # Configurar modo passivo
             if passive:
-                self.log_debug("Usando modo passivo")
+                self.log_debug("[*] Usando modo passivo")
                 ftp.set_pasv(True)
             
             # Fazer login
-            self.log_debug(f"Tentando login com usuário: {username}")
+            self.log_debug(f"[*] Tentando login com usuário: {username}")
             ftp.login(username, password)
-            self.log_debug("Login bem-sucedido")
+            self.log_debug("[+] Login bem-sucedido")
             
             # Obter informações do servidor
             welcome = ftp.getwelcome()
-            self.log_debug(f"Mensagem de boas-vindas: {welcome}")
+            self.log_debug(f"[*] Mensagem de boas-vindas: {welcome}")
             
             result = f"FTP Success - {host}:{port}\n"
             result += f"Welcome: {welcome}\n"
             
             # Listar arquivos se solicitado
             if self.options.get('list_files', True):
-                self.log_debug("Listando arquivos no diretório atual")
+                self.log_debug("[*] Listando arquivos no diretório atual")
                 try:
                     files = []
                     ftp.retrlines('LIST', files.append)
                     
                     if files:
-                        self.log_debug(f"Encontrados {len(files)} arquivos/diretórios")
+                        self.log_debug(f"[+] Encontrados {len(files)} arquivos/diretórios")
                         result += f"Directory listing:\n"
                         for file_line in files[:10]:  # Limitar a 10 linhas
                             result += f"  {file_line}\n"
                         if len(files) > 10:
                             result += f"  ... and {len(files) - 10} more files\n"
                     else:
-                        self.log_debug("Diretório vazio")
+                        self.log_debug("[!] Diretório vazio")
                         result += "Directory is empty\n"
                 except ftplib.error_perm as e:
                     self.handle_error(e, f"Erro de permissão ao listar arquivos")
@@ -148,14 +148,14 @@ class FTPConnector(BaseModule):
             # Obter diretório atual
             try:
                 pwd = ftp.pwd()
-                self.log_debug(f"Diretório atual: {pwd}")
+                self.log_debug(f"[*] Diretório atual: {pwd}")
                 result += f"Current directory: {pwd}\n"
             except ftplib.error_perm:
-                self.log_debug("Não foi possível obter o diretório atual")
+                self.log_debug("[x] Não foi possível obter o diretório atual")
                 pass
             
             # Encerrar conexão corretamente
-            self.log_debug("Encerrando conexão")
+            self.log_debug("[*] Encerrando conexão")
             ftp.quit()
             self.set_result(result)
             

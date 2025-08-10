@@ -54,7 +54,7 @@ class SqliteOutput(BaseModule):
         try:
             data = Format.clear_value(self.options.get('data', ''))
             if not data:
-                self.log_debug("Nenhum dado fornecido para salvar no SQLite")
+                self.log_debug("[!] Nenhum dado fornecido para salvar no SQLite")
                 return
             
             # Limpar resultados anteriores para evitar acúmulo

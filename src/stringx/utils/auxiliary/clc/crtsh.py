@@ -104,7 +104,7 @@ class CrtshCollector(BaseModule):
         # Realiza consulta ao crt.sh
         try:
             # Mensagem de debug para o usuário
-            self.set_result(f"🔍 Consultando certificados para: {domain}")
+            self.log_debug(f"🔍 Consultando certificados para: {domain}")
             
             self.log_debug("Iniciando consulta ao serviço crt.sh")
             
