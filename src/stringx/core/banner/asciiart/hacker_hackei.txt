@@ -1,0 +1,16 @@
+                                                          [turquoise2]/^ ^\   ..........,
+                                                         / 0 0 \ /  [bold bright_yellow]Hacker![/bold bright_yellow] |
+                                                         V\ Y /V \  [bold bright_yellow]Hackeia![/bold bright_yellow]|
+                                                          / - \   '---------´
+                                                         /    |
+                                                        V__) ||
+                [bright_yellow]       ▄████████     ███        ▄████████▀▀████    ▐████▀▀▀[/bright_yellow]
+                [bright_yellow]      ███    ███ ▀█████████▄   ███    ███   ███▌   ████▀[/bright_yellow]
+                [bright_yellow]      ███    █▀     ▀███▀▀██   ███    ███    ███  ▐███[/bright_yellow]
+                [bright_yellow]      ███            ███   ▀  ▄███▄▄▄▄██▀    ▀███▄███▀[/bright_yellow]
+                [bright_yellow]    ▀███████████     ███     ▀▀███▀▀▀▀▀      ████▀██▄[/bright_yellow]
+                [bright_yellow]             ███     ███     ▀███████████   ▐███  ▀███[/bright_yellow]
+                [bright_yellow]       ▄█    ███     ███       ███    ███  ▄███     ███▄[/bright_yellow]
+                [bright_yellow]     ▄████████▀     ▄████▀     ███    ███ ████       ███▄[/bright_yellow]
+
+                           [grey54][DESCRIPTION]  [VERSION][/grey54][/turquoise2]

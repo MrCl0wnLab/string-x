@@ -1,0 +1,133 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "stringx"
+version = "1.0.0"
+description = "Automation Tool for String Manipulation and OSINT"
+readme = "README.md"
+requires-python = ">=3.12"
+license = {text = "MIT"}
+authors = [
+    {name = "Cleiton Pinheiro", email = "mrcl0wnlab@gmail.com"}
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Security",
+    "Topic :: System :: Networking",
+    "Topic :: Text Processing",
+    "Topic :: Utilities",
+]
+keywords = ["osint", "automation", "string-manipulation", "security", "networking"]
+dependencies = [
+    "rich>=13.6.0",
+    "typing_extensions>=4.12.2",
+    "PyYAML>=6.0.1",
+    "httpx>=0.27.0",
+    "requests>=2.31.0",
+    "dnspython>=2.4.2",
+    "python-whois>=0.8.0",
+    "mysql-connector-python>=8.2.0",
+    "sqlite-utils>=3.35.2",
+    "beautifulsoup4>=4.12.2",
+    "backoff>=2.2.1",
+    "packaging>=23.2",
+    "pydantic>=2.0.0",
+    "opensearch-py>=2.3.0",
+    "python-magic>=0.4.27",
+    "Pillow>=10.0.0",
+    "mutagen>=1.47.0",
+    "PyPDF2>=3.0.1",
+    "chardet>=5.0.0",
+    "python-dotenv>=1.0.0",
+    "notify_py>=0.3.42",
+    "boto3>=1.40.6",
+]
+
+[project.urls]
+Homepage = "https://github.com/mrcl0wn/string-x"
+Issues = "https://github.com/mrcl0wn/string-x/issues"
+Repository = "https://github.com/mrcl0wn/string-x"
+
+[project.scripts]
+strx = "stringx.cli:main_cli"
+
+[project.optional-dependencies]
+dev = [
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+    "pre-commit>=3.0.0",
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+]
+
+[tool.black]
+line-length = 100
+target-version = ["py312"]
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 100
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[tool.flake8]
+max-line-length = 100
+extend-ignore = ["E203", "W503"]
+exclude = [".git", "__pycache__", "build", "dist", ".eggs", "*.egg"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "-verbose",
+    "--cov=stringx",
+    "--cov-report=html",
+    "--cov-report=term-missing",
+]

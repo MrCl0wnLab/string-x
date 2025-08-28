@@ -1,0 +1,17 @@
+include LICENSE
+include README*.md
+recursive-include src/stringx/config *
+recursive-include src/stringx/core *
+recursive-include src/stringx/utils *
+recursive-include asset *
+recursive-include output .gitkeep
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
+recursive-exclude * *.pyo
+recursive-exclude * *.pyd
+recursive-exclude * *.so
+recursive-exclude * *.dylib
+recursive-exclude * *.orig
+recursive-exclude * *.swp
+recursive-exclude * *.swo
+recursive-exclude * *~

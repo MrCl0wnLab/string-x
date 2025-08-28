@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  string-x:
+    build: .
+    container_name: string-x
+    volumes:
+      - ./data:/app/data
+      - ./output:/app/output
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - strx-network
+    # Uncomment to run interactively
+    # stdin_open: true
+    # tty: true
+
+networks:
+  strx-network:
+    driver: bridge
+
+volumes:
+  strx-data:
+    driver: local
+  strx-output:
+    driver: local
