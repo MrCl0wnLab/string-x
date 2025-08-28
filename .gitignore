@@ -26,6 +26,9 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+# Arquivos de log
+*.log
+
 # AI
 .claude/
 CLAUDE.md
