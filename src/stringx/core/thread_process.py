@@ -49,6 +49,11 @@ class ThreadProcess:
             self._sleep = sleep_delay or 0
             self._timeout = timeout or 300
             
+        # Limit threads to prevent memory issues
+        if self.max_thread > 20:
+            print(f"[!] AVISO: Limitando threads de {self.max_thread} para 20 para evitar problemas de memória")
+            self.max_thread = 20
+            
         self._cli = StyleCli()
         self._logger = logging.getLogger(__name__)
         
@@ -95,15 +100,26 @@ class ThreadProcess:
                     time.sleep(self._sleep)
                 
                 # Process completed tasks as they finish
-                for future in as_completed(futures, timeout=self._timeout):
-                    target = futures[future]
-                    try:
-                        result = future.result(timeout=1)  # Quick timeout per task
-                        results.append(result)
-                    except Exception as e:
-                        failed_targets.append(target)
-                        self._logger.error(f"Task failed for target '{target}': {e}")
+                try:
+                    for future in as_completed(futures, timeout=self._timeout):
+                        target = futures[future]
+                        try:
+                            result = future.result(timeout=1)  # Quick timeout per task
+                            results.append(result)
+                        except Exception as e:
+                            failed_targets.append(target)
+                            self._logger.error(f"Task failed for target '{target}': {e}")
+                except KeyboardInterrupt:
+                    # Immediately shutdown executor on interrupt
+                    self._logger.info("Keyboard interrupt received, shutting down...")
+                    executor.shutdown(wait=False, cancel_futures=True)
+                    import os
+                    os._exit(1)
                         
+        except KeyboardInterrupt:
+            self._logger.info("Thread execution interrupted by user")
+            import os
+            os._exit(1)
         except Exception as e:
             self._logger.error(f"Critical error in thread execution: {e}")
             raise

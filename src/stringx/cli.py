@@ -45,23 +45,19 @@ def quit_process(signal, frame) -> None:
     Returns:
         None
     """
-    import threading
-    import concurrent.futures
     import os
+    import sys
     
-    print("")
-    CLI.console.log(f" [!] Saindo...")
-    CLI.console.log(f" [!] File output: {setting.LOG_FILE_OUTPUT}")
-    CLI.console.log(f" [!] Last value: {CMD.last_value}")
-    
-    # Clean shutdown of any running threads/executors to prevent threading warnings
+    print("\n")
     try:
-        # Clean up any remaining thread pools
-        concurrent.futures.thread._python_exit()
-    except (AttributeError, RuntimeError):
-        pass
+        CLI.console.log(f" [!] Interrompido pelo usuário (Ctrl+C)")
+        CLI.console.log(f" [!] Saindo...")
+        CLI.console.log(f" [!] File output: {setting.LOG_FILE_OUTPUT}")
+        CLI.console.log(f" [!] Last value: {CMD.last_value}")
+    except:
+        print(" [!] Processo interrompido pelo usuário")
     
-    # Use os._exit to avoid threading shutdown warnings
+    # Immediate exit without complex cleanup to avoid futures scheduling issues
     os._exit(0)
 
 
@@ -167,8 +163,17 @@ def main(target_str_list: list, template_str: str) -> None:
                         target_list=target_str_list,
                         argparse=ARGS,
                     )
-                except Exception:
-                    CLI.console.print_exception(max_frames=3)
+                except MemoryError as e:
+                    print(f"[!] ERRO DE MEMÓRIA: {str(e)}")
+                    print(f"[!] Reduza o número de threads (-t) ou o tamanho do input")
+                    exit(1)
+                except Exception as e:
+                    try:
+                        CLI.console.print_exception(max_frames=3)
+                    except Exception:
+                        # Fallback if Rich fails to print exception
+                        print(f"[!] ERRO: {type(e).__name__}: {str(e)}")
+                        exit(1)
         except BrokenPipeError:
             CLI.console.print_exception(max_frames=3)
     
@@ -281,6 +286,13 @@ def main_cli():
         # Define o número máximo de threads a serem utilizadas
         if ARGS.thread:
             thread_count = int(ARGS.thread)
+            
+            # Hard limit for memory protection
+            if thread_count > 50:
+                CLI.console.log(f"[!] ERRO: Número de threads muito alto ({thread_count})")
+                CLI.console.log(f"[!] Máximo recomendado: 20 threads para evitar problemas de memória")
+                exit(1)
+                
             if not ARGS.disable_security and not SecurityValidator.validate_thread_limits(thread_count):
                 CLI.console.log(f"[!] Thread count {thread_count} exceeds security limits (max {SecurityValidator.MAX_THREAD_COUNT})")
                 CLI.console.log(f"[!] Use -ds to disable security validations if you need more threads")
@@ -344,7 +356,10 @@ def main_cli():
             CLI.console.log("[!] Nenhuma string para processar. Use -l para um arquivo ou -s para string única.")
             exit(1)
     except KeyboardInterrupt:
-        pass
+        # Direct exit to avoid complex shutdown procedures
+        print("\n [!] Processo interrompido pelo usuário")
+        import os
+        os._exit(1)
     except SystemError:
         CLI.console.print_exception(max_frames=3)
     except ModuleNotFoundError:

@@ -241,7 +241,18 @@ class Funcs:
         if value.startswith('http'):
             try:
                 request = HTTPClient()
-                results = asyncio.run(request.send_request([value]))[0]
+                # Use timeout and handle interruption
+                try:
+                    # Check if event loop is already running to avoid conflicts
+                    try:
+                        loop = asyncio.get_running_loop()
+                        # If we have a running loop, skip async operation to avoid conflicts
+                        return "skipped_during_shutdown"
+                    except RuntimeError:
+                        # No running loop, safe to create new one
+                        results = asyncio.run(request.send_request([value]))[0]
+                except (KeyboardInterrupt, RuntimeError):
+                    return "interrupted"
                 
                 # Check if results has the required attributes
                 if hasattr(results, 'is_success') and hasattr(results, 'is_error') and hasattr(results, 'is_redirect'):
@@ -258,8 +269,12 @@ class Funcs:
                 
                 # Handle ConnectError or other unexpected result types
                 return f"error; {str(results)}"
+            except AttributeError as e:
+                if "httpcore" in str(e):
+                    return "error; httpcore compatibility issue"
+                return f"error; {str(e)}"
             except Exception as e:
-                return f"exception; {str(e)}"
+                return f"error; {str(e)}"
         return str()
 
     @staticmethod
