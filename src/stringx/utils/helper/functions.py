@@ -242,16 +242,24 @@ class Funcs:
             try:
                 request = HTTPClient()
                 results = asyncio.run(request.send_request([value]))[0]
-                success_error_redirect = (
-                    results.is_success or results.is_error
-                    or results.is_redirect)
-                if success_error_redirect:
-                    return (f"{results.status_code}; "
-                            f"{Funcs.title_html(results.text)}")
-                elif results.is_exception:
+                
+                # Check if results has the required attributes
+                if hasattr(results, 'is_success') and hasattr(results, 'is_error') and hasattr(results, 'is_redirect'):
+                    success_error_redirect = (
+                        results.is_success or results.is_error
+                        or results.is_redirect)
+                    if success_error_redirect:
+                        return (f"{results.status_code}; "
+                                f"{Funcs.title_html(results.text)}")
+                
+                # Handle exception case
+                if hasattr(results, 'is_exception') and results.is_exception:
                     return f"exception; {str(results.exception)}"
-            except Exception:
-                pass
+                
+                # Handle ConnectError or other unexpected result types
+                return f"error; {str(results)}"
+            except Exception as e:
+                return f"exception; {str(e)}"
         return str()
 
     @staticmethod
