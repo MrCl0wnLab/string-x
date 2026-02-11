@@ -358,8 +358,7 @@ def main_cli():
     except KeyboardInterrupt:
         # Direct exit to avoid complex shutdown procedures
         print("\n [!] Processo interrompido pelo usuário")
-        import os
-        os._exit(1)
+        sys.exit(1)
     except SystemError:
         CLI.console.print_exception(max_frames=3)
     except ModuleNotFoundError:
