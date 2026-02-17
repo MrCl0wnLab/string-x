@@ -6,6 +6,7 @@ os módulos auxiliares do sistema String-X. Define a interface comum e estrutura
 básica que todos os módulos devem seguir.
 """
 # Bibliotecas padrão
+import threading
 import traceback
 from typing import Optional, Any, List, Dict, Type, Union
 
@@ -237,20 +238,37 @@ class BaseModule:
 
     def __getstate__(self):
         """
-        Customiza o processo de serialização (pickle) removendo referências de módulos.
+        Customiza o processo de serialização (pickle) removendo referências não serializáveis.
         
         Returns:
-            dict: Estado do objeto sem referências de módulos que não podem ser serializadas
+            dict: Estado do objeto sem referências que não podem ser serializadas
         """
         state = self.__dict__.copy()
-        # Remove a referência ao módulo setting para evitar erros de pickle
-        if 'setting' in state:
-            del state['setting']
+        
+        # Remove referências problemáticas que causam erro de serialização
+        keys_to_remove = []
+        for key, value in state.items():
+            # Remove a referência ao módulo setting
+            if key == 'setting':
+                keys_to_remove.append(key)
+            # Remove locks e objetos de threading
+            elif hasattr(value, '__class__'):
+                class_name = value.__class__.__name__
+                # Remove loggers que podem conter locks (RLock)
+                if 'Logger' in class_name or 'RLock' in class_name or 'Lock' in class_name:
+                    keys_to_remove.append(key)
+            # Remove objetos threading diretamente
+            elif isinstance(value, type(threading.RLock())):
+                keys_to_remove.append(key)
+        
+        for key in keys_to_remove:
+            del state[key]
+        
         return state
     
     def __setstate__(self, state):
         """
-        Customiza o processo de desserialização (unpickle) restaurando referências de módulos.
+        Customiza o processo de desserialização (unpickle) restaurando referências.
         
         Args:
             state (dict): Estado do objeto desserializado

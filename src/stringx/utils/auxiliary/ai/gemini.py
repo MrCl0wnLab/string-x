@@ -14,6 +14,7 @@ O Google Gemini é um modelo de linguagem avançado que pode ser utilizado para:
 """
 # Bibliotecas padrão
 import json
+import time
 from typing import Dict, Any, Optional
 
 # Bibliotecas de terceiros
@@ -52,7 +53,7 @@ class GeminiAI(BaseModule):
             'model': self.setting.STRX_GEMINI_MODEL,  # Versão do modelo
             'temperature': self.setting.STRX_GEMINI_TEMPERATURE,  # Controla aleatoriedade (0.0 a 1.0)
             'max_tokens': self.setting.STRX_GEMINI_MAX_TOKENS,  # Máximo de tokens na resposta
-            'debug': False,  # Modo de debug para mostrar informações detalhadas
+            'debug': True,  # Modo de debug para mostrar informações detalhadas
             'data': str(),  # O texto do prompt
         }
         
@@ -84,9 +85,9 @@ class GeminiAI(BaseModule):
             
             data = self.options.get('data', '').strip()
             api_key = self.options.get('api_key', '')
-            model = self.options.get('model', 'gemini-2.0-flash')
+            model = self.options.get('model', 'gemini-2.5-flash')
             temperature = float(self.options.get('temperature', 0.7))
-            max_tokens = int(self.options.get('max_tokens', 800))
+            max_tokens = int(self.options.get('max_tokens', 4096))
             
             self.log_debug(f"[*] Configuração carregada: modelo={model}, temperatura={temperature}, max_tokens={max_tokens}")
             
@@ -122,9 +123,10 @@ class GeminiAI(BaseModule):
             self.handle_error(e, "Erro inesperado na execução Gemini AI")
     
     def _query_gemini(self, prompt: str, api_key: str, model: str, 
-                     temperature: float = 0.7, max_tokens: int = 800) -> str:
+                     temperature: float = 0.7, max_tokens: int = 4096) -> str:
         """
         Consulta a API Gemini com o prompt fornecido.
+        Implementa retry com backoff exponencial para rate limiting (HTTP 429).
         
         Este método envia uma requisição HTTP para a API Gemini com o prompt
         especificado e parâmetros de configuração, processa a resposta e
@@ -138,90 +140,117 @@ class GeminiAI(BaseModule):
             max_tokens (int): Número máximo de tokens na resposta
             
         Returns:
-            str: O texto de resposta gerado ou mensagem de erro
+            str: O texto de resposta gerado ou string vazia em caso de erro
             
         Raises:
             HTTPError: Erro na comunicação com a API
             ValueError: Erro na validação ou formato dos dados
             TimeoutException: Timeout durante a requisição
         """
-        try:
-            self.log_debug(f"[*] Iniciando consulta à API Gemini com modelo '{model}'")
-            
-            # Validar parâmetros
-            if not (0.0 <= temperature <= 1.0):
-                self.log_debug(f"[!] Parâmetro temperatura inválido: {temperature} (deve estar entre 0.0 e 1.0)")
-                raise ValueError("Temperatura deve estar entre 0.0 e 1.0")
+        max_retries = 3
+        base_delay = 2  # segundos
+        
+        for attempt in range(max_retries):
+            try:
+                self.log_debug(f"[*] Tentativa {attempt + 1}/{max_retries}: Consultando API Gemini com modelo '{model}'")
                 
-            if max_tokens <= 0:
-                self.log_debug(f"[!] Parâmetro max_tokens inválido: {max_tokens} (deve ser positivo)")
-                raise ValueError("max_tokens deve ser um número positivo")
-            
-            url = f"{self.base_url}{model}:generateContent?key={api_key}"
-            self.log_debug(f"[*] URL da API configurada: {self.base_url}{model}:generateContent")
-            
-            payload = {
-                "contents": [
-                    {
-                        "parts": [
-                            {
-                                "text": prompt
-                            }
-                        ]
+                # Validar parâmetros
+                if not (0.0 <= temperature <= 1.0):
+                    self.log_debug(f"[!] Parâmetro temperatura inválido: {temperature} (deve estar entre 0.0 e 1.0)")
+                    raise ValueError("Temperatura deve estar entre 0.0 e 1.0")
+                    
+                if max_tokens <= 0:
+                    self.log_debug(f"[!] Parâmetro max_tokens inválido: {max_tokens} (deve ser positivo)")
+                    raise ValueError("max_tokens deve ser um número positivo")
+                
+                url = f"{self.base_url}{model}:generateContent?key={api_key}"
+                self.log_debug(f"[*] URL da API configurada: {self.base_url}{model}:generateContent")
+                
+                payload = {
+                    "contents": [
+                        {
+                            "parts": [
+                                {
+                                    "text": prompt
+                                }
+                            ]
+                        }
+                    ],
+                    "generationConfig": {
+                        "temperature": temperature,
+                        "maxOutputTokens": max_tokens,
+                        "topP": 0.95,
+                        "topK": 64
                     }
-                ],
-                "generationConfig": {
-                    "temperature": temperature,
-                    "maxOutputTokens": max_tokens
                 }
-            }
-            
-            headers = {
-                "Content-Type": "application/json"
-            }
-            
-            self.log_debug(f"[*] Payload JSON preparado com prompt de {len(prompt)} caracteres")
-            self.log_debug("[*] Iniciando envio da requisição HTTP com timeout de 30 segundos")
-            
-            with httpx.Client() as client:
-                self.log_debug("[+] Conexão cliente HTTP estabelecida")
-                response = client.post(
-                    url, 
-                    headers=headers, 
-                    json=payload, 
-                    timeout=30
-                )
-            
-            self.log_debug(f"[*] Resposta da API recebida - Status HTTP: {response.status_code}")
-            
-            if response.status_code != 200:
-                return self.log_debug(f"[x] Corpo da resposta de erro: {response.text[:150]}...")
-            
-            result = response.json()
-            self.log_debug("[+] Resposta JSON decodificada com sucesso")
-            
-            # Extrai o texto gerado da resposta
-            if 'candidates' in result and len(result['candidates']) > 0:
-                self.log_debug(f"[+] Encontrados {len(result['candidates'])} candidatos na resposta")
-                if 'content' in result['candidates'][0]:
-                    content = result['candidates'][0]['content']
-                    if 'parts' in content and len(content['parts']) > 0:
-                        self.log_debug(f"[+] Texto extraído com sucesso: {len(content['parts'][0]['text'])} caracteres")
-                        return content['parts'][0]['text']
-            
-            self.log_debug("[x] Erro: estrutura de resposta inesperada ou inválida")
-            self.log_debug(f"Estrutura recebida: {json.dumps(result)[:150]}...")
-            return self.log_debug(f"Corpo da resposta de erro: {response.text[:150]}...")
-            
-        except HTTPError as e:
-            self.handle_error(e, "Erro HTTP durante a comunicação com a API Gemini")
-            return ""
-        except TimeoutException as e:
-            self.handle_error(e, "Timeout na requisição após 30 segundos")
-            return ""
-        except ValueError as e:
-            self.handle_error(e, "Erro de validação nos parâmetros da requisição")
-            return ""
-        except Exception as e:
-            self.handle_error(e, "Erro inesperado no processamento Gemini AI")
-            return ""
+                
+                headers = {
+                    "Content-Type": "application/json"
+                }
+                
+                self.log_debug(f"[*] Payload JSON preparado com prompt de {len(prompt)} caracteres")
+                self.log_debug("[*] Iniciando envio da requisição HTTP com timeout de 30 segundos")
+                
+                with httpx.Client() as client:
+                    self.log_debug("[+] Conexão cliente HTTP estabelecida")
+                    response = client.post(
+                        url, 
+                        headers=headers, 
+                        json=payload, 
+                        timeout=30
+                    )
+                
+                self.log_debug(f"[*] Resposta da API recebida - Status HTTP: {response.status_code}")
+                
+                # Tratamento específico para erro 429 (Rate Limit)
+                if response.status_code == 429:
+                    if attempt < max_retries - 1:
+                        delay = base_delay * (2 ** attempt)  # Backoff exponencial: 2s, 4s, 8s
+                        self.log_debug(f"[!] Rate limit atingido (HTTP 429). Aguardando {delay}s antes de retentar...")
+                        time.sleep(delay)
+                        continue
+                    else:
+                        self.log_debug(f"[x] Rate limit atingido após {max_retries} tentativas. Quota da API excedida.")
+                        self.log_debug("[!] Verifique seu plano e limites em https://aistudio.google.com/apikey")
+                        return ""
+                
+                if response.status_code != 200:
+                    error_text = response.text[:200] if len(response.text) > 200 else response.text
+                    self.log_debug(f"[x] Erro HTTP {response.status_code}: {error_text}")
+                    return ""
+                
+                result = response.json()
+                self.log_debug("[+] Resposta JSON decodificada com sucesso")
+                
+                # Extrai o texto gerado da resposta
+                if 'candidates' in result and len(result['candidates']) > 0:
+                    self.log_debug(f"[+] Encontrados {len(result['candidates'])} candidatos na resposta")
+                    if 'content' in result['candidates'][0]:
+                        content = result['candidates'][0]['content']
+                        if 'parts' in content and len(content['parts']) > 0:
+                            generated_text = content['parts'][0]['text']
+                            self.log_debug(f"[+] Texto extraído com sucesso: {len(generated_text)} caracteres")
+                            return generated_text
+                
+                self.log_debug("[x] Erro: estrutura de resposta inesperada ou inválida")
+                return ""
+                
+            except HTTPError as e:
+                if attempt < max_retries - 1:
+                    delay = base_delay * (2 ** attempt)
+                    self.log_debug(f"[!] Erro HTTP na tentativa {attempt + 1}. Retentando em {delay}s...")
+                    time.sleep(delay)
+                    continue
+                self.handle_error(e, "Erro HTTP durante a comunicação com a API Gemini")
+                return ""
+            except TimeoutException as e:
+                self.handle_error(e, "Timeout na requisição após 30 segundos")
+                return ""
+            except ValueError as e:
+                self.handle_error(e, "Erro de validação nos parâmetros da requisição")
+                return ""
+            except Exception as e:
+                self.handle_error(e, "Erro inesperado no processamento Gemini AI")
+                return ""
+        
+        return ""

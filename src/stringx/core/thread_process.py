@@ -86,14 +86,22 @@ class ThreadProcess:
         results = []
         failed_targets = []
         
+        # Limita workers para evitar problemas de serialização
+        effective_workers = min(self.max_thread, 10)
+        
         try:
-            with ThreadPoolExecutor(max_workers=self.max_thread) as executor:
+            with ThreadPoolExecutor(max_workers=effective_workers) as executor:
                 # Submit all tasks first
                 futures = {}
                 for tgt_str in target_list:
                     if tgt_str:
-                        future = executor.submit(function_name, tgt_str, command_str, argparse)
-                        futures[future] = tgt_str
+                        try:
+                            future = executor.submit(function_name, tgt_str, command_str, argparse)
+                            futures[future] = tgt_str
+                        except Exception as e:
+                            # Erro ao submeter tarefa (geralmente problemas de serialização)
+                            self._logger.error(f"Failed to submit task for '{tgt_str}': {e}")
+                            failed_targets.append(tgt_str)
                 
                 # Add sleep delay after all submissions if configured
                 if self._sleep > 0:
@@ -105,10 +113,15 @@ class ThreadProcess:
                         target = futures[future]
                         try:
                             result = future.result(timeout=1)  # Quick timeout per task
-                            results.append(result)
+                            if result:
+                                results.append(result)
                         except Exception as e:
                             failed_targets.append(target)
-                            self._logger.error(f"Task failed for target '{target}': {e}")
+                            # Log mais específico para erros de pickle
+                            if 'pickle' in str(e).lower() or 'rlock' in str(e).lower():
+                                self._logger.error(f"Serialization error for '{target}': {e}")
+                            else:
+                                self._logger.error(f"Task failed for target '{target}': {e}")
                 except KeyboardInterrupt:
                     # Immediately shutdown executor on interrupt
                     self._logger.info("Keyboard interrupt received, shutting down...")

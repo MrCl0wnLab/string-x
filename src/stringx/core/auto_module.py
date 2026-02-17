@@ -6,11 +6,9 @@ módulos e instanciar suas classes. Utiliza importação dinâmica baseada no ti
 do módulo para carregar e executar funcionalidades específicas.
 """
 # Biblioteca padrão
-import copy
 import inspect
-import functools
 import importlib
-from typing import Dict, Optional
+from typing import Dict, Optional, Type
 
 # Módulos locais
 from stringx.core.style_cli import StyleCli
@@ -33,7 +31,8 @@ class AutoModulo:
         name_module (str): Nome do módulo (ex: "email", "domain")
         class_instance: Instância da classe carregada
     """
-    _module_cache: Dict[str, object] = {}
+    # Cache stores the CLASS reference (not instances) to avoid deepcopy/pickle issues
+    _class_cache: Dict[str, Type] = {}
 
     def __init__(self, type_module_name_module: str):
         """
@@ -70,7 +69,6 @@ class AutoModulo:
             return False
         return True
 
-    @functools.lru_cache(maxsize=50)
     def load_module(self) -> Optional[object]:
         """
         Carrega o módulo e instancia a classe definida nele.
@@ -81,19 +79,23 @@ class AutoModulo:
             object | None: Instância da classe carregada ou None se houver erro
         """
         cache_key = f"{self.type_module}:{self.name_module}"
-        if cache_key in self._module_cache:
-            # Retornar cópia do módulo cached
-            return copy.deepcopy(self._module_cache[cache_key])
+        if cache_key in self._class_cache:
+            # Create a fresh instance from the cached CLASS (avoids deepcopy/pickle of RLock)
+            try:
+                return self._class_cache[cache_key]()
+            except Exception as e:
+                self._cli.console.print(f"[!] Error creating instance from cache: {e}")
+                return None
         
         if not self._valid_type_module:
             self._cli.console.print("[!] Invalid type_module or name_module format")
             return None
         try:
-            # self._cli.console.print(f"[*] Importando módulo: {self.type_module}:{self.name_module}")
             obj_centrao = self._instantiate_class()
             if obj_centrao:
                 self.class_instance = obj_centrao
-                self._module_cache[cache_key] = self.class_instance
+                # Cache the CLASS, not the instance, to avoid pickle/deepcopy issues
+                self._class_cache[cache_key] = obj_centrao.__class__
                 return obj_centrao
             else:
                 self._cli.console.print("[!] Failed to instantiate class from module")
