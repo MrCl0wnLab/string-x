@@ -229,6 +229,7 @@ def main_cli():
         parser.add_argument('-module', metavar="<type:module>", help="Selecionar o tipo e module, possível usar encadeamento type1:module1|type:module2", default=str(), required=False)
         parser.add_argument('-printmodule', '-pm', dest='pm', help="Mostrar somente resultados de execução do module", action='store_true', default=False)
         parser.add_argument('-pmc', help="Mostrar resultados de cada módulo no encadeamento separadamente (para coletores, preserva o input original)", action='store_true', default=False)
+        parser.add_argument('-print-shell', '-ps', dest='ps', help="Mostrar (e salvar) o output do shell mesmo com -pm/-pmc ativos", action='store_true', default=False)
         parser.add_argument('-proxy', help="Setar um proxy para request", default=str(), required=False)
         parser.add_argument('-disable-security',  '-ds', dest='disable_security', help="Disable security validations (use with caution)", action='store_true', default=False)
         parser.add_argument('-no-shell', '-ns', dest='no_shell', help="Process input directly through modules/functions without shell command execution", action='store_true', default=False)

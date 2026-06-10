@@ -64,6 +64,7 @@ class Command:
         self._output_func: bool = False
         self._print_result_module: bool = False
         self._print_module_chain: bool = False  # Flag para imprimir resultados de cada módulo na cadeia
+        self._print_shell: bool = False  # Flag para reexpor o output do shell mesmo com -pm/-pmc
         self._filter: str = str()
         self._filter_function: str = str()  # iff filter
         self._filter_module: str = str()    # ifm filter
@@ -528,7 +529,10 @@ class Command:
                         # Process each line of output
                         for line_std in stdout_data.splitlines():
                             if line_std:
-                                if not self._print_result_module:
+                                # Imprime a linha crua do shell no modo padrão, ou sempre
+                                # que -ps (print shell) estiver ativo. Com -pm/-pmc sem -ps,
+                                # o usuário quer só o output dos módulos.
+                                if self._print_shell or (not self._print_result_module and not self._print_module_chain):
                                     line_std = Format.clear_value(line_std)
                                     self._print_line_std(line_std)
                                 if object_module := self._exec_module(self._type_module, line_std):
@@ -536,19 +540,19 @@ class Command:
                                         # Apply module filter for shell-based module execution too
                                         filtered_results = self._filter_module_results(result_module, self._type_module)
                                         if filtered_results:  # Only proceed if we have filtered results
-                                            # Quando -pmc está ativado, não precisamos imprimir o resultado final aqui
-                                            # pois cada módulo já imprime seu próprio resultado
-                                            if not self._print_module_chain:
+                                            # No modo -pmc com cadeia, cada módulo já imprime o
+                                            # próprio resultado dentro do _exec_module; aqui só
+                                            # imprimimos nos demais casos (inclui módulo único + -pmc,
+                                            # que não imprime sozinho).
+                                            is_chain = "|" in self._type_module
+                                            if not (self._print_module_chain and is_chain):
                                                 # Formatar o resultado do módulo como texto
                                                 result_module = "\n".join(filtered_results)
-                                                
-                                                # Determinar se o módulo é o último em uma cadeia
-                                                is_chain = "|" in self._type_module
                                                 if is_chain:
                                                     # No caso de cadeia de módulos, adiciona o nome dos módulos
                                                     modules = self._type_module.split("|")
-                                                    logger.verbose(f"[Chain: {' → '.join(modules)}]")  
-                        
+                                                    logger.verbose(f"[Chain: {' → '.join(modules)}]")
+
                                                 # Imprimir o resultado final
                                                 self._print_line_std(result_module, is_module_result=True)
                     
@@ -981,6 +985,7 @@ class Command:
             self._type_module = args.module
             self._print_result_module = args.pm
             self._print_module_chain = args.pmc
+            self._print_shell = getattr(args, 'ps', False)
             self._proxy = args.proxy
             self._retry = int(args.retry)
             self._retry_delay = int(args.retry_delay)
