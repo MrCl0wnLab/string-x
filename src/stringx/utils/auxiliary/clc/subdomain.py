@@ -131,7 +131,7 @@ class SubdomainEnum(BaseModule):
                             subdomains.update(name.split('\n'))
                         else:
                             subdomains.add(name)
-                except:
+                except Exception:
                     pass
             
             return {sub.strip() for sub in subdomains if sub.strip() and domain in sub}
@@ -170,7 +170,7 @@ class SubdomainEnum(BaseModule):
                     for entry in data:
                         dns_names = entry.get('dns_names', [])
                         subdomains.update(dns_names)
-                except:
+                except Exception:
                     pass
             
             return {sub for sub in subdomains if domain in sub}

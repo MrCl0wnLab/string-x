@@ -20,10 +20,10 @@ import json
 from stringx.core.async_runner import run_async
 import ipaddress
 
-from stringx.core.basemodule import BaseModule
+from stringx.core.basecollector import BaseCollector
 from stringx.core.http_async import HTTPClient
 
-class GeoIPCollector(BaseModule):
+class GeoIPCollector(BaseCollector):
     """
     Módulo coletor para geolocalização de IPs.
     
@@ -136,11 +136,8 @@ class GeoIPCollector(BaseModule):
             url = f"http://ip-api.com/json/{ip}?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,query"
             
             kwargs = {
-                'headers': {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                    'Accept': 'application/json',
-                },
-                'timeout': self.options.get('timeout', 10),
+                'headers': self._default_headers(),
+                'timeout': self._get_timeout(),
             }
             
             response = await self.request.send_request([url], **kwargs)
@@ -178,11 +175,8 @@ class GeoIPCollector(BaseModule):
             url = f"https://ipinfo.io/{ip}/json"
             
             kwargs = {
-                'headers': {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                    'Accept': 'application/json',
-                },
-                'timeout': self.options.get('timeout', 10),
+                'headers': self._default_headers(),
+                'timeout': self._get_timeout(),
             }
             
             response = await self.http_client.send_request([url], **kwargs)
@@ -224,11 +218,8 @@ class GeoIPCollector(BaseModule):
             url = f"https://freegeoip.app/json/{ip}"
             
             kwargs = {
-                'headers': {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                    'Accept': 'application/json',
-                },
-                'timeout': self.options.get('timeout', 10),
+                'headers': self._default_headers(),
+                'timeout': self._get_timeout(),
             }
             
             response = await self.http_client.send_request([url], **kwargs)

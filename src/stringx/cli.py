@@ -54,7 +54,7 @@ def quit_process(signal, frame) -> None:
         CLI.console.log(f" [!] Saindo...")
         CLI.console.log(f" [!] File output: {setting.LOG_FILE_OUTPUT}")
         CLI.console.log(f" [!] Last value: {CMD.last_value}")
-    except:
+    except Exception:
         print(" [!] Processo interrompido pelo usuário")
     
     # Immediate exit without complex cleanup to avoid futures scheduling issues
@@ -318,7 +318,11 @@ def main_cli():
                 pass  # stdin was successfully read
 
         if ARGS.out:
-            if setting.LOG_FILE_OUTPUT != ARGS.out:
+            # Caminho absoluto: respeita exatamente o que o usuário passou.
+            # Caminho relativo/nome: grava dentro do diretório de log (output/).
+            if os.path.isabs(str(ARGS.out)):
+                CMD.file_output = ARGS.out
+            elif setting.LOG_FILE_OUTPUT != ARGS.out:
                 CMD.file_output = f'{setting.STRX_LOG_DIRECTORY}/{ARGS.out}'
             else:
                 CMD.file_output = ARGS.out

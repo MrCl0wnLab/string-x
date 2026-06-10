@@ -240,7 +240,7 @@ class IPInfo(BaseModule):
                 # Format each key-value pair and join them with newlines
                 formatted_result = [f"{key}: {value}" for key, value in result.items()]
                 if formatted_result:
-                    return self.set_result("\n".join(formatted_result))
+                    self.set_result("\n".join(formatted_result)); return
 
         except Exception as e:
             self.handle_error(e, "Erro IPInfo")

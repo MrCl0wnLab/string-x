@@ -108,7 +108,7 @@ class DuckDuckGoDorker(BaseModule):
                 self.log_debug(f"[!] Nenhum resultado encontrado para: {dork}")
                 return
 
-            return self.set_result("\n".join(results))
+            self.set_result("\n".join(results)); return
         except Exception as e:
             self.handle_error(e, "Erro na busca")
     
@@ -250,7 +250,7 @@ class DuckDuckGoDorker(BaseModule):
                         decoded_url = self._decode_duckduckgo_url(match)
                         if decoded_url:
                             urls.append(decoded_url)
-                except:
+                except Exception:
                     continue
         
         return urls
@@ -335,7 +335,7 @@ class DuckDuckGoDorker(BaseModule):
             parsed = urlparse(url)
             if not parsed.netloc or len(parsed.netloc) < 4:
                 return False
-        except:
+        except Exception:
             return False
         
         return True

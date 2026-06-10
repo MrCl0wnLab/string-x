@@ -201,7 +201,7 @@ class CreditCardExtractor(BaseModule):
         
         try:
             return luhn_checksum(card_number) == 0
-        except:
+        except Exception:
             return False
     
     def _mask_card(self, card_number):

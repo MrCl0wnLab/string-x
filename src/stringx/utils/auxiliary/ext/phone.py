@@ -67,7 +67,7 @@ class Phone(BaseModule):
                     result.append(phone)
                 if result:
                     result = sorted(list(set(result)))  # Remove duplicatas
-                    return self.set_result("\n".join(result))
+                    self.set_result("\n".join(result)); return
 
 
 

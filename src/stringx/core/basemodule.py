@@ -58,6 +58,9 @@ class BaseModule:
         self.setting = setting
         self._result = {f"{self._get_cls_name()}": []}
         self._auto_clear_results = True  # Habilita limpeza automática por padrão
+        # Marca que o próximo set_result inicia um novo ciclo e deve limpar
+        # resultados antigos antes de acumular (resetado a cada get_result).
+        self._pending_clear = True
 
 
         # Cada módulo deverá definir suas opções (chave: dict com required, description, value)
@@ -79,15 +82,30 @@ class BaseModule:
     def _clear_results(self):
         """Limpa todos os resultados armazenados."""
         self._result[self._get_cls_name()].clear()
-    
+
+    def _maybe_clear(self):
+        """
+        Limpa resultados antigos no primeiro append de um novo ciclo.
+
+        Quando a limpeza automática está habilitada, o primeiro ``set_result*``
+        após um ``get_result`` (ou após a criação do módulo) descarta resultados
+        de execuções anteriores. Chamadas subsequentes dentro do mesmo ciclo
+        acumulam normalmente.
+        """
+        if self._auto_clear_results and self._pending_clear:
+            self._clear_results()
+            self._pending_clear = False
+
     def set_auto_clear(self, value: bool):
         """
         Define se os resultados devem ser limpos automaticamente.
-        
+
         Args:
             value (bool): True para limpar automaticamente, False caso contrário
         """
         self._auto_clear_results = value
+        if value:
+            self._pending_clear = True
 
     def set_result(self, value: Union[str, List[str], Dict[str, Any]]):
         """
@@ -97,8 +115,7 @@ class BaseModule:
             value: Valor a ser adicionado aos resultados (string, lista ou dicionário)
         """
          # Se auto_clear estiver habilitado e for o primeiro resultado, limpar antes
-        if self._auto_clear_results and not self._result.get(self._get_cls_name()):
-            self._clear_results()
+        self._maybe_clear()
             
         if value:
             if isinstance(value, list):
@@ -116,8 +133,7 @@ class BaseModule:
         Args:
             values (List): Lista de valores a serem adicionados
         """
-        if self._auto_clear_results and not self._result.get(self._get_cls_name()):
-            self._clear_results()
+        self._maybe_clear()
             
         for value in values:
             if value:
@@ -138,8 +154,7 @@ class BaseModule:
         Args:
             results: Lista de dicionários com estrutura {'type': str, 'value': str}
         """
-        if self._auto_clear_results and not self._result.get(self._get_cls_name()):
-            self._clear_results()
+        self._maybe_clear()
             
         for result in results:
             if isinstance(result, dict) and 'type' in result and 'value' in result:
@@ -156,6 +171,9 @@ class BaseModule:
         Returns:
             list: Lista contendo todos os resultados encontrados pelo módulo
         """
+        # Consumir resultados encerra o ciclo: o próximo set_result limpa antes
+        # de acumular (quando auto-clear está habilitado).
+        self._pending_clear = True
         if plain:
            # Retorna resultados sem formatação, ícones ou cores
            return [OutputFormatter._strip_formatting(r) for r in list(self._result.values())[0]]

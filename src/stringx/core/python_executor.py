@@ -106,7 +106,16 @@ class PythonExecutor:
         """
         if not code:
             return None
-            
+
+        # Recusa código com padrões perigosos ANTES de executar. Isto ativa a
+        # validação que antes existia mas nunca era chamada — defense-in-depth
+        # além do namespace restrito de __builtins__. Valida o template original
+        # (o alvo é sempre inserido via repr(), como literal de string seguro).
+        is_safe, reason = self.validate_code_safety(code)
+        if not is_safe:
+            logger.error(f"Código Python rejeitado: {reason}")
+            return f"ERROR: unsafe code rejected ({reason})"
+
         try:
             # Substitute {STRING} placeholder with properly quoted value
             quoted_value = repr(target_value)

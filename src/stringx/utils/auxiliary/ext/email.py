@@ -94,7 +94,7 @@ class AuxRegexEmail(BaseModule):
                         if len(result) > 3:
                             self.log_debug(f"   [*] ... e mais {len(result) - 3} emails")
                             
-                        return self.set_result("\n".join(result))
+                        self.set_result("\n".join(result)); return
                     else:
                         self.log_debug("[!] Lista de emails vazia após processamento")
                 else:

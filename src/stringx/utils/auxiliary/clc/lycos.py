@@ -380,7 +380,7 @@ class LycosDorker(BaseModule):
                 for match in matches:
                     if self._is_external_url(match):
                         urls.append(match)
-            except:
+            except Exception:
                 pass
         
         return urls
@@ -448,7 +448,7 @@ class LycosDorker(BaseModule):
             parsed = urlparse(url)
             if not parsed.netloc or len(parsed.netloc) < 4:
                 return False
-        except:
+        except Exception:
             return False
         
         return True

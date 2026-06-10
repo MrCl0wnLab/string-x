@@ -11,7 +11,7 @@ from typing import Optional, Dict, Any, List, Tuple, Set, Union
 
 # Bibliotecas de terceiros
 import httpx
-from httpx import Response, HTTPError, ConnectError, TimeoutException, ReadTimeout, ConnectTimeout
+from httpx import Response
 
 # Módulos locais
 from stringx.core.format import Format
@@ -98,44 +98,6 @@ class HTTPClient:
                 request_params[key] = value
                 
         return client_params, request_params
-    
-    async def _get_async(self, url: str, **kwargs) -> Response:
-        """
-        Realiza uma requisição GET assíncrona.
-        
-        Args:
-            url (str): URL para a requisição GET
-            **kwargs: Parâmetros adicionais para a configuração do cliente e requisição
-            
-        Returns:
-            Response: Objeto de resposta da requisição
-            
-        Raises:
-            HTTPError: Erro na comunicação HTTP
-        """
-        client_params, request_params = self._split_params(kwargs)
-            
-        async with httpx.AsyncClient(**client_params) as client:
-            return await client.get(url, **request_params)
-    
-    async def _post_async(self, url: str, **kwargs) -> Response:
-        """
-        Realiza uma requisição POST assíncrona.
-        
-        Args:
-            url (str): URL para a requisição POST
-            **kwargs: Parâmetros adicionais para a configuração do cliente e requisição
-            
-        Returns:
-            Response: Objeto de resposta da requisição
-            
-        Raises:
-            HTTPError: Erro na comunicação HTTP
-        """
-        client_params, request_params = self._split_params(kwargs)
-            
-        async with httpx.AsyncClient(**client_params) as client:
-            return await client.post(url, **request_params)
     
     async def _fetch_all(self, urls: List[str], max_concurrent: int = 10, **kwargs) -> List[Union[Response, Exception]]:
         """

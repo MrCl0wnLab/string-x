@@ -1,11 +1,13 @@
 # Biblioteca padrão
 import os
 import logging
+from logging.handlers import RotatingFileHandler
 from rich.logging import RichHandler
 from rich.console import Console
 
 # Módulos locais
 from stringx.config import setting
+
 
 class Logger:
     """Sistema centralizado de logging para o String-X."""
@@ -42,25 +44,33 @@ class Logger:
             console_handler = RichHandler(rich_tracebacks=True, show_time=False)
             console_handler.setLevel(logging.DEBUG)
             
+            # Rotação de arquivo conforme configuração (evita crescimento ilimitado)
+            max_bytes = getattr(setting, 'STRX_LOG_MAX_FILE_SIZE', 10 * 1024 * 1024)
+            backup_count = getattr(setting, 'STRX_LOG_BACKUP_COUNT', 5)
+
             # Configurar saída para arquivo - create directory if needed
             os.makedirs(os.path.dirname(setting.LOG_FILE_OUTPUT), exist_ok=True)
-            file_handler = logging.FileHandler(setting.LOG_FILE_OUTPUT)
+            file_handler = RotatingFileHandler(
+                setting.LOG_FILE_OUTPUT, maxBytes=max_bytes, backupCount=backup_count
+            )
             file_handler.setLevel(logging.DEBUG)
-            
+
             # Configurar arquivo separado para erros
             error_log_path = str(setting.LOG_FILE_OUTPUT).replace('.log', '-errors.log')
-            self.error_file_handler = logging.FileHandler(error_log_path)
+            self.error_file_handler = RotatingFileHandler(
+                error_log_path, maxBytes=max_bytes, backupCount=backup_count
+            )
             self.error_file_handler.setLevel(logging.ERROR)
-            
+
             # Formato para arquivo (com timestamp)
             file_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
             file_handler.setFormatter(file_formatter)
             self.error_file_handler.setFormatter(file_formatter)
-            
+
             # Formato para console (sem timestamp para saída limpa)
             console_formatter = logging.Formatter('%(levelname)s: %(message)s')
             console_handler.setFormatter(console_formatter)
-            
+
             # Adicionar handlers
             self.logger.addHandler(console_handler)
             self.logger.addHandler(file_handler)

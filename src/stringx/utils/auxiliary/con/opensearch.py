@@ -107,7 +107,7 @@ class OpenSearchOutput(BaseModule):
                     resp_data = response.json()
                     if not (resp_data.get("version") and resp_data.get("name")):
                         self.set_result(f"Aviso: O servidor em {url} pode não ser um OpenSearch/Elasticsearch válido")
-                except:
+                except Exception:
                     pass
                     
                 return True, "Servidor disponível"
@@ -115,7 +115,7 @@ class OpenSearchOutput(BaseModule):
                 error_detail = ""
                 try:
                     error_detail = f" - {response.text}"
-                except:
+                except Exception:
                     pass
                 return False, f"Servidor respondeu com código de status {response.status_code}{error_detail}"
                 
@@ -300,7 +300,7 @@ class OpenSearchOutput(BaseModule):
                                     # Verificar se há detalhes adicionais de erro
                                     if hasattr(e, 'info') and isinstance(e.info, dict):
                                         self.log_debug(f"[*] Detalhes do erro: {e.info}")
-                                except:
+                                except Exception:
                                     pass
                             # Apenas log do erro, mas continuar tentando indexar no índice
             

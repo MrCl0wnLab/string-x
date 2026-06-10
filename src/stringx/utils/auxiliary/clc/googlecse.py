@@ -141,7 +141,7 @@ class GoogleCSEDorker(BaseModule):
         if results:
             results = list(set(results))  # Remove duplicatas
             self.log_debug(f"Busca concluída: {len(results)} resultados únicos encontrados")
-            return self.set_result("\n".join(results))
+            self.set_result("\n".join(results)); return
         else:
             self.log_debug("Busca concluída mas nenhum resultado encontrado")
             self.set_result(f"Aviso: Busca executada com sucesso mas nenhum resultado encontrado para '{raw_data}'")

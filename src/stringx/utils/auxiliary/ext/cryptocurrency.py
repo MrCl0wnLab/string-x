@@ -202,7 +202,7 @@ class AuxRegexCryptocurrency(BaseModule):
             if results_and_type:
                 results_and_type = sorted(
                     list(set(results_and_type)))  # Remove duplicatas
-                return self.set_result("\n".join(results_and_type))
+                self.set_result("\n".join(results_and_type)); return
         else:
             self.log_debug("Nenhum endereço de criptomoeda encontrado")
 

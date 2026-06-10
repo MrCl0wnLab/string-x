@@ -316,7 +316,7 @@ class NaverDorker(BaseModule):
                         decoded_url = self._decode_naver_url(match)
                         if decoded_url:
                             urls.append(match)
-            except:
+            except Exception:
                 pass
         
         return urls
@@ -430,7 +430,7 @@ class NaverDorker(BaseModule):
             parsed = urlparse(url)
             if not parsed.netloc or len(parsed.netloc) < 4:
                 return False
-        except:
+        except Exception:
             return False
         
         return True

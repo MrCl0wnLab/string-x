@@ -212,7 +212,7 @@ class MetadataExtractor(BaseModule):
                 
                 mime_info["file_type_description"] = file_type
                 mime_info["mime_type_magic"] = mime_type_magic
-            except:
+            except Exception:
                 pass  # python-magic não disponível
                 
         except Exception as e:

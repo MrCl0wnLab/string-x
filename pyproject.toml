@@ -52,9 +52,9 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/mrcl0wn/string-x"
-Issues = "https://github.com/mrcl0wn/string-x/issues"
-Repository = "https://github.com/mrcl0wn/string-x"
+Homepage = "https://github.com/MrCl0wnLab/string-x"
+Issues = "https://github.com/MrCl0wnLab/string-x/issues"
+Repository = "https://github.com/MrCl0wnLab/string-x"
 
 [project.scripts]
 strx = "stringx.cli:main_cli"
@@ -126,7 +126,7 @@ python_functions = ["test_*"]
 addopts = [
     "--strict-markers",
     "--strict-config",
-    "-verbose",
+    "-v",
     "--cov=stringx",
     "--cov-report=html",
     "--cov-report=term-missing",

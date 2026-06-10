@@ -346,7 +346,7 @@ class SogouDorker(BaseModule):
                         decoded_url = self._decode_sogou_url(match)
                         if decoded_url:
                             urls.append(decoded_url)
-            except:
+            except Exception:
                 pass
         
         return urls
@@ -459,7 +459,7 @@ class SogouDorker(BaseModule):
             parsed = urlparse(url)
             if not parsed.netloc or len(parsed.netloc) < 4:
                 return False
-        except:
+        except Exception:
             return False
         
         return True

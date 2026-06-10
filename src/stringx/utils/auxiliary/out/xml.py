@@ -62,7 +62,7 @@ class XMLOutput(BaseModule):
                 try:
                     tree = ET.parse(file_path)
                     root = tree.getroot()
-                except:
+                except Exception:
                     root = ET.Element(root_name)
                     tree = ET.ElementTree(root)
             else:

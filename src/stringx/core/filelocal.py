@@ -78,8 +78,15 @@ class FileLocal:
         """
         if value and file:
             try:
+                from stringx.core.security_validator import SecurityValidator
+                is_safe, reason = SecurityValidator.validate_file_path(file)
+                if not is_safe:
+                    self._cli.console.print(f"[!] Caminho de saída rejeitado ({reason}): {file}")
+                    return
                 # Criar diretório se não existir
-                os.makedirs(os.path.dirname(file), exist_ok=True)
+                directory = os.path.dirname(file)
+                if directory:
+                    os.makedirs(directory, exist_ok=True)
                 with open(file, mode) as data_return:
                     data_return.writelines(value)
             except Exception:

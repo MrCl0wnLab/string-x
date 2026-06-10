@@ -75,6 +75,13 @@ class CustomRegexExtractor(BaseModule):
             regex_flags = self._build_flags()
             self.log_debug(f"[*] Flags aplicadas: {self._describe_flags(regex_flags)}")
             
+            # Validar padrão contra ReDoS antes de compilar
+            from stringx.core.security_validator import SecurityValidator
+            is_safe, reason = SecurityValidator.validate_regex_pattern(pattern)
+            if not is_safe:
+                self.log_debug(f"[x] Padrão regex rejeitado: {reason}")
+                return
+
             # Compilar regex
             try:
                 compiled_pattern = re.compile(pattern, regex_flags)

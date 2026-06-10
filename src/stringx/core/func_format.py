@@ -47,26 +47,7 @@ class FuncFormat:
                     attribute_value = getattr(Funcs, attribute)
                     return attribute_value(value)
         return str()
-                
-    def _detect_func(self, text: str, func_name: str) -> list[str]:
-        """
-        Detecta padrões de função em um texto.
-        
-        Args:
-            text (str): Texto onde buscar padrões de função
-            func_name (str): Nome da função a ser detectada
-            
-        Returns:
-            list[str]: Lista de tuplas com função e parâmetros ou None
-        """
-        if text and func_name:
-            # procurando padrão de função na string {text}
-            findall = re.findall(rf'({func_name}\((.*?)\))',text,re.MULTILINE)
-            if findall:
-                return list(set(findall))
-            self.is_func = False
-            return None
-    
+
     def _find_innermost_call(self, text: str, func_set: set) -> tuple | None:
         """
         Localiza a chamada de função mais interna (à esquerda) no texto.

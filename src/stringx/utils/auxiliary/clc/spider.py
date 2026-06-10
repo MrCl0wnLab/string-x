@@ -443,13 +443,13 @@ class WebSpider(BaseModule):
                 if url in self.visited_urls or len(self.collected_urls) >= self.options.get('max_urls', 100) or self._interrupted:
                     return
                 
-                # Memory protection check
-                #max_memory = self.options.get('max_total_memory', 104857600)  # 100MB
-                #if self._total_content_size > max_memory:
-                #    if self.options.get('debug'):
-                #        self.log_debug(f"[!] Memory limit reached: {self._total_content_size} bytes")
-                #    return
-                
+                # Memory protection check (early-exit antes de buscar a URL)
+                max_memory = self.options.get('max_total_memory', 104857600)  # 100MB
+                if self._total_content_size > max_memory:
+                    if self.options.get('debug'):
+                        self.log_debug(f"[!] Memory limit reached: {self._total_content_size} bytes")
+                    return
+
                 self.visited_urls.add(url)
                 self.collected_urls.add(url)
                 self._processed_urls += 1

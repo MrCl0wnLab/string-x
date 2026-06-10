@@ -11,6 +11,7 @@ import os
 import time
 import hashlib
 import shlex
+import threading
 import argparse
 import subprocess
 import logging.config
@@ -77,6 +78,9 @@ class Command:
         self._retry: int = int()
         self._retry_delay: int = int()
         self._no_shell: bool = False  # Flag for no-shell mode
+
+        # Lock para serializar escritas no arquivo de saída entre threads
+        self._output_lock = threading.Lock()
 
         # Command execution cache to avoid duplicates
         self._command_cache: set = set()
@@ -161,13 +165,12 @@ class Command:
                 # Criar diretório de logs se não existir
                 # os.makedirs(os.path.dirname(self.file_output), exist_ok=True)
                 
-                # Abrir arquivo e escrever saída formatada
-                self._file.save_value(f"{formatted_output}\n", self.file_output)
-                '''with open(self.file_output, 'a+') as file_a:
-                    file_a.write(f"{formatted_output}\n")'''
-                
-                # Salvar último valor processado
-                self._save_last_target(formatted_output)
+                # Abrir arquivo e escrever saída formatada — serializado entre
+                # threads para evitar intercalação/corrupção do arquivo de saída
+                with self._output_lock:
+                    self._file.save_value(f"{formatted_output}\n", self.file_output)
+                    # Salvar último valor processado
+                    self._save_last_target(formatted_output)
                 '''with open(self.file_last_output, 'w+') as file_w:
                     file_w.write(str(value))'''
             except Exception as e:
@@ -891,6 +894,30 @@ class Command:
                 return True
                 
         return False
+
+    def format_command_template(self, template: str, target: str) -> str:
+        """
+        Substitui o placeholder de um template pelo alvo, com quoting seguro.
+
+        Diferente de ``_command_prepare`` (que executa o pipeline completo e usa
+        o placeholder ``{STRING}``), este método é um utilitário puro: substitui
+        ``{}`` e ``{STRING}`` pelo ``target`` já protegido com ``shlex.quote``,
+        retornando a string resultante sem executar nada. Útil para construir
+        comandos com argumentos controlados pelo usuário de forma segura.
+
+        Args:
+            template (str): Template do comando contendo ``{}`` ou ``{STRING}``.
+            target (str): Valor a ser substituído (será citado com shlex.quote).
+
+        Returns:
+            str: Template com o placeholder substituído de forma segura.
+        """
+        if not template:
+            return str()
+        safe_target = shlex.quote(target) if target else str()
+        result = template.replace("{}", safe_target)
+        result = re.sub(r'\{[sS][tT][rR][iI][nN][gG]\}', safe_target, result)
+        return result
 
     def _command_prepare(self, target: str, command: str) -> str:
         """
