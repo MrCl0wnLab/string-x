@@ -17,7 +17,7 @@ de geolocalização com maior precisão e confiabilidade, alternando
 entre diferentes APIs quando necessário.
 """
 import json
-import asyncio
+from stringx.core.async_runner import run_async
 import ipaddress
 
 from stringx.core.basemodule import BaseModule
@@ -91,7 +91,7 @@ class GeoIPCollector(BaseModule):
             
             for api in apis:
                 try:
-                    result = asyncio.run(self._query_api(ip, api))
+                    result = run_async(self._query_api(ip, api))
                     if result:
                         self.set_result(result)
                         return

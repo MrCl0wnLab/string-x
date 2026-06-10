@@ -20,6 +20,7 @@ através dos motores de busca mainstream como Google ou Bing.
 import re
 import random
 import asyncio
+from stringx.core.async_runner import run_async
 from bs4 import BeautifulSoup
 from requests.exceptions import RequestException
 from httpx import ConnectError, ReadTimeout, ConnectTimeout, TimeoutException
@@ -159,7 +160,7 @@ class LycosDorker(BaseModule):
         Returns:
             bool: True se conseguiu obter o keyvol, False caso contrário
         """
-        return asyncio.run(self._get_keyvol_async(headers))
+        return run_async(self._get_keyvol_async(headers))
 
     async def _search_lycos_async(self, dork: str) -> list:
         """
@@ -274,7 +275,7 @@ class LycosDorker(BaseModule):
         Returns:
             list: Lista de URLs válidas encontradas
         """
-        return asyncio.run(self._search_lycos_async(dork))
+        return run_async(self._search_lycos_async(dork))
 
     @retry_operation
     def _get_next_page_url(self, html_content: str) -> str:

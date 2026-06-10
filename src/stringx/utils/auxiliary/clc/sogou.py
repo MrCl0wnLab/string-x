@@ -22,7 +22,7 @@ uma perspectiva local que complementa as informações de buscadores ocidentais.
 import re
 import time
 import random
-import asyncio
+from stringx.core.async_runner import run_async
 from bs4 import BeautifulSoup
 from requests.exceptions import RequestException
 from httpx import ConnectError, ReadTimeout, ConnectTimeout, TimeoutException
@@ -151,7 +151,7 @@ class SogouDorker(BaseModule):
         
         try:
             # Primeira página - usar template específico e extrair sessiontime
-            first_page_urls = asyncio.run(self._search_first_page_async(kwargs, encoded_dork))
+            first_page_urls = run_async(self._search_first_page_async(kwargs, encoded_dork))
             results.extend(first_page_urls)
             
             # Se não conseguiu extrair sessiontime ou não há resultados, parar
@@ -161,7 +161,7 @@ class SogouDorker(BaseModule):
             # Buscar páginas subsequentes usando sessiontime
             for page in range(2, max_pages + 1):
                 try:
-                    page_urls = asyncio.run(self._search_pagination_page_async(kwargs, encoded_dork, page))
+                    page_urls = run_async(self._search_pagination_page_async(kwargs, encoded_dork, page))
                     results.extend(page_urls)
                     
                     # Limitar número de resultados

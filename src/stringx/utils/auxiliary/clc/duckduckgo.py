@@ -20,7 +20,7 @@ encontrados em outros motores de busca.
 import re
 import time
 import random
-import asyncio
+from stringx.core.async_runner import run_async
 from bs4 import BeautifulSoup
 from requests.exceptions import RequestException
 from httpx import ConnectError, ReadTimeout, ConnectTimeout, TimeoutException
@@ -163,7 +163,7 @@ class DuckDuckGoDorker(BaseModule):
 
                         async def make_request():
                             return await self.request.send_request([search_url], **kwargs)
-                        response = asyncio.run(make_request())[0]
+                        response = run_async(make_request())[0]
 
                         if response.status_code == 200:
                             page_urls = self._extract_urls_from_response(response.text)

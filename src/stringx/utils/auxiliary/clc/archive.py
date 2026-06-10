@@ -12,7 +12,7 @@ O Internet Archive mantém snapshots históricos de páginas web, o que é útil
 - Descoberta de subdomínios e paths que podem não estar mais ativos
 """
 import re
-import asyncio
+from stringx.core.async_runner import run_async
 import warnings
 import traceback
 from requests.exceptions import RequestException
@@ -116,7 +116,7 @@ class archive(BaseModule):
         Returns:
             list: Lista de URLs arquivadas para o domínio
         """
-        return asyncio.run(self._query_archive_async(domain))
+        return run_async(self._query_archive_async(domain))
     
     
     @retry_operation

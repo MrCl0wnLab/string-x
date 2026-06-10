@@ -22,7 +22,7 @@ investigações de segurança e OSINT.
 import os
 import json
 import socket
-import asyncio
+from stringx.core.async_runner import run_async
 from datetime import datetime, timedelta
 
 from stringx.core.http_async import HTTPClient
@@ -186,7 +186,7 @@ class IPInfo(BaseModule):
         Returns:
             dict: Dicionário com informações do IP ou None em caso de erro
         """
-        return asyncio.run(self._query_ipinfo_async(ip))
+        return run_async(self._query_ipinfo_async(ip))
     
     def run(self, **kwargs):
         """

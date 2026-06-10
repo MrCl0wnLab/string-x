@@ -21,6 +21,7 @@ acessar dados que podem estar ausentes ou menos visíveis em motores de busca oc
 import re
 import random
 import asyncio
+from stringx.core.async_runner import run_async
 from bs4 import BeautifulSoup
 from requests.exceptions import RequestException
 from httpx import ConnectError, ReadTimeout, ConnectTimeout, TimeoutException
@@ -119,7 +120,7 @@ class NaverDorker(BaseModule):
         Returns:
             list: Lista de URLs válidas encontradas
         """
-        return asyncio.run(self._search_naver_async(dork))
+        return run_async(self._search_naver_async(dork))
     
     @retry_operation
     async def _search_naver_async(self, dork: str) -> list:

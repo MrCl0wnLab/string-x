@@ -16,7 +16,7 @@ para refinar as buscas, permitindo encontrar:
 import re
 import time
 import random
-import asyncio
+from stringx.core.async_runner import run_async
 from typing import List, Dict, Any, Optional, Union, Set, Tuple
 from urllib.parse import urljoin, urlparse, quote_plus
 
@@ -181,7 +181,7 @@ class BingDorker(BaseModule):
                 try:
                     async def make_request():
                         return await self.request .send_request([url], **kwargs)
-                    response = asyncio.run(make_request())[0]
+                    response = run_async(make_request())[0]
                     if response.status_code != 200:
                         continue
                     

@@ -13,6 +13,7 @@ import socket
 import hashlib
 import random
 import asyncio
+from stringx.core.async_runner import run_async
 import datetime
 import ipaddress
 import subprocess
@@ -250,7 +251,7 @@ class Funcs:
                         return "skipped_during_shutdown"
                     except RuntimeError:
                         # No running loop, safe to create new one
-                        results = asyncio.run(request.send_request([value]))[0]
+                        results = run_async(request.send_request([value]))[0]
                 except (KeyboardInterrupt, RuntimeError):
                     return "interrupted"
                 

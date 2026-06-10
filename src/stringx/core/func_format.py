@@ -67,33 +67,85 @@ class FuncFormat:
             self.is_func = False
             return None
     
-    def func_format(self,cmd_str: str) -> str:
+    def _find_innermost_call(self, text: str, func_set: set) -> tuple | None:
+        """
+        Localiza a chamada de função mais interna (à esquerda) no texto.
+
+        Faz matching balanceado de parênteses: encontra o primeiro `)`, casa-o
+        com seu `(` correspondente e lê o identificador imediatamente antes.
+        Como é o primeiro `)`, o argumento não contém parênteses — portanto é
+        sempre a chamada mais interna, permitindo avaliação de dentro para fora
+        (ex.: em `md5(get(url))`, resolve `get(url)` antes de `md5(...)`).
+
+        Args:
+            text (str): Texto a inspecionar
+            func_set (set): Nomes de funções conhecidas
+
+        Returns:
+            tuple | None: (início, fim, nome, arg) da chamada conhecida, onde
+                `text[início:fim]` é o trecho `nome(arg)`; None se não houver.
+        """
+        i = 0
+        n = len(text)
+        while i < n:
+            if text[i] == ')':
+                # Caminha para trás até a '(' correspondente
+                depth = 1
+                j = i - 1
+                while j >= 0:
+                    if text[j] == ')':
+                        depth += 1
+                    elif text[j] == '(':
+                        depth -= 1
+                        if depth == 0:
+                            break
+                    j -= 1
+                if j < 0:
+                    # Parêntese desbalanceado: nada a processar
+                    return None
+                # Extrai o identificador imediatamente antes da '('
+                k = j - 1
+                while k >= 0 and (text[k].isalnum() or text[k] == '_'):
+                    k -= 1
+                name = text[k + 1:j]
+                arg = text[j + 1:i]
+                if name in func_set and arg:
+                    return (k + 1, i + 1, name, arg)
+                # Grupo de parênteses que não é função conhecida: segue adiante
+                i += 1
+                continue
+            i += 1
+        return None
+
+    def func_format(self, cmd_str: str) -> str:
         """
         Processa todas as funções detectadas em uma string de comando.
-        
-        Este método detecta todas as funções presentes na string de comando,
-        executa-as e substitui os padrões pelos resultados das execuções.
-        
+
+        Avalia as funções de dentro para fora usando matching balanceado de
+        parênteses, suportando argumentos com parênteses aninhados
+        (ex.: `md5(get(http://x))`). A substituição é posicional, garantindo
+        ordem determinística entre execuções.
+
         Args:
             cmd_str (str): String de comando contendo padrões de função
-            
+
         Returns:
             str: String processada com funções substituídas por seus resultados
         """
         if cmd_str:
-            func_detect_list = [] 
-            for func_name in self._func_name_list:
-                detect_func = self._detect_func(cmd_str, func_name)
-                if detect_func: func_detect_list.extend(detect_func)
-            if func_detect_list:
-                for func_detect,value_func in func_detect_list:
-                    if func_detect and value_func:
-                        self.is_func = True
-                        cmd_str = cmd_str.replace(
-                            str(func_detect),
-                            str(self._find_func(func_detect,value_func))
-                        )
-            if cmd_str:            
+            func_set = set(self._func_name_list)
+            # Itera resolvendo a chamada mais interna a cada passo, até não
+            # restar nenhuma função conhecida. O teto evita loops patológicos.
+            max_iterations = len(cmd_str) + 1
+            for _ in range(max_iterations):
+                call = self._find_innermost_call(cmd_str, func_set)
+                if not call:
+                    break
+                start, end, name, arg = call
+                self.is_func = True
+                result = str(self._find_func(f"{name}({arg})", arg))
+                cmd_str = cmd_str[:start] + result + cmd_str[end:]
+            if cmd_str:
                 return cmd_str
         return str()
     

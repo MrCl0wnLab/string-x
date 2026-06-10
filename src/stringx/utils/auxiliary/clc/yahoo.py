@@ -22,7 +22,7 @@ utilizando apenas um motor de busca principal como o Google.
 import re
 import time
 import random
-import asyncio
+from stringx.core.async_runner import run_async
 from typing import List, Dict, Any, Optional, Set
 from urllib.parse import urljoin, urlparse, unquote, quote_plus
 
@@ -189,7 +189,7 @@ class YahooDorker(BaseModule):
                     # Executar requisição assíncrona
                     async def make_request():
                         return await self.request.send_request([search_url], **kwargs)
-                    response = asyncio.run(make_request())[0]
+                    response = run_async(make_request())[0]
                     
                     if response.status_code != 200:
                         self.log_debug(f"Status não-OK: {response.status_code}")

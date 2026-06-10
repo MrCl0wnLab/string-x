@@ -20,7 +20,7 @@ de subdomínios, incluindo:
 - Técnicas passivas que não geram tráfego direto para o alvo
 - Consolidação e deduplicação de resultados de múltiplas fontes
 """
-import asyncio
+from stringx.core.async_runner import run_async
 
 from stringx.core.basemodule import BaseModule
 from stringx.core.http_async import HTTPClient
@@ -119,7 +119,7 @@ class SubdomainEnum(BaseModule):
             async def make_request():
                 return await self.request.send_request([url], **kwargs)
             
-            response = asyncio.run(make_request())[0]
+            response = run_async(make_request())[0]
             
             subdomains = set()
             if response.status_code == 200:
@@ -161,7 +161,7 @@ class SubdomainEnum(BaseModule):
             async def make_request():
                 return await self.request.send_request([url], **kwargs)
             
-            response = asyncio.run(make_request())[0]
+            response = run_async(make_request())[0]
             
             subdomains = set()
             if response.status_code == 200:
@@ -199,7 +199,7 @@ class SubdomainEnum(BaseModule):
             async def make_request():
                 return await self.request.send_request([url], **kwargs)
             
-            response = asyncio.run(make_request())[0]
+            response = run_async(make_request())[0]
             
             subdomains = set()
             if response.status_code == 200:

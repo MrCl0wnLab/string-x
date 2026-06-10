@@ -601,7 +601,7 @@ class Command:
                     except subprocess.TimeoutExpired:
                         result_command.kill()
                         result_command.wait()
-                    except:
+                    except Exception:
                         pass
                         
                 if first_process and first_process != result_command:
@@ -610,7 +610,7 @@ class Command:
                     except subprocess.TimeoutExpired:
                         first_process.kill()
                         first_process.wait()
-                    except:
+                    except Exception:
                         pass
 
     def _print_line_std(self, line_std, is_module_result=False) -> None:
@@ -753,8 +753,8 @@ class Command:
                 if (self._output_func or should_show_function) and command_func and should_save_function:
                     self._save_command_log(command_func)
             return command_func
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"Erro em _format_function: {type(e).__name__}: {e}")
 
     def _sanitize_command(self, command: str) -> str:
         """
@@ -989,5 +989,5 @@ class Command:
                     if command_target: logger.verbose(f"[!] COMMAND: {command_target}")
                     if command_pipe: logger.verbose(f"[!] PIPE: {command_pipe}")
                     return self._exec_command(command_target, command_pipe)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"Erro em command_template (target='{target}'): {type(e).__name__}: {e}")

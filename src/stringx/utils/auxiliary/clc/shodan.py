@@ -22,7 +22,7 @@ de descoberta de dispositivos e reconhecimento com o fluxo de trabalho do
 String-X.
 """
 import json
-import asyncio
+from stringx.core.async_runner import run_async
 import ipaddress
 import urllib.parse
 
@@ -166,7 +166,7 @@ class ShodanCollector(BaseModule):
 
     def _query_host(self, ip: str, api_key: str) -> str:
         """Consulta informações de um host específico (wrapper assíncrono)."""
-        return asyncio.run(self._query_host_async(ip, api_key))
+        return run_async(self._query_host_async(ip, api_key))
 
     async def _query_search_async(self, query: str, api_key: str) -> str:
         """Realiza busca por query no Shodan."""
@@ -218,7 +218,7 @@ class ShodanCollector(BaseModule):
 
     def _query_search(self, query: str, api_key: str) -> str:
         """Realiza busca por query no Shodan (wrapper assíncrono)."""
-        return asyncio.run(self._query_search_async(query, api_key))
+        return run_async(self._query_search_async(query, api_key))
 
     async def _query_count_async(self, query: str, api_key: str) -> str:
         """Conta resultados para uma query."""
@@ -268,4 +268,4 @@ class ShodanCollector(BaseModule):
 
     def _query_count(self, query: str, api_key: str) -> str:
         """Conta resultados para uma query (wrapper assíncrono)."""
-        return asyncio.run(self._query_count_async(query, api_key))
+        return run_async(self._query_count_async(query, api_key))

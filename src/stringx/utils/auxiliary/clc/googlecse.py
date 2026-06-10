@@ -23,6 +23,7 @@ Este módulo utiliza múltiplas chaves CSE configuradas para:
 import re
 import random
 import asyncio
+from stringx.core.async_runner import run_async
 import backoff
 import urllib.parse
 from requests.exceptions import RequestException
@@ -157,7 +158,7 @@ class GoogleCSEDorker(BaseModule):
         Returns:
             list: Lista de URLs encontradas
         """
-        return asyncio.run(self._search_async(dork, cse_id, info_js))
+        return run_async(self._search_async(dork, cse_id, info_js))
             
     async def _search_async(self, dork: str, cse_id: str, info_js: dict) -> list:
         """
@@ -221,7 +222,7 @@ class GoogleCSEDorker(BaseModule):
         Returns:
             dict: Dicionário com tokens de configuração
         """
-        return asyncio.run(self._get_info_from_cse_async(cse_id))
+        return run_async(self._get_info_from_cse_async(cse_id))
     
     async def _get_info_from_cse_async(self, cse_id: str) -> dict:
         """
@@ -370,7 +371,7 @@ class GoogleCSEDorker(BaseModule):
         Returns:
             str: Conteúdo da resposta ou string vazia em caso de erro
         """
-        return asyncio.run(self._make_request_async(url))
+        return run_async(self._make_request_async(url))
     
     @retry_operation
     async def _make_request_async(self, url: str) -> str:

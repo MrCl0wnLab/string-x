@@ -206,7 +206,7 @@ class OutputFormatter:
             import xml.dom.minidom
             dom = xml.dom.minidom.parseString(rough_string)
             return dom.toprettyxml(indent="  ")
-        except:
+        except Exception:
             # Fallback sem formatação se minidom não estiver disponível
             return rough_string
     

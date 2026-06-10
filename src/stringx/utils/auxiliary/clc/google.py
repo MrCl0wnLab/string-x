@@ -21,7 +21,7 @@ e múltiplas estratégias de requisição.
 import re
 import time
 import random
-import asyncio
+from stringx.core.async_runner import run_async
 from typing import List, Dict, Optional, Any, Tuple
 from urllib.parse import quote_plus, unquote, urlencode
 
@@ -352,7 +352,7 @@ class GoogleDorker(BaseModule):
         try:
             async def make_request():
                 return await self.request.send_request([url], **kwargs)
-            response = asyncio.run(make_request())[0]
+            response = run_async(make_request())[0]
             return response.text
         except RequestException as e:
             if debug_mode:

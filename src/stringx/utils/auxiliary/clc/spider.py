@@ -18,6 +18,7 @@ O spider oferece:
 """
 import re
 import asyncio
+from stringx.core.async_runner import run_async
 import signal
 import time
 from typing import List, Set, Tuple
@@ -651,7 +652,7 @@ class WebSpider(BaseModule):
                 
                 # Use asyncio.run with proper KeyboardInterrupt handling
                 try:
-                    collected_urls = asyncio.run(self._run_spider_async(start_url))
+                    collected_urls = run_async(self._run_spider_async(start_url))
                 except KeyboardInterrupt:
                     self._interrupted = True
                     if self.options.get('debug'):

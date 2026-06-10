@@ -16,6 +16,7 @@ O módulo oferece:
 - Formato de saída: {URL}; {HTTP_CODE}
 """
 import asyncio
+from stringx.core.async_runner import run_async
 import signal
 from typing import List, Dict, Set, Tuple
 from urllib.parse import urlparse
@@ -685,7 +686,7 @@ class UrlChecker(BaseModule):
             try:
                 # Use asyncio.run with proper KeyboardInterrupt handling
                 try:
-                    results = asyncio.run(self._check_urls_async(urls))
+                    results = run_async(self._check_urls_async(urls))
                 except KeyboardInterrupt:
                     self.interrupted = True
                     if self.options.get('debug'):

@@ -16,7 +16,7 @@ esses logs, o que é útil para:
 # Bibliotecas padrão
 import re
 import json
-import asyncio
+from stringx.core.async_runner import run_async
 import warnings
 import traceback
 import urllib.parse
@@ -218,7 +218,7 @@ class CrtshCollector(BaseModule):
                 return await self.request.send_request([url], **kwargs)
             
             self.log_debug("Enviando requisição HTTP ao crt.sh")
-            response = asyncio.run(make_request())[0]
+            response = run_async(make_request())[0]
             self.log_debug(f"Resposta recebida com status code: {response.status_code}")
                 
             if response.status_code == 200:

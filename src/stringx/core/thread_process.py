@@ -41,13 +41,15 @@ class ThreadProcess:
         # Configuração via parâmetros ou settings
         try:
             from stringx.config import setting
-            self.max_thread = max_threads or getattr(setting, 'STRX_MAX_THREADS', 10)
-            self._sleep = sleep_delay or getattr(setting, 'STRX_THREAD_SLEEP', 0)
+            self.max_thread = max_threads or getattr(setting, 'STRX_THREAD_MAX', 10)
+            self._sleep = sleep_delay or 0
             self._timeout = timeout or getattr(setting, 'STRX_THREAD_TIMEOUT', 300)
+            self._pool_max_workers = getattr(setting, 'STRX_THREAD_POOL_MAX_WORKERS', 20)
         except ImportError:
             self.max_thread = max_threads or 10
             self._sleep = sleep_delay or 0
             self._timeout = timeout or 300
+            self._pool_max_workers = 20
             
         # Limit threads to prevent memory issues
         if self.max_thread > 20:
@@ -86,8 +88,9 @@ class ThreadProcess:
         results = []
         failed_targets = []
         
-        # Limita workers para evitar problemas de serialização
-        effective_workers = min(self.max_thread, 10)
+        # Limita workers ao teto configurável do pool (STRX_THREAD_POOL_MAX_WORKERS)
+        # para evitar problemas de serialização/memória, respeitando o -t do usuário.
+        effective_workers = min(self.max_thread, self._pool_max_workers)
         
         try:
             with ThreadPoolExecutor(max_workers=effective_workers) as executor:

@@ -20,6 +20,7 @@ import re
 import random
 import backoff
 import asyncio
+from stringx.core.async_runner import run_async
 from bs4 import BeautifulSoup
 from stringx.core.format import Format
 from requests.exceptions import RequestException
@@ -127,7 +128,7 @@ class EzilonDorker(BaseModule):
         Returns:
             list: Lista de URLs válidas encontradas
         """
-        return asyncio.run(self._search_ezilon_async(dork))
+        return run_async(self._search_ezilon_async(dork))
     
     @retry_operation
     async def _search_ezilon_async(self, dork: str) -> list:

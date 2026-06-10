@@ -155,26 +155,31 @@ class HTTPClient:
         """
         # Semáforo para limitar o número de requisições simultâneas
         semaphore = asyncio.Semaphore(max_concurrent)
-        
-        async def _fetch_url(url: str) -> Union[Response, Exception]:
-            """Função interna para realizar requisição com controle de semáforo"""
-            async with semaphore:
-                try:
-                    return await self._get_async(url, **kwargs)
-                except HTTPError as e:
-                    return e
-                except ConnectError as e:
-                    return e
-                except TimeoutException as e:
-                    return e
-                except Exception as e:
-                    return e
-        
-        # Criar tarefas para cada URL
-        tasks = [_fetch_url(url) for url in urls]
-        
-        # Executar todas as tarefas concorrentemente
-        return await asyncio.gather(*tasks)
+
+        client_params, request_params = self._split_params(kwargs)
+        # Habilita pool de conexões com keep-alive, reutilizando conexões entre
+        # as URLs do mesmo lote em vez de criar um cliente novo por requisição.
+        client_params.setdefault(
+            'limits',
+            httpx.Limits(
+                max_connections=max_concurrent,
+                max_keepalive_connections=max_concurrent,
+            ),
+        )
+
+        async with httpx.AsyncClient(**client_params) as client:
+            async def _fetch_url(url: str) -> Union[Response, Exception]:
+                """Função interna para realizar requisição com controle de semáforo"""
+                async with semaphore:
+                    try:
+                        return await client.get(url, **request_params)
+                    except Exception as e:
+                        return e
+
+            # Criar tarefas para cada URL e executá-las concorrentemente,
+            # compartilhando o mesmo cliente (e seu pool de conexões).
+            tasks = [_fetch_url(url) for url in urls]
+            return await asyncio.gather(*tasks)
     
     async def send_request(self, target_list: List[str], **kwargs) -> List[Union[Response, Exception]]:
         """

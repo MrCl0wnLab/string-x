@@ -20,7 +20,7 @@ de risco durante investigações OSINT.
 """
 import re
 import json
-import asyncio
+from stringx.core.async_runner import run_async
 
 from stringx.core.basemodule import BaseModule
 from stringx.core.http_async import HTTPClient
@@ -186,7 +186,7 @@ class VirusTotalCollector(BaseModule):
             
     def _query_url(self, url: str, api_key: str) -> str:
         """Consulta análise de URL (wrapper para método assíncrono)."""
-        return asyncio.run(self._query_url_async(url, api_key))
+        return run_async(self._query_url_async(url, api_key))
     
     async def _query_ip_async(self, ip: str, api_key: str) -> str:
         """Consulta análise de IP."""
@@ -237,7 +237,7 @@ class VirusTotalCollector(BaseModule):
             
     def _query_ip(self, ip: str, api_key: str) -> str:
         """Consulta análise de IP (wrapper para método assíncrono)."""
-        return asyncio.run(self._query_ip_async(ip, api_key))
+        return run_async(self._query_ip_async(ip, api_key))
     
     async def _query_domain_async(self, domain: str, api_key: str) -> str:
         """Consulta análise de domínio."""
@@ -300,7 +300,7 @@ class VirusTotalCollector(BaseModule):
             
     def _query_domain(self, domain: str, api_key: str) -> str:
         """Consulta análise de domínio (wrapper para método assíncrono)."""
-        return asyncio.run(self._query_domain_async(domain, api_key))
+        return run_async(self._query_domain_async(domain, api_key))
     
     async def _query_file_async(self, file_hash: str, api_key: str) -> str:
         """Consulta análise de arquivo por hash."""
@@ -364,4 +364,4 @@ class VirusTotalCollector(BaseModule):
             
     def _query_file(self, file_hash: str, api_key: str) -> str:
         """Consulta análise de arquivo por hash (wrapper para método assíncrono)."""
-        return asyncio.run(self._query_file_async(file_hash, api_key))
+        return run_async(self._query_file_async(file_hash, api_key))

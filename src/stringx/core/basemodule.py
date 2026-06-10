@@ -158,7 +158,7 @@ class BaseModule:
         """
         if plain:
            # Retorna resultados sem formatação, ícones ou cores
-           return list(OutputFormatter._strip_formatting(r) for r in self._results)
+           return [OutputFormatter._strip_formatting(r) for r in list(self._result.values())[0]]
         return list(self._result.values())[0]
 
     def log_debug(self, message):
