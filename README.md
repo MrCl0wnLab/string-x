@@ -175,12 +175,27 @@ Com `-pmc` ativado:
 - Os resultados de cada módulo são impressos separadamente
 - Cada módulo é identificado com um cabeçalho claro (`[Módulo 1/3: ext:url]`)
 - Cada resultado é exibido em sua própria linha, evitando concatenações
+- **Somente o output dos módulos é exibido** — o output do comando shell não é impresso (use `-ps` para reexibi-lo)
 
 Este parâmetro é especialmente útil para:
 - Processar os dados originais com múltiplos módulos independentemente
 - Obter resultados de análise paralela sem encadeamento
 - Comparar os resultados de diferentes módulos para o mesmo conjunto de dados
 - Evitar que erros em um módulo interrompam a execução da cadeia completa
+
+#### Expondo o output do shell com -ps (Print Shell)
+
+Por padrão, `-pm` e `-pmc` substituem o output do shell pelos resultados dos módulos. Quando você quiser ver (e salvar) **também** o output do comando shell junto com os módulos, use `-ps` / `-print-shell`:
+
+```bash
+# Mostra o resultado do shell (echo) E os resultados dos módulos
+strx -l urls.txt -st "echo {STRING}" -module "ext:url|ext:domain" -pmc -ps
+
+# Combinável com -pm da mesma forma
+strx -s "exemplo.com" -st "dig {STRING}" -module "clc:dns" -pm -ps
+```
+
+Com `-ps` ativado, a execução do shell aparece no terminal e é gravada no arquivo de saída (`-o`), além dos resultados dos módulos.
 
 #### Exemplo prático com -pmc
 
@@ -386,23 +401,27 @@ strx -help
 | `-iff` | Filtro para resultados de funções: retorna apenas resultados que contenham o valor especificado | `-iff "admin"` |
 | `-ifm` | Filtro para resultados de módulos: retorna apenas resultados que contenham o valor especificado | `-ifm "hash"` |
 | `-module` | Seleção de módulo específico | `-module "ext:email"` |
-| `-pm` | Mostrar apenas resultados do módulo | `-pm` |
-| `-pmc` | Mostrar resultados de cada módulo em uma cadeia separadamente | `-pmc` |
+| `-pm` | Mostrar apenas resultados do módulo (omite o output do shell) | `-pm` |
+| `-pmc` | Mostrar somente os resultados de cada módulo do encadeamento separadamente (sem o output do shell) | `-pmc` |
+| `-ps, -print-shell` | Mostrar (e salvar) o output do shell mesmo com `-pm`/`-pmc` ativos | `-ps` |
 | `-pf` | Mostrar apenas resultados de funções | `-pf` |
 | `-of` | Salvar resultados de funções em arquivo | `-of` |
 | `-sleep` | Delay entre threads (segundos) | `-sleep 2` |
 | `-proxy` | Setar proxy para requests | `-proxy "http://127.0.0.1:8080"` |
 | `-format` | Formato de saída (txt, csv, json) | `-format json` |
+| `-notify` | Enviar notificação desktop ao finalizar a execução | `-notify` |
 | `-upgrade` | Atualizar String-X via Git | `-upgrade` |
 | `-r, -retry` | Quantidade de tentativas | `-r 3` |
+| `-rd, -retry-delay` | Delay entre tentativas (segundos) | `-rd 2` |
 
 ### Interface da Aplicação
 
 ```bash
 usage: strx [-h] [-types] [-examples] [-functions] [-list file] [-s string] [-str cmd]
             [-out file] [-pipe cmd] [-verbose] [-thread <10>] [-pf] [-of]
-            [-filter value] [-sleep <5>] [-module <type:module>] [-pm] [-proxy PROXY]
-            [-format <format>] [-upgrade] [-retry <1>] [-no-shell]
+            [-filter value] [-sleep <5>] [-module <type:module>] [-pm] [-pmc]
+            [-print-shell] [-proxy PROXY] [-format <format>] [-notify] [-upgrade]
+            [-retry <1>] [-retry-delay <0>] [-no-shell]
 
  
                                              _
@@ -457,12 +476,15 @@ options:
              -sleep <5>             Segundos de delay entre threads
              -module <type:module>  Selecionar o tipo e module, possível usar encadeamento type1:module1|type:module2
              -pm                    Mostrar somente resultados de execução do module
-             -pmc                   Mostrar resultados de cada módulo no encadeamento separadamente
+             -pmc                   Mostrar resultados de cada módulo no encadeamento separadamente (sem o output do shell)
+             -print-shell, -ps      Mostrar (e salvar) o output do shell mesmo com -pm/-pmc ativos
              -no-shell, -ns         Processar entrada diretamente através de módulos/funções sem execução de comandos shell
              -proxy PROXY           Setar um proxy para request
              -format <format>       Formato de saída (txt, csv, json)
+             -notify                Enviar notificação desktop ao finalizar a execução
              -upgrade               Atualizar String-X via Git
              -retry, -r <1>         Quantidade de tentativas
+             -retry-delay, -rd <0>  Delay entre tentativas (segundos)
 
 ```
 
@@ -493,6 +515,8 @@ strx -l hosts.txt -st "scan {STRING}" -v all
 # Combinar múltiplos níveis
 strx -l mixed.txt -st "test {STRING}" -v "1,3,4"
 ```
+
+> **Saída separada (pipe-friendly):** o trace de diagnóstico do verbose (`[INFO]`, `[DEBUG]`, `[ERROR]`, `[EXCEPT]`) é enviado para **stderr**, enquanto os **resultados** ficam apenas no **stdout**. Assim você pode usar `-v` para depurar sem poluir os dados de saída em pipes — ex.: `strx ... -v all 2>debug.log | sort -u`.
 
 ### Modo No-Shell (-ns / --no-shell)
 
@@ -804,6 +828,8 @@ strx -module "tipo:nome_do_modulo"
 #### Parâmetros Relacionados
 - **`-module tipo:nome`**: Especifica o módulo a ser utilizado
 - **`-pm`**: Mostra apenas resultados do módulo (omite saída shell)
+- **`-pmc`**: Mostra somente os resultados de cada módulo do encadeamento separadamente (sem a saída shell)
+- **`-ps` / `-print-shell`**: Mostra (e salva) a saída do shell mesmo com `-pm`/`-pmc` ativos
 
 
 ### Módulos Extractor (EXT)

@@ -281,7 +281,9 @@ string-x/
 | `-iff` | Filtro de resultados de función: retorna solo resultados que contengan el valor especificado | `-iff "admin"` |
 | `-ifm` | Filtro de resultados de módulo: retorna solo resultados que contengan el valor especificado | `-ifm "hash"` |
 | `-module` | Selección de módulo específico | `-module "ext:email"` |
-| `-pm` | Mostrar solo resultados del módulo | `-pm` |
+| `-pm` | Mostrar solo resultados del módulo (omite salida shell) | `-pm` |
+| `-pmc` | Mostrar solo los resultados de cada módulo de la cadena por separado (sin la salida shell) | `-pmc` |
+| `-ps, -print-shell` | Mostrar (y guardar) la salida shell incluso con `-pm`/`-pmc` activos | `-ps` |
 | `-pf` | Mostrar solo resultados de funciones | `-pf` |
 | `-of` | Guardar resultados de funciones en archivo | `-of` |
 | `-sleep` | Delay entre threads (segundos) | `-sleep 2` |
@@ -540,6 +542,8 @@ String-X utiliza una arquitectura modular extensible que permite agregar funcion
 #### Parámetros Relacionados
 - **`-module tipo:nombre`**: Especifica el módulo a utilizar
 - **`-pm`**: Muestra solo resultados del módulo (omite salida shell)
+- **`-pmc`**: Muestra solo los resultados de cada módulo de la cadena por separado (sin la salida shell)
+- **`-ps` / `-print-shell`**: Muestra (y guarda) la salida shell incluso con `-pm`/`-pmc` activos
 
 ### Módulos Extractor (EXT)
 Módulos para extracción de patrones y datos específicos usando regex:
