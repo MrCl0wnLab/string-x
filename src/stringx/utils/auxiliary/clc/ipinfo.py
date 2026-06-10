@@ -135,14 +135,14 @@ class IPInfo(BaseModule):
             dict: Dicionário com informações do IP ou None em caso de erro
         """
         try:
-            base_url = f"https://ipinfo.io/{ip}/json"
+            base_url = f"https://api.ipinfo.io/lite/{ip}"
             headers = {
                 'Accept': 'application/json',
                 'User-Agent': UserAgentGenerator.get_random_lib()
             }
             
             # Adiciona token de API se disponível (prioriza opção, depois variável de ambiente)
-            token = self.options.get('api_token') or os.environ.get('IPINFO_TOKEN')
+            token = self.options.get('api_token') or os.environ.get('STRX_IPINFO_APIKEY')
             if token:
                 headers['Authorization'] = f"Bearer {token}"
             
