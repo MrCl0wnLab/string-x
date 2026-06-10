@@ -49,6 +49,22 @@ class Command:
         verbose (bool): Flag para modo verboso
         _type_module (str): Tipo de módulo a ser executado
     """
+    # Regexes/constantes pré-compiladas reutilizadas por comando (evita recompilar
+    # e refazer a lista a cada chamada no caminho quente).
+    _RE_NEWLINES = re.compile(r'\n+')
+    _RE_CONTROL_CHARS = re.compile(r'[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]')
+    _RE_ONLY_SPECIALS = re.compile(r'^[^a-zA-Z0-9/._-]*$')
+    _RE_HASH_PATTERN = re.compile(r'[a-fA-F0-9]{32,128}')
+    _RE_INVALID_COMMANDS = (
+        re.compile(r'^\s*$'),          # Apenas espaços em branco
+        re.compile(r'^\s*\n+\s*$'),    # Apenas quebras de linha
+        re.compile(r'^\s*[;&|]+\s*$'), # Apenas operadores shell
+        re.compile(r'^\s*[<>]+\s*$'),  # Apenas redirecionamentos
+    )
+    _SHELL_OPERATORS = (';', '|', '&', '<', '>', '&&', '||', '$(', '`')
+    # Limite de entradas no cache de comandos para evitar crescimento ilimitado
+    _COMMAND_CACHE_MAX = 100000
+
     def __init__(self,):
         """
         Inicializa a classe Command com configurações padrão.
@@ -443,7 +459,7 @@ class Command:
                 # Check if this looks like a processed template result (contains functions output)
                 # by looking for patterns like domain; hash or similar structured data
                 has_semicolon = ';' in command
-                has_hash_pattern = bool(re.search(r'[a-fA-F0-9]{32,128}', command))
+                has_hash_pattern = bool(self._RE_HASH_PATTERN.search(command))
                 has_function_result = has_semicolon or has_hash_pattern
                 
                 if has_function_result:
@@ -466,8 +482,8 @@ class Command:
         result_command = None
         try:
             # Create initial process
-            # Use shell=True for commands with shell operators like ; | & < > 
-            shell_operators = [';', '|', '&', '<', '>', '&&', '||', '$(', '`']
+            # Use shell=True for commands with shell operators like ; | & < >
+            shell_operators = self._SHELL_OPERATORS
             use_shell = any(op in command for op in shell_operators)
             
             try:
@@ -644,11 +660,9 @@ class Command:
                     module=self._current_module
                 )
             
-            if self.verbose:
-                logger.verbose('RESULT')
-                logger.result(output_to_print)
-            else:
-                logger.result(output_to_print)
+            # Resultado sempre limpo no stdout (sem rótulo "RESULT"); o trace
+            # de diagnóstico fica no stderr via logger.verbose/debug.
+            logger.result(output_to_print)
             
             # Para logs, salvar apenas o resultado original (não formatado)
             # A formatação de arquivo é feita separadamente no _save_command_log
@@ -780,17 +794,17 @@ class Command:
         sanitized = command.strip()
         
         # Remove múltiplas quebras de linha consecutivas
-        sanitized = re.sub(r'\n+', ' ', sanitized)
-        
+        sanitized = self._RE_NEWLINES.sub(' ', sanitized)
+
         # Remove caracteres de controle ASCII
-        sanitized = re.sub(r'[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]', '', sanitized)
-        
+        sanitized = self._RE_CONTROL_CHARS.sub('', sanitized)
+
         # Verifica se o comando não é apenas espaços em branco
         if not sanitized or not sanitized.strip():
             return ""
-            
+
         # Verifica se o comando não contém apenas caracteres especiais que causam erro
-        if re.match(r'^[^a-zA-Z0-9/._-]*$', sanitized):
+        if self._RE_ONLY_SPECIALS.match(sanitized):
             return ""
             
         return sanitized
@@ -808,18 +822,11 @@ class Command:
         if not command or not command.strip():
             return False
             
-        # Lista de padrões que indicam comandos potencialmente problemáticos
-        invalid_patterns = [
-            r'^\s*$',  # Apenas espaços em branco
-            r'^\s*\n+\s*$',  # Apenas quebras de linha
-            r'^\s*[;&|]+\s*$',  # Apenas operadores shell
-            r'^\s*[<>]+\s*$',  # Apenas redirecionamentos
-        ]
-        
-        for pattern in invalid_patterns:
-            if re.match(pattern, command):
+        # Padrões (pré-compilados) que indicam comandos potencialmente problemáticos
+        for pattern in self._RE_INVALID_COMMANDS:
+            if pattern.match(command):
                 return False
-                
+
         return True
 
     def _should_execute_command(self, command: str) -> bool:
@@ -832,14 +839,18 @@ class Command:
         Returns:
             bool: True se o comando deve ser executado
         """
-        # Generate a simple hash for the command to use as cache key
-        command_hash = hashlib.md5(command.encode()).hexdigest()
-        
+        # Hash built-in do Python como chave de cache (muito mais rápido que MD5;
+        # só precisamos detectar duplicatas, não resistência criptográfica).
+        command_hash = hash(command)
+
         if command_hash in self._command_cache:
             logger.verbose(f"[!] Comando já executado (cache): {command}")
             return False
-            
-        # Add to cache
+
+        # Limita o crescimento do cache em execuções muito grandes
+        if len(self._command_cache) >= self._COMMAND_CACHE_MAX:
+            self._command_cache.clear()
+
         self._command_cache.add(command_hash)
         return True
 
@@ -937,10 +948,10 @@ class Command:
         try:
             if not target or not command:
                 return str()
-                
-            # Clean target value to avoid injection
-            target = Format.clear_value(target)
-            if not target or not target.strip():
+
+            # target já vem limpo de command_template (Format.clear_value);
+            # evita relimpar a cada chamada (comando + pipe) no caminho quente.
+            if not target.strip():
                 return str()
                 
             # Replace both {STRING} and {string} with the target value
