@@ -198,9 +198,6 @@ def main_cli():
     THREAD = ThreadProcess()
     CMD = Command()
 
-    # Set security resource limits
-    SecurityValidator.set_resource_limits()
-    
     try:
         parser = RichArgumentParser(
             prog="strx",
@@ -279,7 +276,14 @@ def main_cli():
                     CLI.console.log(f"[!] Command template rejected for security: {reason}")
                     CLI.console.log(f"[!] Use -ds to disable security validations if this is a trusted command")
                     exit(1)
-            
+
+            # Limites de recurso são opt-in (STRX_RESOURCE_LIMITS_ENABLED) e nunca
+            # aplicados sob -ds. Por padrão ficam desligados: como os limites são
+            # herdados por subprocessos, um teto de address space/CPU quebraria as
+            # ferramentas externas que os módulos lançam (nmap, simplerecon, etc.).
+            if getattr(setting, 'STRX_RESOURCE_LIMITS_ENABLED', False) and not ARGS.disable_security:
+                SecurityValidator.set_resource_limits()
+
             # stdin will be handled later in the input processing section
         else:
             parser.error("o argumento -str/-st é obrigatório quando não estiver usando -types, -examples ou -functions")

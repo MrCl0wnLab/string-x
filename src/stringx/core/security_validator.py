@@ -24,6 +24,10 @@ class SecurityValidator:
 
     # Get patterns from configuration (with safe fallback)
     DANGEROUS_PATTERNS = getattr(setting, 'STRX_BLOCKED_COMMAND_PATTERNS', []) + [
+        r'\brm\s+-[a-z]*[rf]',     # rm -rf / -fr / -r / -f (recursivo/forçado)
+        r'\bshred\b',
+        r'\bwipefs\b',
+        r'>\s*/dev/(sd|nvme|hd|mapper|disk)',  # sobrescrever block device
         r'dd\s+if=',
         r'mkfs\.',
         r'fdisk',
@@ -55,15 +59,6 @@ class SecurityValidator:
         r'>/etc/',
         r'>>/etc/',
     ]
-
-    # Safe commands whitelist - combine with allowed patterns from config
-    SAFE_COMMANDS = {
-        'ping', 'nslookup', 'dig', 'host', 'whois', 'curl', 'wget',
-        'echo', 'printf', 'cat', 'head', 'tail', 'grep', 'awk', 'sed',
-        'cut', 'sort', 'uniq', 'wc', 'find', 'ls', 'file', 'stat',
-        'date', 'sleep', 'timeout', 'test', 'tr', 'base64', 'md5sum',
-        'sha256sum', 'sha1sum', 'openssl'
-    }
 
     @classmethod
     def validate_input_size(cls, data: Any) -> bool:
@@ -192,13 +187,14 @@ class SecurityValidator:
             if re.search(pattern, command, re.IGNORECASE):
                 return False, f"Dangerous pattern detected: {pattern}"
         
-        # Extract command name
+        # Valida apenas a sintaxe do comando (aspas/escapes balanceados). NÃO há
+        # allow-list de binário: o String-X é uma ferramenta de orquestração de
+        # OSINT/pentest e precisa rodar qualquer comando de recon (nmap, httpx,
+        # sqlmap, nuclei…) e os próprios templates de função (md5(), base64()) e o
+        # modo -ns. A proteção real fica na denylist DANGEROUS_PATTERNS (acima) e
+        # nos padrões de injeção (abaixo).
         try:
-            parts = shlex.split(command)
-            if parts:
-                cmd_name = parts[0].split('/')[-1]  # Remove path
-                if cmd_name not in cls.SAFE_COMMANDS:
-                    return False, f"Command not in safe list: {cmd_name}"
+            shlex.split(command)
         except ValueError:
             return False, "Invalid command syntax"
         
@@ -343,19 +339,23 @@ class SecurityValidator:
         Returns:
             bool: True if limits were set successfully
         """
+        # Aplica apenas limites SOFT, preservando o hard atual (getrlimit), para
+        # que o processo (e seus filhos) ainda possam elevá-los se necessário.
+        # NÃO usa RLIMIT_AS: o limite de address space é herdado por subprocessos
+        # e quebra ferramentas multithread/async (cada thread reserva stack), além
+        # de ser um proxy ruim de uso de memória — era a causa de crashes em
+        # módulos que lançam binários externos pesados.
+        def _set_soft(limit, soft):
+            _, hard = resource.getrlimit(limit)
+            new_soft = soft if hard == resource.RLIM_INFINITY else min(soft, hard)
+            resource.setrlimit(limit, (new_soft, hard))
+
         try:
-            # Set CPU time limit (10 minutes)
-            resource.setrlimit(resource.RLIMIT_CPU, (600, 600))
-            
-            # Set memory limit (1GB)
-            resource.setrlimit(resource.RLIMIT_AS, (1024*1024*1024, 1024*1024*1024))
-            
-            # Set file size limit (100MB)
-            resource.setrlimit(resource.RLIMIT_FSIZE, (100*1024*1024, 100*1024*1024))
-            
-            # Set maximum number of open files
-            resource.setrlimit(resource.RLIMIT_NOFILE, (1024, 1024))
-            
+            # CPU time (10 min), tamanho de arquivo (100MB), nº de file descriptors
+            _set_soft(resource.RLIMIT_CPU, 600)
+            _set_soft(resource.RLIMIT_FSIZE, 100 * 1024 * 1024)
+            _set_soft(resource.RLIMIT_NOFILE, 1024)
+
             return True
         except Exception:
             return False
